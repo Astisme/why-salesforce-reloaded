@@ -81,7 +81,7 @@ jobs:
             - name: Approve and merge pull request
               run: |
                   PR_NUMBER=$(echo "$PR_URL" | sed 's/.*\/pull\/\([0-9]*\)/\1/')
-                  gh pr review "$PR_NUMBER" --approve --repo ${{ github.repository }}
+                  #gh pr review "$PR_NUMBER" --approve --repo ${{ github.repository }}
                   gh pr merge "$PR_NUMBER" --merge --repo ${{ github.repository }}
               env:
                   GITHUB_TOKEN: ${{ github.token }}
