@@ -1,6 +1,6 @@
 "use strict";
 import process from "node:process";
-import manifest from "./template-manifest.json" assert { type: "json" };
+import manifest from "./template-manifest.json" with { type: "json" };
 import { writeFileSync } from "fs";
 
 const browser = process.argv[2];
