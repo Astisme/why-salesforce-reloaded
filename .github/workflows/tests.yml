@@ -1,8 +1,14 @@
-name: Format and Lint
+name: Format, Lint and add changes
 
 on:
     pull_request:
-        branches: ["main"]
+        types:
+            - ready_for_review
+        branches: 
+            - main
+    push:
+        branches:
+            - main
 
 permissions:
     contents: read
@@ -10,7 +16,6 @@ permissions:
 jobs:
     test:
         runs-on: ubuntu-latest
-
         steps:
             - name: Setup repo
               uses: actions/checkout@v4
@@ -20,8 +25,26 @@ jobs:
               with:
                   deno-version: v2.x
 
-            - name: Verify formatting
-              run: deno task fmt
+            - name: Switch branch
+              run: |
+                HEAD_REF="${{ github.head_ref }}"
+                if [ "$HEAD_REF" != "main" ]; then
+                  git fetch origin $HEAD_REF
+                  git switch $HEAD_REF
+                fi
 
             - name: Run linter
               run: deno task lint
+
+            - name: Verify formatting
+              run: deno task fmt
+
+            - name: Upload changes to base branch
+              run: |
+                HEAD_REF="${{ github.head_ref }}"
+                if [ "$HEAD_REF" != "main" ]; then
+                  git config user.name "github-actions"
+                  git config user.email "github-actions@github.com"
+                  git commit -am "deno formatting"
+                  git push
+                fi
