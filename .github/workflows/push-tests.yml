@@ -29,16 +29,16 @@ jobs:
 
             - name: Ensure Changes Exist
               run: |
-                if git diff --exit-code; then
-                  echo "No changes to commit, exiting."
-                  exit 0
-                fi
+                  if git diff --exit-code; then
+                    echo "No changes to commit, exiting."
+                    exit 0
+                  fi
 
             - name: Debug Git Status
               run: |
-                git status
-                git branch -a
-                git remote -v
+                  git status
+                  git branch -a
+                  git remote -v
 
             - name: Set up Git user
               run: |

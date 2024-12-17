@@ -4,7 +4,8 @@
 		"indentWidth": 4,
 		"semiColons": true,
 		"singleQuote": false,
-		"proseWrap": "preserve"
+		"proseWrap": "preserve",
+		"exclude": ["*.git*"]
 	},
 	"tasks": {
 		"test": "deno test -A",
@@ -18,7 +19,7 @@
 		"/": "./",
 		"./": "./"
 	},
-    "test": {
-        "include": ["tests/*"]
-    }
+	"test": {
+		"include": ["tests/*"]
+	}
 }
