@@ -50,7 +50,7 @@ jobs:
               with:
                   token: ${{ github.token }}
                   base: main
-                  head: "${{ env.BRANCH_NAME }}"
+                  branch: "${{ env.BRANCH_NAME }}"
                   title: "Deno formatting changes"
                   body: "This PR includes formatting updates made by the workflow."
 
