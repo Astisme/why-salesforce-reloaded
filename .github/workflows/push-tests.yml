@@ -70,13 +70,15 @@ jobs:
     merge-pr:
         runs-on: ubuntu-latest
         needs: test
+        env:
+            PR_URL: ${{ needs.tests.outputs.PR_URL }}
         steps:
             - name: Checkout repo
               uses: actions/checkout@v4
 
             - name: Approve and merge pull request
               run: |
-                  PR_NUMBER=$(echo "${{ needs.test.outputs.PR_URL }}" | sed 's/.*\/pull\/\([0-9]*\)/\1/')
+                  PR_NUMBER=$(echo "$PR_URL" | sed 's/.*\/pull\/\([0-9]*\)/\1/')
                   gh pr review "$PR_NUMBER" --approve --repo ${{ github.repository }}
                   gh pr merge "$PR_NUMBER" --merge --repo ${{ github.repository }}
               env:
