@@ -64,8 +64,8 @@ jobs:
                       --base "main" \
                       --title "Deno formatting changes" \
                       --body "This PR includes formatting updates made by the workflow." \
-                      --reviewer "${{ github.actor }} \
-                      2>&1")
+                      --reviewer "${{ github.actor }}" \
+                      2>&1)
                 echo "PR_URL=$PR_URL" >> $GITHUB_OUTPUT
 
     merge-pr:
