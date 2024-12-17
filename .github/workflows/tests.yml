@@ -28,7 +28,7 @@ jobs:
             - name: Switch branch
               run: |
                 HEAD_REF="${{ github.head_ref }}"
-                if [ "$HEAD_REF" != "main" ]; then
+                if [ "$HEAD_REF" != "" && "$HEAD_REF" != "main" ]; then
                   git fetch origin $HEAD_REF
                   git switch $HEAD_REF
                 fi
@@ -42,7 +42,7 @@ jobs:
             - name: Upload changes to base branch
               run: |
                 HEAD_REF="${{ github.head_ref }}"
-                if [ "$HEAD_REF" != "main" ]; then
+                if [ "$HEAD_REF" != "" && "$HEAD_REF" != "main" ]; then
                   git config user.name "github-actions"
                   git config user.email "github-actions@github.com"
                   git commit -am "deno formatting"
