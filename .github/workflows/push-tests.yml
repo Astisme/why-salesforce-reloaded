@@ -34,12 +34,6 @@ jobs:
                     exit 0
                   fi
 
-            - name: Debug Git Status
-              run: |
-                  git status
-                  git branch -a
-                  git remote -v
-
             - name: Set up Git user
               run: |
                   git config user.name "github-actions"
@@ -57,15 +51,17 @@ jobs:
                   git commit -am "deno formatting"
                   git push https://x-access-token:${{ github.token }}@github.com/${{ github.repository }} "${{ env.BRANCH_NAME }}"
 
-            - name: Create pull request to main
-              id: pr
-              uses: peter-evans/create-pull-request@v4
-              with:
-                  token: ${{ github.token }}
-                  base: main
-                  branch: "${{ env.BRANCH_NAME }}"
-                  title: "Deno formatting changes"
-                  body: "This PR includes formatting updates made by the workflow."
+            - name: Authenticate GitHub CLI
+              run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
+
+            - name: Create Pull Request
+              run: |
+                gh pr create \
+                  --head "fmt/${{ github.sha }}" \
+                  --base "main" \
+                  --title "Deno formatting changes" \
+                  --body "This PR includes formatting updates made by the workflow." \
+                  --reviewer "${{ github.actor }}"
 
     merge-pr:
         runs-on: ubuntu-latest
