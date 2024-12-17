@@ -3,7 +3,8 @@ name: Format, Lint and add changes
 on:
     pull_request:
         types:
-            - ready_for_review
+            - opened
+            - edited
         branches: 
             - main
     push:
