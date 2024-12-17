@@ -1,0 +1,70 @@
+name: Format, Lint and add changes on push
+
+on:
+    push:
+        branches:
+            - main
+
+permissions:
+    contents: write
+    pull-requests: write
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Setup repo
+              uses: actions/checkout@v4
+
+            - name: Setup Deno
+              uses: denoland/setup-deno@v2
+              with:
+                  deno-version: v2.x
+
+            - name: Run linter
+              run: deno task lint
+
+            - name: Verify formatting
+              run: deno task fmt
+
+            - name: Set up Git user
+              run: |
+                  git config user.name "github-actions"
+                  git config user.email "github-actions@github.com"
+
+            - name: Create new branch for changes
+              run: |
+                  BRANCH_NAME="fmt/${{ github.sha }}"
+                  git branch "$BRANCH_NAME"
+                  git switch "$BRANCH_NAME"
+                  echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
+
+            - name: Push changes
+              run: |
+                  git commit -am "deno formatting"
+                  git push https://x-access-token:${{ github.token }}@github.com/${{ github.repository }} "${{ env.BRANCH_NAME }}"
+
+            - name: Create pull request to main
+              id: pr
+              uses: peter-evans/create-pull-request@v4
+              with:
+                  token: ${{ github.token }}
+                  base: main
+                  head: "${{ env.BRANCH_NAME }}"
+                  title: "Deno formatting changes"
+                  body: "This PR includes formatting updates made by the workflow."
+
+    merge-pr:
+        runs-on: ubuntu-latest
+        needs: test
+        steps:
+            - name: Checkout repo
+              uses: actions/checkout@v4
+
+            - name: Approve and merge pull request
+              run: |
+                  PR_NUMBER=$(echo "${{ steps.pr.outputs.pull-request-url }}" | sed 's/.*\/pull\/\(.*\)/\1/')
+                  gh pr review "$PR_NUMBER" --approve --repo ${{ github.repository }}
+                  gh pr merge "$PR_NUMBER" --merge --repo ${{ github.repository }}
+              env:
+                  GITHUB_TOKEN: ${{ github.token }}

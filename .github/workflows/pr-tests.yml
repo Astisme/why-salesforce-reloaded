@@ -1,13 +1,10 @@
-name: Format, Lint and add changes
+name: Format, Lint and add changes on PR
 
 on:
     pull_request:
         types:
             - opened
             - edited
-        branches:
-            - main
-    push:
         branches:
             - main
 
@@ -26,13 +23,8 @@ jobs:
               with:
                   deno-version: v2.x
 
-            - name: Switch branch
-              run: |
-                  HEAD_REF="${{ github.head_ref }}"
-                  if [ "$HEAD_REF" != "" && "$HEAD_REF" != "main" ]; then
-                    git fetch origin $HEAD_REF
-                    git switch $HEAD_REF
-                  fi
+            - name: Switch to branch
+              run: git switch "${{ github.head_ref }}"
 
             - name: Run linter
               run: deno task lint
@@ -40,11 +32,12 @@ jobs:
             - name: Verify formatting
               run: deno task fmt
 
-            - name: Upload changes to base branch
+            - name: Set up Git user
               run: |
-                  HEAD_REF="${{ github.head_ref }}"
-                  BRANCH_TO_PUSH="${HEAD_REF:-main}"
                   git config user.name "github-actions"
                   git config user.email "github-actions@github.com"
+
+            - name: Push fmt changes
+              run: |
                   git commit -am "deno formatting"
-                  git push https://x-access-token:${{ secrets.AWSF_PUSH_MAIN }}@github.com/${{ github.repository }} "$BRANCH_TO_PUSH"
+                  git push https://x-access-token:${{ github.token }}@github.com/${{ github.repository }} "${{ github.head_ref }}"
