@@ -12,6 +12,8 @@ permissions:
 jobs:
     test:
         runs-on: ubuntu-latest
+        outputs:
+            PR_URL: ${{ steps.make_pr.outputs.PR_URL }}
         steps:
             - name: Setup repo
               uses: actions/checkout@v4
@@ -55,6 +57,7 @@ jobs:
               run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
             - name: Create Pull Request
+              id: make_pr
               run: |
                 gh pr create \
                   --head "fmt/${{ github.sha }}" \
@@ -62,6 +65,7 @@ jobs:
                   --title "Deno formatting changes" \
                   --body "This PR includes formatting updates made by the workflow." \
                   --reviewer "${{ github.actor }}"
+                echo "PR_URL=$PR_URL" >> $GITHUB_OUTPUT
 
     merge-pr:
         runs-on: ubuntu-latest
@@ -72,7 +76,7 @@ jobs:
 
             - name: Approve and merge pull request
               run: |
-                  PR_NUMBER=$(echo "${{ steps.pr.outputs.pull-request-url }}" | sed 's/.*\/pull\/\(.*\)/\1/')
+                  PR_NUMBER=$(echo "${{ needs.test.outputs.PR_URL }}" | sed 's/.*\/pull\/\([0-9]*\)/\1/')
                   gh pr review "$PR_NUMBER" --approve --repo ${{ github.repository }}
                   gh pr merge "$PR_NUMBER" --merge --repo ${{ github.repository }}
               env:
