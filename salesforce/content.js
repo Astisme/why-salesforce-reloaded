@@ -123,8 +123,8 @@ function initTabs() {
 
 function generateFavouriteButton() {
 	const assetDir = chrome.runtime.getURL("assets");
-	const star = chrome.runtime.getURL("assets/star.svg");
-	const slashedStar = chrome.runtime.getURL("assets/slashed-star.svg");
+	const star = chrome.runtime.getURL("assets/svgs/star.svg");
+	const slashedStar = chrome.runtime.getURL("assets/svgs/slashed-star.svg");
 	return `<button aria-live="off" type="button" id="${buttonId}" class="slds-button slds-button--neutral uiButton" aria-label="" data-aura-rendered-by="3:829;a" data-aura-class="uiButton">
                 <span dir="ltr" class=" label bBody" data-aura-rendered-by="6:829;a">
                     <!--⭐-->
