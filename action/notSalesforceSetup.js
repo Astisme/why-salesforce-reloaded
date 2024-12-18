@@ -1,26 +1,46 @@
 // deno-lint-ignore-file no-window
+const authorizedDomainRegex = /https:\/\/.*\.lightning\.force\.com/;
 const page = new URLSearchParams(window.location.search).get("url");
-const textEl = document.querySelector("h3");
+const sfsetupTextEl = document.querySelector("h3");
 
 const div = document.createElement("div");
 const prefix = document.createTextNode("This is not a ")
 const strongEl = document.createElement("strong")
-const otherText = document.createTextNode();
+const otherText = document.createTextNode("");
+
+sfsetupTextEl.innerText = "";
+sfsetupTextEl.appendChild(div);
+let insertPrefix = true;
+let strongFirst = true;
 
 if (page != null) { // we're in a salesforce page
-	// switch which button is shown
-	document.getElementById("login").classList.add("hidden");
-	const goSetup = document.getElementById("go-setup");
-	goSetup.classList.remove("hidden");
-	// update the button href to use the domain
-	const domain = page.substring(0, page.indexOf("/lightning"));
-	goSetup.href = `${domain}/lightning/setup/SetupOneHome/home`;
-	// update the bold on the text
-    otherText = "Salesforce Lightning";
-    strongEl = "Setup Page"
+    // Validate the domain (make sure it's a Salesforce domain)
+    if (!authorizedDomainRegex.test(page)) {
+        strongEl.textContent = "Invalid Salesforce";
+        otherText.textContent = "domain detected.";
+        insertPrefix = false;
+    } else {
+        // switch which button is shown
+        document.getElementById("login").classList.add("hidden");
+        const goSetup = document.getElementById("go-setup");
+        goSetup.classList.remove("hidden");
+        // update the button href to use the domain
+        const domain = page.substring(0, page.indexOf("/lightning"));
+        goSetup.href = `${domain}/lightning/setup/SetupOneHome/home`;
+        // update the bold on the text
+        otherText.textContent = "Salesforce Lightning";
+        strongEl.textContent = " Setup Page"
+        strongFirst = false;
+    }
 } else {
-    strongEl = "Salesforce Lightning";
-    otherText = "Setup Page";
+    strongEl.textContent = "Salesforce Lightning";
+    otherText.textContent = " Setup Page";
 }
-textEl.innerText = "";
-textEl.insertAdjacentHTML("beforeend", text);
+insertPrefix && div.appendChild(prefix);
+if(strongFirst){
+    div.appendChild(strongEl);
+    div.appendChild(otherText)
+} else {
+    div.appendChild(otherText)
+    div.appendChild(strongEl);
+}
