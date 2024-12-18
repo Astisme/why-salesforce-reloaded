@@ -1,6 +1,6 @@
 "use strict";
 import process from "node:process";
-import manifest from "./template-manifest.json" assert { type: "json" };
+import manifest from "./template-manifest.json" with { type: "json" };
 import { writeFileSync } from "fs";
 
 const browser = process.argv[2];
@@ -20,7 +20,11 @@ if (browser === "firefox") {
     delete manifest.browser_specific_settings.gecko;
 
 } else {
-	console.error(`Usage: ${process.argv[0]} ${process.argv[1]} (firefox || chrome || safari)`);
+	console.error(
+		`Usage: ${process.argv[0]} ${
+			process.argv[1]
+		} (firefox || chrome || safari)`,
+	);
 	throw new Error(`Unknown browser: ${browser}`);
 }
 

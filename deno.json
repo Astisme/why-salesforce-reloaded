@@ -4,11 +4,12 @@
 		"indentWidth": 4,
 		"semiColons": true,
 		"singleQuote": false,
-		"proseWrap": "preserve"
+		"proseWrap": "preserve",
+		"exclude": ["*.git*"]
 	},
 	"tasks": {
 		"test": "deno test -A",
-		"fmt": "deno fmt --check --ignore=*.md --ignore=*/*.md",
+		"fmt": "deno fmt",
 		"lint": "deno lint",
 		"dev-firefox": "node manifest/build-manifest.mjs firefox",
 		"dev-chrome": "node manifest/build-manifest.mjs chrome",
@@ -18,7 +19,7 @@
 		"/": "./",
 		"./": "./"
 	},
-    "test": {
-        "include": ["tests/*"]
-    }
+	"test": {
+		"include": ["tests/*"]
+	}
 }

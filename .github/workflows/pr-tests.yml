@@ -1,0 +1,50 @@
+name: Format, Lint and add changes on PR
+
+on:
+    pull_request:
+        types:
+            - opened
+            - edited
+        branches:
+            - main
+
+permissions:
+    contents: write
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Setup repo
+              uses: actions/checkout@v4
+
+            - name: Setup Deno
+              uses: denoland/setup-deno@v2
+              with:
+                  deno-version: v2.x
+
+            - name: Switch to branch
+              run: git switch "${{ github.head_ref }}"
+
+            - name: Run linter
+              run: deno task lint
+
+            - name: Verify formatting
+              run: deno task fmt
+
+            - name: Ensure Changes Exist
+              run: |
+                  if git diff --exit-code; then
+                    echo "No changes to commit, exiting."
+                    exit 0
+                  fi
+
+            - name: Set up Git user
+              run: |
+                  git config user.name "github-actions"
+                  git config user.email "github-actions@github.com"
+
+            - name: Push fmt changes
+              run: |
+                  git commit -am "deno formatting"
+                  git push https://x-access-token:${{ github.token }}@github.com/${{ github.repository }} "${{ github.head_ref }}"
