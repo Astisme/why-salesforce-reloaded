@@ -51,6 +51,7 @@ a {
 	}
 }
 
+.button,
 button {
 	position: relative;
 	display: inline-flex;
@@ -59,13 +60,10 @@ button {
 	padding-bottom: 0;
 	padding-left: 1rem;
 	padding-right: 1rem;
-	background-clip: border-box;
-	border-style: solid;
-	border-width: 1px;
+    border: none;
 	border-radius: 0.25rem;
 	line-height: 1.875rem;
 	text-decoration: none;
-	white-space: none;
 	user-select: none;
 	cursor: pointer;
 	text-transform: none;
@@ -76,6 +74,19 @@ button {
 	margin-left: 0.25rem;
 	width: 4rem;
 	min-height: 2.3rem;
+    background-color: #e9e9ed;
+
+    &:hover {
+        background-color: #cccccc;
+    }
+}
+
+.highlight {
+	background-color: lightblue;
+
+    &:hover {
+        background-color: skyblue;
+    }
 }
 
 .slds-assistive-text {
@@ -91,10 +102,6 @@ button {
 	white-space: nowrap !important;
 }
 
-.highlight {
-	background-color: lightblue;
-}
-
 .hidden {
-	display: none;
+	display: none !important;
 }
