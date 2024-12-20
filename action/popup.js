@@ -121,10 +121,6 @@ function focusListener(e) {
 function createElement() {
 	const element = tabTemplate.content.firstElementChild.cloneNode(true);
 	element.dataset.draggable = "false";
-	/*element.addEventListener("focus", event => {
-        event.preventDefault();
-        saveTabs();
-    });*/
 	const deleteButton = element.querySelector("button.delete");
 	deleteButton.addEventListener("click", deleteTab);
 	deleteButton.disabled = true;

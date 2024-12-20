@@ -1,5 +1,6 @@
 *, :before, :after {
 	box-sizing: border-box;
+    background-color: transparent;
 }
 
 html {
@@ -15,13 +16,14 @@ html {
 		"Segoe UI Emoji",
 		"Segoe UI Symbol";
 	line-height: 1.5;
+    color: var(--color);
+    background-color: var(--background-color);
 }
 
 body {
 	padding: 0 !important;
 	margin: 0;
 	font-size: 0.8125rem;
-	background-color: transparent;
 }
 
 header {
@@ -51,6 +53,10 @@ a {
 	}
 }
 
+input {
+    color: var(--color);
+}
+
 .button,
 button {
 	position: relative;
@@ -74,18 +80,46 @@ button {
 	margin-left: 0.25rem;
 	width: 4rem;
 	min-height: 2.3rem;
-    background-color: #e9e9ed;
+    color: var(--color);
+    background-color: var(--button-background-color);
 
     &:hover {
-        background-color: #cccccc;
+        background-color: var(--button-background-color-hover);
+    }
+}
+
+.success {
+    background-color: var(--success);
+
+    &:hover {
+        background-color: var(--success-hover);
+    }
+}
+
+.error {
+    background-color: var(--error);
+
+    &:hover {
+        background-color: var(--error-hover);
     }
 }
 
 .highlight {
-	background-color: lightblue;
+    color: var(--background-color);
+	background-color: var(--highlight);
 
     &:hover {
-        background-color: skyblue;
+        background-color: var(--highlight-hover);
+    }
+}
+
+:disabled {
+    color: var(--background-color);
+	background-color: var(--shade-hover);
+    cursor: not-allowed !important;
+
+    &:hover {
+        background-color: var(--shade-hover);
     }
 }
 

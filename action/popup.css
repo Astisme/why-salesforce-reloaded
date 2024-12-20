@@ -5,13 +5,11 @@ body {
 div#top {
 	position: relative;
 	padding: 0;
-	background-color: #ffffff;
-	border-width: 1px;
-	border-style: solid;
-	border-color: #c9c9c9;
+	/*background-color: var(--background-color);*/
+    border: 1px solid var(--border-color);
 	border-radius: 0.25rem;
 	background-clip: padding-box;
-	box-shadow: 0 2px 2px 0 #0000000f; /*rgba(0,0,0,0.1)*/
+	box-shadow: 0 2px 2px 0 rgba(var(--rgbcolor),0.1);
 	display: block;
 }
 
@@ -57,18 +55,6 @@ header {
 			cursor: pointer;
 		}
 
-		& > button#export {
-			color: #040f0f;
-			background-color: #5fb49c;
-			border-color: #5fb49c;
-		}
-
-		& > button#import {
-			color: #ffffff;
-			background-color: #0176d3;
-			border-color: #0176d3;
-		}
-
 		& > img#delete-all {
 			height: 2rem;
 		}
@@ -82,9 +68,6 @@ div#top > div:last-child {
 
 	& > table {
 		border-collapse: separate;
-		border-top: 1px solid #e5e5e5;
-		border-bottom: 1px solid #e5e5e5;
-		background-color: #ffffff;
 		font-size: inherit;
 		width: 100%;
 		border-spacing: 0;
@@ -92,8 +75,7 @@ div#top > div:last-child {
 		& > thead {
 			& th {
 				padding: 0.25rem 1rem;
-				background-color: #f3f3f3;
-				color: #444444;
+				background-color: var(--shade);
 				font-weight: 700;
 				line-height: normal;
 				white-space: nowrap;
@@ -115,48 +97,33 @@ div#top > div:last-child {
 			counter-increment: row-number;
 
 			& > td {
+                border-top: 1px solid var(--border-color);
 				padding: 0.25rem 0.5rem;
 				padding-left: 1rem;
-				border-top: 1px solid #e5e5e5;
 				white-space: nowrap;
-				position: relative;
 				text-align: left;
-				transition: all 0.3s ease-in-out;
-				transform: translateX(0); /* Initially no translation */
 
-				&:not(:has(img, button)):hover {
-					transform: translateX(10px);
-				}
-
-				& > img {
+				& > svg {
 					width: 1rem;
 					height: 1rem;
 					cursor: grab;
+                    stroke: var(--color);
 				}
 
 				& > div {
 					clear: left;
-					position: relative;
+                    transition: all 0.3s ease-in-out;
+                    transform: translateX(0); /* Initially no translation */
 				}
 
-				& > button.delete {
-					color: #ffffff;
-					background-color: #ba0517;
-					border-color: #ba0517;
+				&:hover > div  {
+					transform: translateX(10px);
 				}
 			}
 		}
 
-		& > tbody#tabs > tr.tab:last-child {
-			& button.delete {
-				color: #333333;
-				background-color: #c9c9c9;
-				border-color: #c9c9c9;
-			}
-
-			& :is(:not(input), button, img) {
-				cursor: not-allowed !important;
-			}
+		& > tbody#tabs > tr.tab:last-child :is(:not(input)) {
+            cursor: not-allowed !important;
 		}
 	}
 }
@@ -170,9 +137,8 @@ input {
 	min-height: calc(1.875rem + 2px);
 	font: inherit;
 	line-height: 1.875rem;
-	border: 1px solid #c9c9c9;
+	border: 1px solid var(--border-color);
 	border-radius: 0.25rem;
-	background-color: #ffffff;
 	display: inline-block;
 	margin: 0;
 }
