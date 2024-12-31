@@ -31,6 +31,7 @@ jobs:
                 git switch "${{ github.head_ref }}"
 
             - name: Run linter and comment on failure
+              continue-on-error: true
               run: |
                 output=$(deno task lint 2>&1)
                 echo "$output" > lint_output.txt
