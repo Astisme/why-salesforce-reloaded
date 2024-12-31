@@ -35,7 +35,6 @@ jobs:
               with:
                 github-token: ${{ secrets.GITHUB_TOKEN }}
                 script: |
-                  #run: |
                   output=$(deno task lint 2>&1 || true)
                   if [ -n "$output" ]; then
                     PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
