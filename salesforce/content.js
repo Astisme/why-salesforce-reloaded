@@ -58,33 +58,41 @@ function generateRowTemplate(row) {
 	let { tabTitle, url } = row;
 	url = cleanupUrl(url);
 
-  const li = document.createElement('li');
-  li.setAttribute('role', 'presentation');
-  li.classList.add('oneConsoleTabItem', 'tabItem', 'slds-context-bar__item', 'borderRight', 'navexConsoleTabItem', prefix);
-  li.setAttribute('data-aura-class', 'navexConsoleTabItem');
+	const li = document.createElement("li");
+	li.setAttribute("role", "presentation");
+	li.classList.add(
+		"oneConsoleTabItem",
+		"tabItem",
+		"slds-context-bar__item",
+		"borderRight",
+		"navexConsoleTabItem",
+		prefix,
+	);
+	li.setAttribute("data-aura-class", "navexConsoleTabItem");
 
-  const a = document.createElement('a');
-  a.setAttribute('data-draggable', 'true');
-  a.setAttribute('role', 'tab');
-  a.setAttribute('tabindex', '-1');
-  a.setAttribute('title', tabTitle);
-  a.setAttribute('aria-selected', 'false');
-  a.setAttribute('href', url);
-  a.classList.add('tabHeader', 'slds-context-bar__label-action');
-  a.style.zIndex = 0;
+	const a = document.createElement("a");
+	a.setAttribute("data-draggable", "true");
+	a.setAttribute("role", "tab");
+	a.setAttribute("tabindex", "-1");
+	a.setAttribute("title", tabTitle);
+	a.setAttribute("aria-selected", "false");
+	a.setAttribute("href", url);
+	a.classList.add("tabHeader", "slds-context-bar__label-action");
+	a.style.zIndex = 0;
 
-  const span = document.createElement('span');
-  span.classList.add('title', 'slds-truncate');
-  span.textContent = tabTitle;
+	const span = document.createElement("span");
+	span.classList.add("title", "slds-truncate");
+	span.textContent = tabTitle;
 
-  a.appendChild(span);
-  li.appendChild(a);
+	a.appendChild(span);
+	li.appendChild(a);
 
-  // Highlight the tab related to the current page
-  if(href === url)
-    li.classList.add("slds-is-active");
+	// Highlight the tab related to the current page
+	if (href === url) {
+		li.classList.add("slds-is-active");
+	}
 
-  return li;
+	return li;
 }
 
 function generateSldsToastMessage(message, isSuccess) {
@@ -244,7 +252,7 @@ function init(items) {
 		? initTabs()
 		: items[items.key];
 
-  rowObj.forEach(row => setupTabUl.appendChild(generateRowTemplate(row)));
+	rowObj.forEach((row) => setupTabUl.appendChild(generateRowTemplate(row)));
 	currentTabs.length = 0;
 	currentTabs.push(...rowObj);
 	isOnSavedTab();

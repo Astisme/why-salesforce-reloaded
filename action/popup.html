@@ -17,8 +17,14 @@
 			<header>
 				<object data="./logo.html" type="text/html"></object>
 				<div>
-					<button id="export" class="success" title="Export all tabs">Export</button>
-					<button id="import" class="highlight" title="Import tabs from json file">
+					<button id="export" class="success" title="Export all tabs">
+						Export
+					</button>
+					<button
+						id="import"
+						class="highlight"
+						title="Import tabs from json file"
+					>
 						Import
 					</button>
 					<img
@@ -29,39 +35,70 @@
 					/>
 				</div>
 			</header>
-      <table id="sortable-table">
-        <thead>
-          <tr>
-            <th scope="col">
-              <div><!-- used for the svg --></div>
-            </th>
-            <th scope="col">
-              <div>Tab Label</div>
-            </th>
-            <th scope="col">
-              <div>Tab Url</div>
-            </th>
-            <th scope="col" style="width: 3.25rem">
-              <div class="slds-assistive-text">
-                Actions
-              </div>
-            </th>
-          </tr>
-        </thead>
-        <tbody id="tabs"></tbody>
-      </table>
+			<table id="sortable-table">
+				<thead>
+					<tr>
+						<th scope="col">
+							<div><!-- used for the svg --></div>
+						</th>
+						<th scope="col">
+							<div>Tab Label</div>
+						</th>
+						<th scope="col">
+							<div>Tab Url</div>
+						</th>
+						<th scope="col" style="width: 3.25rem">
+							<div class="slds-assistive-text">
+								Actions
+							</div>
+						</th>
+					</tr>
+				</thead>
+				<tbody id="tabs"></tbody>
+			</table>
 		</div>
 
 		<template id="tr_template">
 			<tr class="tab" draggable="true">
 				<td scope="row">
-                    <svg data-draggable="true" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
-                      <g>
-                        <line x1="16" x2="56" y1="26" y2="26" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"/>
-                        <line x1="16" x2="56" y1="36" y2="36" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"/>
-                        <line x1="16" x2="56" y1="46" y2="46" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2"/>
-                      </g>
-                    </svg>
+					<svg
+						data-draggable="true"
+						viewBox="0 0 72 72"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<g>
+							<line
+								x1="16"
+								x2="56"
+								y1="26"
+								y2="26"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-miterlimit="10"
+								stroke-width="2"
+							/>
+							<line
+								x1="16"
+								x2="56"
+								y1="36"
+								y2="36"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-miterlimit="10"
+								stroke-width="2"
+							/>
+							<line
+								x1="16"
+								x2="56"
+								y1="46"
+								y2="46"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-miterlimit="10"
+								stroke-width="2"
+							/>
+						</g>
+					</svg>
 				</td>
 				<td data-label="Tab Label" scope="row">
 					<div>
@@ -70,7 +107,7 @@
 							name="tabTitle"
 							class="tabTitle"
 							placeholder="Flows"
-                            title="Enter the label for this URL"
+							title="Enter the label for this URL"
 						/>
 					</div>
 				</td>
@@ -81,7 +118,7 @@
 							name="url"
 							class="url"
 							placeholder="Flows/home"
-                            title="Enter the sub-URL where you want to be redirected."
+							title="Enter the sub-URL where you want to be redirected."
 						/>
 					</div>
 				</td>

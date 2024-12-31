@@ -3,7 +3,7 @@ a {
 	margin-right: 0.75rem;
 	display: flex;
 	align-items: center;
-    color: var(--color);
+	color: var(--color);
 
 	& > span {
 		line-height: 1;

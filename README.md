@@ -8,6 +8,7 @@
 ![Last commit](https://img.shields.io/github/last-commit/Astisme/again-why-salesforce?labelColor=black&color=white)
 ![License](https://img.shields.io/github/license/Astisme/again-why-salesforce)
 ![Code size](https://img.shields.io/github/languages/code-size/Astisme/again-why-salesforce)
+
 <!--
 ![Chrome users](https://img.shields.io/chrome-web-store/users/:storeId)
 ![Chrome stars](https://img.shields.io/chrome-web-store/stars/:storeId)
@@ -44,11 +45,13 @@ This is a fork of [Why Salesforce](https://www.github.com/walters954/why-salesfo
 - [x] Import & Export tabs
 
 ## Contributing
+
 All contributions are welcome. Please head to the [issues page](https://github.com/Astisme/again-why-salesforce/issues) and pick one unassigned issue to work on.
 
 We'll assign it to you after you comment on it.
 
 ## Best Practices
+
 The Best Practices followed by this project can be found [at this link](https://blog.jetbrains.com/webstorm/2024/10/javascript-best-practices-2024/).
 
 ## Contributors
