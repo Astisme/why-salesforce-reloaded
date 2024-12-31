@@ -24,7 +24,9 @@ jobs:
                   deno-version: v2.x
 
             - name: Switch to branch
-              run: git switch "${{ github.head_ref }}"
+              run: |
+                git fetch origin "${{ github.head_ref }}" 
+                git switch "${{ github.head_ref }}"
 
             - name: Run linter
               run: |
