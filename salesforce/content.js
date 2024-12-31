@@ -35,7 +35,7 @@ function setStorage(tabs) {
 	sendMessage({ what: "set", tabs }, afterSet);
 }
 
-function cleanupUrl(url = href, nochange = null) {
+function cleanupUrl(url, nochange = null) {
 	const asis = nochange == null ? url.startsWith("http") : nochange;
 	if (url.startsWith("/lightning") || url.startsWith("/_ui/common")) { // normalized setup pages won't get here
 		return `${baseUrl}${url}`;
@@ -183,7 +183,7 @@ function toggleFavouriteButton(button, isSaved) {
 }
 
 function actionFavourite(parent) {
-	const url = cleanupUrl();
+	const url = cleanupUrl(href);
 	if (isCurrentlyOnSavedTab) {
 		const filteredTabs = currentTabs.filter((tabdef) => {
 			return tabdef.url !== url;
@@ -206,7 +206,7 @@ function showFavouriteButton(count = 0) {
 
 	// Do not add favourite button on Home and Object Manager
 	const standardTabs = ["SetupOneHome/home", "ObjectManager/home"];
-	if (standardTabs.includes(cleanupUrl())) {
+	if (standardTabs.includes(cleanupUrl(href))) {
 		return;
 	}
 
@@ -257,7 +257,7 @@ function isOnSavedTab(isFromHrefUpdate = false) {
 		return;
 	}
 	fromHrefUpdate = isFromHrefUpdate;
-	const loc = cleanupUrl();
+	const loc = cleanupUrl(href);
 	wasOnSavedTab = isCurrentlyOnSavedTab;
 	isCurrentlyOnSavedTab = currentTabs.some((tabdef) =>
 		tabdef.url.includes(loc)
