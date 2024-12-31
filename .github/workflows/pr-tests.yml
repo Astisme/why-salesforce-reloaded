@@ -33,13 +33,10 @@ jobs:
             - name: Run linter and comment on failure
               continue-on-error: false
               run: |
-                output=$(deno task lint 2>&1)
-                echo $output
-                #if [ $? -ne 0 ]; then
+                output=$(deno task lint 2>&1 || true)
                 if [ -n "$output" ]; then
-                  echo "$output" > lint_output.txt
                   PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-                  COMMENT_BODY="## Linter Failed:\n\n\`\`\`$(cat lint_output.txt)\`\`\`"
+                  COMMENT_BODY="## Linter Failed:\n\n\`\`\`$(echo "$output")\`\`\`"
                   curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
                         -X POST \
                         -d "{\"body\": \"$COMMENT_BODY\"}" \
