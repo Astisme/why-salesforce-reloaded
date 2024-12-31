@@ -5,8 +5,6 @@ body {
 div#top {
 	position: relative;
 	padding: 0;
-	/*background-color: var(--background-color);*/
-    border: 1px solid var(--border-color);
 	border-radius: 0.25rem;
 	background-clip: padding-box;
 	box-shadow: 0 2px 2px 0 rgba(var(--rgbcolor),0.1);
@@ -61,71 +59,74 @@ header {
 	}
 }
 
-div#top > div:last-child {
-	padding: 0 !important;
-	margin-top: 0.75rem;
-	margin-bottom: 0.75rem;
+div#top > table {
+  padding: 0 !important;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+  border-collapse: collapse;
+  border-spacing: 0;
+  border: none;
+  font-size: inherit;
+  width: 100%;
+  white-space: nowrap;
+  text-align: left;
 
-	& > table {
-		border-collapse: separate;
-		font-size: inherit;
-		width: 100%;
-		border-spacing: 0;
+  & > thead {
+    & th {
+      padding: 0.25rem 1rem;
+      background-color: var(--shade);
+      font-weight: 700;
+      line-height: normal;
+      position: relative;
+    }
 
-		& > thead {
-			& th {
-				padding: 0.25rem 1rem;
-				background-color: var(--shade);
-				font-weight: 700;
-				line-height: normal;
-				white-space: nowrap;
-				position: relative;
-				text-align: left;
-			}
+    & th:first-child {
+      padding: 0;
+      width: 1rem;
+    }
 
-			& th:first-child {
-				padding: 0;
-				width: 1rem;
-			}
+    & th:last-child {
+      padding-right: 1.5rem;
+    }
+  }
 
-			& th:last-child {
-				padding-right: 1.5rem;
-			}
-		}
+  & > tbody#tabs {
+    & > tr.tab {
+      counter-increment: row-number;
 
-		& > tbody#tabs > tr.tab {
-			counter-increment: row-number;
+      & > td {
+        padding: 0.25rem 0.5rem;
+        padding-left: 1rem;
 
-			& > td {
-                border-top: 1px solid var(--border-color);
-				padding: 0.25rem 0.5rem;
-				padding-left: 1rem;
-				white-space: nowrap;
-				text-align: left;
+        & > svg {
+          width: 1rem;
+          height: 1rem;
+          cursor: grab;
+          stroke: var(--color);
+        }
 
-				& > svg {
-					width: 1rem;
-					height: 1rem;
-					cursor: grab;
-                    stroke: var(--color);
-				}
+        & > div {
+          clear: left;
+          transition: all 0.3s ease-in-out;
+          transform: translateX(0); /* Initially no translation */
+        }
 
-				& > div {
-					clear: left;
-                    transition: all 0.3s ease-in-out;
-                    transform: translateX(0); /* Initially no translation */
-				}
+        &:hover > div  {
+          transform: translateX(10px);
+        }
+      }
+    }
 
-				&:hover > div  {
-					transform: translateX(10px);
-				}
-			}
-		}
+    & > tr.tab:first-child > td {
+      padding-top: 0.75rem;
+    }
 
-		& > tbody#tabs > tr.tab:last-child :is(:not(input)) {
-            cursor: not-allowed !important;
-		}
-	}
+    & > tr.tab:last-child :is(:not(input)) {
+      cursor: not-allowed !important;
+    }
+  }
+
+
 }
 
 input {

@@ -51,7 +51,7 @@ function cleanupUrl(url) {
 	}
 	// remove org-specific url
 	const home =
-		"https:\/\/.*\.my\.salesforce-setup\.com\/lightning\/setup\/.*";
+		"https:\/\/.*.my.salesforce-setup.com\/lightning\/setup\/.*";
 	if (url.match(home)) {
 		url = url.slice(url.indexOf(setupLightning));
 	}
