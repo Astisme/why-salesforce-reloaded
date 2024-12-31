@@ -34,7 +34,9 @@ jobs:
               continue-on-error: false
               run: |
                 output=$(deno task lint 2>&1)
-                if [ $? -ne 0 ]; then
+                echo $output
+                #if [ $? -ne 0 ]; then
+                if [ -n "$output" ]; then
                   echo "$output" > lint_output.txt
                   PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
                   COMMENT_BODY="## Linter Failed:\n\n\`\`\`$(cat lint_output.txt)\`\`\`"
@@ -42,7 +44,7 @@ jobs:
                         -X POST \
                         -d "{\"body\": \"$COMMENT_BODY\"}" \
                         "https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments"
-                  exit 1
+                  exit 2
                 fi
 
             - name: Verify formatting
