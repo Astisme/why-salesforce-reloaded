@@ -73,11 +73,15 @@ jobs:
             - name: Verify formatting
               run: deno task fmt
 
-            - name: Push fmt changes
+            - name: Ensure Changes Exist
               run: |
-                if ! git diff --exit-code; then
-                  git config user.name "github-actions"
-                  git config user.email "github-actions@github.com"
-                  git commit -am "deno formatting"
-                  git push https://x-access-token:${{ github.token }}@github.com/${{ github.repository }} "${{ github.head_ref }}"
-                fi
+                git diff --exit-code
+                echo "no_changes=$?" >> $GITHUB_ENV
+
+            - name: Push fmt changes
+              if: env.no_changes != '0'
+              run: |
+                git config user.name "github-actions"
+                git config user.email "github-actions@github.com"
+                git commit -am "deno formatting"
+                git push https://x-access-token:${{ github.token }}@github.com/${{ github.repository }} "${{ github.head_ref }}"
