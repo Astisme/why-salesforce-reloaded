@@ -79,7 +79,7 @@ jobs:
                 echo "no_changes=$?" >> $GITHUB_ENV
 
             - name: Push fmt changes
-              if: env.no_changes != '1'
+              if: env.no_changes != '0'
               run: |
                 git config user.name "github-actions"
                 git config user.email "github-actions@github.com"
