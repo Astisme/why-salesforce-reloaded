@@ -1,9 +1,9 @@
 name: Build and add to PR
 
 on:
-    pull_request_review:
+    pull_request:
         types:
-            - submitted # the build job runs only when approved
+            - closed
         branches:
             - main
     workflow_dispatch:
@@ -14,7 +14,6 @@ permissions:
 jobs:
     build:
         runs-on: ubuntu-latest
-        if: ${{ github.event.review.state == 'approved' }}
         steps:
             - name: Extract current version
               run: |
