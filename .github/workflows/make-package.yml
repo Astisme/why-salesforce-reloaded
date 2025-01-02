@@ -14,7 +14,11 @@ permissions:
 jobs:
     build:
         runs-on: ubuntu-latest
+        if: github.event.pull_request.merged == true
         steps:
+            - name: Setup repo
+              uses: actions/checkout@v4
+
             - name: Extract current version
               run: |
                   VERSION=$(grep -oP '"version":\s*"\K[0-9.]+' manifest/template-manifest.json)
