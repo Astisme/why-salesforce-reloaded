@@ -34,18 +34,40 @@ jobs:
               uses: actions/github-script@v7
               with:
                 script: |
-                  output=$(deno task lint 2>&1 || true)
-                  if [ -n "$output" ]; then
-                    PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
-                    echo "$PR_NUMBER"
-                    echo context.issue.number
+                  try {
+                    // Run the lint task and capture the output
+                    const process = Deno.run({
+                      cmd: ["deno", "task", "lint"],
+                      stderr: "piped"
+                    });
+
+                    const errorOutput = new TextDecoder().decode(await process.stderrOutput());
+
+                    // Combine both standard output and error output
+
+                    if (errorOutput.length === 0)
+                      return;
+
+                    // Extract PR number from GitHub event path
+                    const eventPath = Deno.env.get("GITHUB_EVENT_PATH");
+                    const eventData = JSON.parse(await Deno.readTextFile(eventPath));
+                    const prNumber = eventData.pull_request.number;
+
+                    // Output the PR number
+                    console.log(prNumber);
+                    console.log(context.issue.number);
+
+                    // Write comment
                     github.rest.issues.createComment({
                       issue_number: context.issue.number,
                       owner: context.repo.owner,
                       repo: context.repo.repo,
                       body: "## Linter Failed:\n\n\`\`\`$(echo "$output")\`\`\`" 
-                    })
-                  fi
+                    });
+
+                  } catch (error) {
+                    console.error("Error running lint task:", error);
+                  }
 
             - name: Verify formatting
               run: deno task fmt
