@@ -35,10 +35,8 @@ jobs:
               run: |
                 # Run the Deno linter and capture stderr
                 deno task lint 2> lint-error.log || true
-              continue-on-error: true
 
             - name: Comment on PR if linter fails
-              if: steps.lint.outcome == 'failure'
               uses: actions/github-script@v7
               with:
                 script: |
