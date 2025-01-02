@@ -62,7 +62,7 @@ jobs:
                       issue_number: context.issue.number,
                       owner: context.repo.owner,
                       repo: context.repo.repo,
-                      body: "## Linter Failed:\n\n\`\`\`$(echo "$output")\`\`\`" 
+                      body: `## Linter Failed:\n\n\`\`\`${errorOutput}\`\`\`` 
                     });
 
                   } catch (error) {
