@@ -34,38 +34,33 @@ jobs:
               uses: actions/github-script@v7
               with:
                 script: |
+                  const { stdout, stderr } = await run("deno task lint");
                   const fs = require('fs');
 
-                  // Run the lint task using the shell command
-                  exec('deno task lint', (error, stdout, stderr) => {
-                    // Capture any stderr (error output)
-                    console.log('a',error);
-                    console.log('b',stdout);
-                    console.log('c',stderr,stderr.length === 0);
-                    if (stderr) {
-                      console.error(`stderr: ${stderr}`);
-                      if (stderr.length === 0) return; // If there's no error output, exit early
+                  // Capture any stderr (error output)
+                  console.log('b',stdout);
+                  console.log('c',stderr,stderr.length === 0);
+                  if (stderr) {
+                    console.error(`stderr: ${stderr}`);
+                    if (stderr.length === 0) return; // If there's no error output, exit early
 
-                      // Extract PR number from GitHub event path
-                      const eventPath = process.env.GITHUB_EVENT_PATH;
-                      const eventData = JSON.parse(fs.readFileSync(eventPath, 'utf8'));
-                      const prNumber = eventData.pull_request.number;
+                    // Extract PR number from GitHub event path
+                    const eventPath = process.env.GITHUB_EVENT_PATH;
+                    const eventData = JSON.parse(fs.readFileSync(eventPath, 'utf8'));
+                    const prNumber = eventData.pull_request.number;
 
-                      // Output the PR number and context issue number
-                      console.log(prNumber);
-                      console.log(context.issue.number);
+                    // Output the PR number and context issue number
+                    console.log(prNumber);
+                    console.log(context.issue.number);
 
-                      // Create a comment on the PR with the error message
-                      github.rest.issues.createComment({
-                        issue_number: context.issue.number,
-                        owner: context.repo.owner,
-                        repo: context.repo.repo,
-                        body: `## Linter Failed:\n\n\`\`\`${stderr}\`\`\``
-                      });
-                    } else if (error) {
-                      console.error(`exec error: ${error}`);
-                    }
-                  });
+                    // Create a comment on the PR with the error message
+                    github.rest.issues.createComment({
+                      issue_number: context.issue.number,
+                      owner: context.repo.owner,
+                      repo: context.repo.repo,
+                      body: `## Linter Failed:\n\n\`\`\`${stderr}\`\`\``
+                    });
+                  }
 
             - name: Verify formatting
               run: deno task fmt
