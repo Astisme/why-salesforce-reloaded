@@ -30,18 +30,19 @@ jobs:
               run: deno task fmt
 
             - name: Ensure Changes Exist
+              continue-on-error: true
               run: |
-                  if git diff --exit-code; then
-                    echo "No changes to commit, exiting."
-                    exit 0
-                  fi
+                git diff --exit-code
+                echo "no_changes=$?" >> $GITHUB_ENV
 
             - name: Set up Git user
+              if: env.no_changes != '0'
               run: |
                   git config user.name "github-actions"
                   git config user.email "github-actions@github.com"
 
             - name: Create new branch for changes
+              if: env.no_changes != '0'
               run: |
                   BRANCH_NAME="fmt/${{ github.sha }}"
                   git branch "$BRANCH_NAME"
@@ -49,14 +50,17 @@ jobs:
                   echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_ENV
 
             - name: Push changes
+              if: env.no_changes != '0'
               run: |
                   git commit -am "deno formatting"
                   git push https://x-access-token:${{ github.token }}@github.com/${{ github.repository }} "${{ env.BRANCH_NAME }}"
 
             - name: Authenticate GitHub CLI
+              if: env.no_changes != '0'
               run: echo "${{ secrets.GITHUB_TOKEN }}" | gh auth login --with-token
 
             - name: Create Pull Request
+              if: env.no_changes != '0'
               id: make_pr
               run: |
                 PR_URL=$(gh pr create \
@@ -69,6 +73,7 @@ jobs:
 
     merge-pr:
         runs-on: ubuntu-latest
+        if: needs.test.outputs.PR_URL != ''
         needs: test
         env:
             PR_URL: ${{ needs.test.outputs.PR_URL }}
