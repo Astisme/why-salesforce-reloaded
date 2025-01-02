@@ -46,7 +46,8 @@ jobs:
                   
                   // Read the linter error output
                   const errorOutput = fs.readFileSync('lint-error.log', 'utf8');
-                  if (!errorOutput) {
+                  const problemsFoundRegex = /Found [0-9]+ problem(s)?\n/m 
+                  if (!errorOutput || !errorOutput.match(problemsFoundRegex)) {
                     console.log("No lint errors.");
                     return;
                   }
