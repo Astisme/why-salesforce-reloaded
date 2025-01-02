@@ -19,7 +19,7 @@ if (page != null) { // we're in a salesforce page
 
 	try {
 		domain = new URL(page).origin;
-	} catch (error) {
+	} catch (_) {
 		strongEl.textContent = "Invalid URL";
 		otherText.textContent = " detected.";
 		insertPrefix = false;
