@@ -1,0 +1,52 @@
+html {
+	--white: #ffffff;
+	--rgbwhite: 255,255,255;
+	--black: #000000;
+	--rgbblack: 0,0,0;
+	--green: #82c4b2;
+	--midgreen: #4ea68f;
+	--darkgreen: #346f5f;
+	--skyblue: #0176d3;
+	--seablue: #2a6bc6;
+	--lightgray: #f3f3f3;
+	--midgray: #e5e5e5;
+	--darkgray: #c9c9c9;
+	--darkergray: #666666;
+	--darkestgray: #333333;
+	--red: #ba0517;
+	--darkred: #951414;
+}
+
+html[data-theme="light"] {
+	--color: var(--black);
+	--rgbcolor: var(--rgbblack);
+	--background-color: var(--white);
+	--shade: var(--lightgray);
+	--shade-hover: var(--midgray);
+	--highlight: var(--skyblue);
+	--highlight-hover: var(--seablue);
+	--success: var(--green);
+	--success-hover: var(--midgreen);
+	--border-color: var(--midgray);
+	--error: var(--red);
+	--error-hover: var(--darkred);
+	--button-background-color: var(--midgray);
+	--button-background-color-hover: var(--darkgray);
+}
+
+html, html[data-theme="dark"] {
+	--color: var(--white);
+	--rgbcolor: var(--rgbwhite);
+	--background-color: var(--black);
+	--shade: var(--darkestgray);
+	--shade-hover: var(--darkergray);
+	--highlight: var(--skyblue);
+	--highlight-hover: var(--seablue);
+	--success: var(--darkgreen);
+	--success-hover: var(--midgreen);
+	--border-color: var(--darkgray);
+	--error: var(--red);
+	--error-hover: var(--darkred);
+	--button-background-color: var(--midgray);
+	--button-background-color-hover: var(--darkgray);
+}

@@ -5,6 +5,7 @@
 		<meta charset="UTF-8" />
 		<meta http-equiv="X-UA-Compatible" content="IE=edge" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<link rel="stylesheet" href="./variables.css" />
 		<link rel="stylesheet" href="./popup.css" />
 		<link rel="stylesheet" href="./basic.css" />
 		<script src="./popup.js" type="module"></script>
@@ -16,50 +17,88 @@
 			<header>
 				<object data="./logo.html" type="text/html"></object>
 				<div>
-					<button id="export" title="Export all tabs">Export</button>
-					<button id="import" title="Import tabs from json file">
+					<button id="export" class="success" title="Export all tabs">
+						Export
+					</button>
+					<button
+						id="import"
+						class="highlight"
+						title="Import tabs from json file"
+					>
 						Import
 					</button>
 					<img
 						id="delete-all"
-						src="../assets/trash.svg"
+						src="../assets/svgs/trash.svg"
 						alt="Delete all tabs"
 						title="Delete all tabs"
 					/>
 				</div>
 			</header>
-			<div>
-				<table id="sortable-table">
-					<thead>
-						<tr>
-							<th scope="col">
-								<div><!-- used for the svg --></div>
-							</th>
-							<th scope="col">
-								<div title="Tab Label">Tab Label</div>
-							</th>
-							<th scope="col">
-								<div title="Tab Url">Tab Url</div>
-							</th>
-							<th scope="col" style="width: 3.25rem">
-								<div
-									class="slds-assistive-text"
-									title="Actions"
-								>
-									Actions
-								</div>
-							</th>
-						</tr>
-					</thead>
-					<tbody id="tabs"></tbody>
-				</table>
-			</div>
+			<table id="sortable-table">
+				<thead>
+					<tr>
+						<th scope="col">
+							<div><!-- used for the svg --></div>
+						</th>
+						<th scope="col">
+							<div>Tab Label</div>
+						</th>
+						<th scope="col">
+							<div>Tab Url</div>
+						</th>
+						<th scope="col" style="width: 3.25rem">
+							<div class="slds-assistive-text">
+								Actions
+							</div>
+						</th>
+					</tr>
+				</thead>
+				<tbody id="tabs"></tbody>
+			</table>
 		</div>
 
 		<template id="tr_template">
 			<tr class="tab" draggable="true">
 				<td scope="row">
-					<img src="../assets/drag.svg" data-draggable="true" />
+					<svg
+						data-draggable="true"
+						viewBox="0 0 72 72"
+						xmlns="http://www.w3.org/2000/svg"
+					>
+						<g>
+							<line
+								x1="16"
+								x2="56"
+								y1="26"
+								y2="26"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-miterlimit="10"
+								stroke-width="2"
+							/>
+							<line
+								x1="16"
+								x2="56"
+								y1="36"
+								y2="36"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-miterlimit="10"
+								stroke-width="2"
+							/>
+							<line
+								x1="16"
+								x2="56"
+								y1="46"
+								y2="46"
+								stroke-linecap="round"
+								stroke-linejoin="round"
+								stroke-miterlimit="10"
+								stroke-width="2"
+							/>
+						</g>
+					</svg>
 				</td>
 				<td data-label="Tab Label" scope="row">
 					<div>
@@ -68,21 +107,23 @@
 							name="tabTitle"
 							class="tabTitle"
 							placeholder="Flows"
+							title="Enter the label for this URL"
 						/>
 					</div>
 				</td>
 				<td data-label="Tab Url">
 					<div>
 						<input
-							type="url"
+							type="text"
 							name="url"
 							class="url"
 							placeholder="Flows/home"
+							title="Enter the sub-URL where you want to be redirected."
 						/>
 					</div>
 				</td>
 				<td>
-					<button class="delete">Delete</button>
+					<button class="delete error">Delete</button>
 				</td>
 			</tr>
 		</template>

@@ -10,15 +10,12 @@ if (browser === "firefox") {
 
 	delete manifest.minimum_chrome_version;
 	delete manifest.background.service_worker;
-    delete manifest.browser_specific_settings.safari;
-
+	delete manifest.browser_specific_settings.safari;
 } else if (browser === "chrome") {
 	delete manifest.browser_specific_settings;
-
 } else if (browser === "safari") {
 	delete manifest.minimum_chrome_version;
-    delete manifest.browser_specific_settings.gecko;
-
+	delete manifest.browser_specific_settings.gecko;
 } else {
 	console.error(
 		`Usage: ${process.argv[0]} ${

@@ -1,1 +1,1 @@
-This directory contains the SVGs used in around the extension and its icons.
+This directory contains the assets using everywhere else.

@@ -35,7 +35,7 @@ function setStorage(tabs) {
 	sendMessage({ what: "set", tabs }, afterSet);
 }
 
-function cleanupUrl(url = href, nochange = null) {
+function cleanupUrl(url, nochange = null) {
 	const asis = nochange == null ? url.startsWith("http") : nochange;
 	if (url.startsWith("/lightning") || url.startsWith("/_ui/common")) { // normalized setup pages won't get here
 		return `${baseUrl}${url}`;
@@ -58,11 +58,41 @@ function generateRowTemplate(row) {
 	let { tabTitle, url } = row;
 	url = cleanupUrl(url);
 
-	return `<li role="presentation" class="oneConsoleTabItem tabItem slds-context-bar__item borderRight navexConsoleTabItem ${prefix}" data-aura-class="navexConsoleTabItem">
-                <a data-draggable="true" role="tab" tabindex="-1" title="${tabTitle}" aria-selected="false" href="${url}" class="tabHeader slds-context-bar__label-action" style="z-index: 0;">
-                    <span class="title slds-truncate">${tabTitle}</span>
-                </a>
-            </li>`;
+	const li = document.createElement("li");
+	li.setAttribute("role", "presentation");
+	li.classList.add(
+		"oneConsoleTabItem",
+		"tabItem",
+		"slds-context-bar__item",
+		"borderRight",
+		"navexConsoleTabItem",
+		prefix,
+	);
+	li.setAttribute("data-aura-class", "navexConsoleTabItem");
+
+	const a = document.createElement("a");
+	a.setAttribute("data-draggable", "true");
+	a.setAttribute("role", "tab");
+	a.setAttribute("tabindex", "-1");
+	a.setAttribute("title", tabTitle);
+	a.setAttribute("aria-selected", "false");
+	a.setAttribute("href", url);
+	a.classList.add("tabHeader", "slds-context-bar__label-action");
+	a.style.zIndex = 0;
+
+	const span = document.createElement("span");
+	span.classList.add("title", "slds-truncate");
+	span.textContent = tabTitle;
+
+	a.appendChild(span);
+	li.appendChild(a);
+
+	// Highlight the tab related to the current page
+	if (href === url) {
+		li.classList.add("slds-is-active");
+	}
+
+	return li;
 }
 
 function generateSldsToastMessage(message, isSuccess) {
@@ -123,8 +153,8 @@ function initTabs() {
 
 function generateFavouriteButton() {
 	const assetDir = chrome.runtime.getURL("assets");
-	const star = chrome.runtime.getURL("assets/star.svg");
-	const slashedStar = chrome.runtime.getURL("assets/slashed-star.svg");
+	const star = chrome.runtime.getURL("assets/svgs/star.svg");
+	const slashedStar = chrome.runtime.getURL("assets/svgs/slashed-star.svg");
 	return `<button aria-live="off" type="button" id="${buttonId}" class="slds-button slds-button--neutral uiButton" aria-label="" data-aura-rendered-by="3:829;a" data-aura-class="uiButton">
                 <span dir="ltr" class=" label bBody" data-aura-rendered-by="6:829;a">
                     <!--⭐-->
@@ -161,7 +191,7 @@ function toggleFavouriteButton(button, isSaved) {
 }
 
 function actionFavourite(parent) {
-	const url = cleanupUrl();
+	const url = cleanupUrl(href);
 	if (isCurrentlyOnSavedTab) {
 		const filteredTabs = currentTabs.filter((tabdef) => {
 			return tabdef.url !== url;
@@ -184,7 +214,7 @@ function showFavouriteButton(count = 0) {
 
 	// Do not add favourite button on Home and Object Manager
 	const standardTabs = ["SetupOneHome/home", "ObjectManager/home"];
-	if (standardTabs.includes(cleanupUrl())) {
+	if (standardTabs.includes(cleanupUrl(href))) {
 		return;
 	}
 
@@ -222,15 +252,7 @@ function init(items) {
 		? initTabs()
 		: items[items.key];
 
-	const rows = [];
-	for (const row of rowObj) {
-		const htmlEl = generateRowTemplate(row);
-		const replaceVector = `${prefix} ${
-			href === cleanupUrl(row.url) ? "slds-is-active" : ""
-		}`; // Highlight the tab related to the current page
-		rows.push(htmlEl.replace(`${prefix}`, replaceVector));
-	}
-	setupTabUl.insertAdjacentHTML("beforeend", rows.join(""));
+	rowObj.forEach((row) => setupTabUl.appendChild(generateRowTemplate(row)));
 	currentTabs.length = 0;
 	currentTabs.push(...rowObj);
 	isOnSavedTab();
@@ -243,7 +265,7 @@ function isOnSavedTab(isFromHrefUpdate = false) {
 		return;
 	}
 	fromHrefUpdate = isFromHrefUpdate;
-	const loc = cleanupUrl();
+	const loc = cleanupUrl(href);
 	wasOnSavedTab = isCurrentlyOnSavedTab;
 	isCurrentlyOnSavedTab = currentTabs.some((tabdef) =>
 		tabdef.url.includes(loc)
