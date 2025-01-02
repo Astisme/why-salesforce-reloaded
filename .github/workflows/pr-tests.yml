@@ -45,18 +45,20 @@ jobs:
                   
                   // Read the linter error output
                   const errorOutput = fs.readFileSync('lint-error.log', 'utf8');
-                  
                   if (!errorOutput) {
                     console.log("No lint errors.");
                     return;
                   }
+
+                  // Remove ANSI codes
+                  const cleanErrorOutput = str.replace(/\x1b\[[0-9;]*m/g;, '');  
 
                   // Create a comment on the PR with the error message
                   await github.rest.issues.createComment({
                     issue_number: context.issue.number,
                     owner: context.repo.owner,
                     repo: context.repo.repo,
-                    body: `## Linter Failed:\n\n\`\`\`${errorOutput}\`\`\``
+                    body: `## Linter Failed:\n\n\`\`\`${cleanErrorOutput}\`\`\``
                   });
 
             - name: Remove lint-error.log
