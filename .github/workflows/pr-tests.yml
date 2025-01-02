@@ -33,11 +33,13 @@ jobs:
 
             - name: Run linter and capture errors
               id: lint
+              continue-on-error: true
               run: |
                 # Run the Deno linter and capture stderr
-                deno task lint 2> lint-error.log || true
+                deno task lint 2> lint-error.log
 
             - name: Comment on PR if linter fails
+              if: failure()
               uses: actions/github-script@v7
               with:
                 script: |
