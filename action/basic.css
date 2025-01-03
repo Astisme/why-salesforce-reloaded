@@ -20,6 +20,13 @@ html {
 	background-color: var(--background-color);
 }
 
+html,
+:not(:has([style*="transparent"])) {
+	transition-property: color background-color;
+	transition-duration: var(--transition-duration);
+	transition-timing-function: var(--transition-timing-function);
+}
+
 body {
 	padding: 0 !important;
 	margin: 0;
@@ -138,4 +145,14 @@ button {
 
 .hidden {
 	display: none !important;
+}
+
+.invisible {
+	opacity: 0;
+}
+
+.visibility-transition {
+	transition-property: opacity;
+	transition-duration: var(--transition-duration);
+	transition-timing-function: 1s;
 }

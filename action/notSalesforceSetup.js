@@ -1,4 +1,7 @@
 // deno-lint-ignore-file no-window
+import { handleSwitchColorTheme, initTheme } from "../themeHandler.js";
+initTheme();
+
 const authorizedDomainRegex =
 	/^https:\/\/[a-zA-Z0-9.-]+\.lightning\.force\.com\/.*/;
 const page = new URLSearchParams(window.location.search).get("url");

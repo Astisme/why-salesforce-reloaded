@@ -33,7 +33,7 @@ jobs:
               continue-on-error: true
               run: |
                 git diff --exit-code
-                echo "no_changes=$?" >> $GITHUB_ENV
+                echo "no_changes=$(ls -l differ | awk '{print $5}')" >> $GITHUB_ENV
 
             - name: Set up Git user
               if: env.no_changes != '0'

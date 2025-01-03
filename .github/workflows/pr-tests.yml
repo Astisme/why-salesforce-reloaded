@@ -75,8 +75,8 @@ jobs:
 
             - name: Ensure Changes Exist
               run: |
-                git diff --exit-code
-                echo "no_changes=$?" >> $GITHUB_ENV
+                git diff --output differ
+                echo "no_changes=$(ls -l differ | awk '{print $5}')" >> $GITHUB_ENV
 
             - name: Push fmt changes
               if: env.no_changes != '0'

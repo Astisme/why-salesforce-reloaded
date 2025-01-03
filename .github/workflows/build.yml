@@ -1,4 +1,4 @@
-name: Build Extension and add to Branch
+name: Create Release
 
 on:
     workflow_call:
@@ -7,6 +7,7 @@ on:
                 description: "The branch to push the changes to"
                 required: true
                 type: string
+    workflow_dispatch:
 
 permissions:
     contents: write
@@ -54,8 +55,7 @@ jobs:
               run: |
                   git config user.name "github-actions"
                   git config user.email = "github-actions@github.com"
-                  # BRANCH_NAME="new-version-${{ env.VERSION }}"
-                  BRANCH_NAME=${{ inputs.target_branch }}
+                  BRANCH_NAME=${{ inputs.target_branch }} || "release/v-$VERSION"
                   git branch $BRANCH_NAME
                   git switch $BRANCH_NAME
                   git add dist
@@ -98,11 +98,10 @@ jobs:
             - name: Zip Chrome extension
               run: zip -r $DIRECTORY/$CHROME_VERSION.zip action assets background salesforce *.js LICENSE.txt README.md manifest.json -x "*/README.md"
 
-            - name: Upload Chrome artifact
-              uses: actions/upload-artifact@v3
+            - name: Create Chrome Release
+              uses: softprops/action-gh-release@v1
               with:
-                  name: $CHROME_VERSION
-                  path: $DIRECTORY/$CHROME_VERSION.zip
+                files: $DIRECTORY/$CHROME_VERSION.zip 
 
             - name: Push Chrome artifact
               run: |

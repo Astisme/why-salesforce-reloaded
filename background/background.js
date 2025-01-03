@@ -34,15 +34,14 @@ browserObj.runtime.onMessage.addListener((request, _, sendResponse) => {
 	} else if (message.what === "set") {
 		setStorage(message.tabs, sendResponse);
 		captured = true;
-	} else if (message.what === "saved" || message.what === "add") {
+	} else if (["saved", "add", "theme"].includes(message.what)) {
 		const notify = (count = 0) => {
 			browserObj.tabs.query(
 				{ active: true, currentWindow: true },
 				function (tabs) {
 					if (tabs && tabs[0]) {
 						browserObj.tabs.sendMessage(tabs[0].id, message);
-					} //browserObj.tabs.sendMessage({}, message);
-					else if (count < 5) {
+					} else if (count < 5) {
 						setTimeout(() => notify(count + 1), 500);
 					}
 				},
