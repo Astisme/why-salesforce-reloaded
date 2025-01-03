@@ -8,6 +8,7 @@
 		<link rel="stylesheet" href="./variables.css" />
 		<link rel="stylesheet" href="./popup.css" />
 		<link rel="stylesheet" href="./basic.css" />
+		<script src="../themeHandler.js" type="module"></script>
 		<script src="./popup.js" type="module"></script>
 		<script src="../dragHandler.js" type="module"></script>
 	</head>
@@ -15,8 +16,14 @@
 	<body>
 		<div id="top">
 			<header>
-				<object data="./logo.html" type="text/html"></object>
+				<iframe src="./logo.html" type="text/html"></iframe>
 				<div>
+					<img
+            id="theme-selector" 
+            src="../assets/svgs/trash.svg"
+            alt="Change Theme"
+            title="Change Theme"
+					/>
 					<button id="export" class="success" title="Export all tabs">
 						Export
 					</button>

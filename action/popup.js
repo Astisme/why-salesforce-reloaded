@@ -1,5 +1,7 @@
 // deno-lint-ignore-file no-window
 "use strict";
+import { initTheme, systemColorSchemeListener, handleSwitchColorTheme } from "../themeHandler.js"
+initTheme();
 
 // queries the currently active tab of the current active window
 chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -223,6 +225,7 @@ addEventListener("message", (e) => {
 	e.source == window && e.data.what === "order" && saveTabs();
 });
 
+document.getElementById("theme-selector").addEventListener("click", handleSwitchColorTheme);
 document.getElementById("import").addEventListener("click", importHandler);
 document.getElementById("export").addEventListener("click", exportHandler);
 document.getElementById("delete-all").addEventListener("click", emptyTabs);
