@@ -18,12 +18,30 @@ header {
   }
 
   & > div:last-child {
-    flex: none;
     display: flex;
     align-items: center;
 
     & > * {
       cursor: pointer;
+    }
+
+    & > div#theme-selector {
+      display: flex;
+      align-items: center;
+
+      & > svg {
+        height: 2rem;
+
+        &#sun, &#moon {
+          & .primary {
+            fill: none;
+            stroke: var(--color);
+          }
+          & .secondary {
+            fill: var(--theme-fill);
+          }
+        }
+      }
     }
 
     & > img {

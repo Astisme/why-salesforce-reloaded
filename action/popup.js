@@ -1,7 +1,20 @@
 // deno-lint-ignore-file no-window
 "use strict";
-import { initTheme, systemColorSchemeListener, handleSwitchColorTheme } from "../themeHandler.js"
-initTheme();
+import { initTheme, handleSwitchColorTheme } from "../themeHandler.js"
+
+const html = document.documentElement;
+const sun = document.getElementById("sun");
+const moon = document.getElementById("moon");
+
+function initThemeSvg(){
+  initTheme();
+  const elementToShow = html.dataset.theme === "light" ? moon : sun;
+  const elementToHide = elementToShow === sun ? moon : sun;
+  
+  elementToShow.classList.remove("invisible","hidden");
+  elementToHide.classList.add("invisible","hidden");
+}
+initThemeSvg();
 
 // queries the currently active tab of the current active window
 chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
@@ -16,6 +29,21 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
 		getStorage(loadTabs);
 	}
 });
+
+
+function switchTheme(){
+  const elementToShow = html.dataset.theme === "light" ? sun : moon;
+  const elementToHide = elementToShow === sun ? moon : sun;
+
+  elementToHide.classList.add("invisible","hidden");
+  elementToShow.classList.remove("hidden");
+
+  setTimeout(() => {
+    elementToShow.classList.remove("invisible");
+  }, 200);
+
+  handleSwitchColorTheme();
+}
 
 const tabTemplate = document.getElementById("tr_template");
 const tabAppendElement = document.getElementById("tabs");
@@ -225,7 +253,8 @@ addEventListener("message", (e) => {
 	e.source == window && e.data.what === "order" && saveTabs();
 });
 
-document.getElementById("theme-selector").addEventListener("click", handleSwitchColorTheme);
+
+document.getElementById("theme-selector").addEventListener("click", switchTheme);
 document.getElementById("import").addEventListener("click", importHandler);
 document.getElementById("export").addEventListener("click", exportHandler);
 document.getElementById("delete-all").addEventListener("click", emptyTabs);

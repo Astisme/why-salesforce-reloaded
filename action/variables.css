@@ -15,6 +15,8 @@ html {
 	--darkestgray: #333333;
 	--red: #ba0517;
 	--darkred: #951414;
+  --lightblue: #49C2D4;
+  --darklightblue: #2794A5;
   --transition-duration: 500ms;
   --transition-timitng-function: ease-in-out;
 }
@@ -36,6 +38,7 @@ html[data-theme="light"] {
 	--error-hover: var(--darkred);
 	--button-background-color: var(--midgray);
 	--button-background-color-hover: var(--darkgray);
+  --theme-fill: var(--lightblue);
 }
 
 html[data-theme="dark"] {
@@ -54,4 +57,5 @@ html[data-theme="dark"] {
 	--error-hover: var(--darkred);
 	--button-background-color: var(--midgray);
 	--button-background-color-hover: var(--darkgray);
+  --theme-fill: var(--darklightblue);
 }

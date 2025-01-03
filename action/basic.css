@@ -146,3 +146,13 @@ button {
 .hidden {
 	display: none !important;
 }
+
+.invisible {
+  opacity: 0;
+}
+
+.visibility-transition {
+  transition-property: opacity;
+  transition-duration: var(--transition-duration);
+  transition-timing-function: 1s;
+}
