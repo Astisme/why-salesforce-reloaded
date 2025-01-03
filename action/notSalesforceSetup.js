@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-window
-import { initTheme, handleSwitchColorTheme } from "../themeHandler.js"
+import { handleSwitchColorTheme, initTheme } from "../themeHandler.js";
 initTheme();
 
 const authorizedDomainRegex =

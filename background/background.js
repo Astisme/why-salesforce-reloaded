@@ -41,8 +41,7 @@ browserObj.runtime.onMessage.addListener((request, _, sendResponse) => {
 				function (tabs) {
 					if (tabs && tabs[0]) {
 						browserObj.tabs.sendMessage(tabs[0].id, message);
-					}
-					else if (count < 5) {
+					} else if (count < 5) {
 						setTimeout(() => notify(count + 1), 500);
 					}
 				},

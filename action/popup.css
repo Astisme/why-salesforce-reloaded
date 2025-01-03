@@ -12,42 +12,42 @@ div#top {
 }
 
 header {
-  & > iframe {
-    border: none;
-    height: 2.1rem !important;
-  }
+	& > iframe {
+		border: none;
+		height: 2.1rem !important;
+	}
 
-  & > div:last-child {
-    display: flex;
-    align-items: center;
+	& > div:last-child {
+		display: flex;
+		align-items: center;
 
-    & > * {
-      cursor: pointer;
-    }
+		& > * {
+			cursor: pointer;
+		}
 
-    & > div#theme-selector {
-      display: flex;
-      align-items: center;
+		& > div#theme-selector {
+			display: flex;
+			align-items: center;
 
-      & > svg {
-        height: 2rem;
+			& > svg {
+				height: 2rem;
 
-        &#sun, &#moon {
-          & .primary {
-            fill: none;
-            stroke: var(--color);
-          }
-          & .secondary {
-            fill: var(--theme-fill);
-          }
-        }
-      }
-    }
+				&#sun, &#moon {
+					& .primary {
+						fill: none;
+						stroke: var(--color);
+					}
+					& .secondary {
+						fill: var(--theme-fill);
+					}
+				}
+			}
+		}
 
-    & > img {
-      height: 2rem;
-    }
-  }
+		& > img {
+			height: 2rem;
+		}
+	}
 }
 
 div#top > table {

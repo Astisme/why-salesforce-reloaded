@@ -1,18 +1,18 @@
 a {
-  width: auto;
+	width: auto;
 	display: flex;
 	align-items: center;
 	color: var(--color);
 
 	& > span > img {
-    height: 2rem;
-    vertical-align: middle;
-    border: 0;
+		height: 2rem;
+		vertical-align: middle;
+		border: 0;
 	}
 
 	& > h2 {
-    margin: 0;
-    margin-top: 0.25rem;
+		margin: 0;
+		margin-top: 0.25rem;
 		margin-left: 0.5rem;
 		font-size: 1rem;
 	}

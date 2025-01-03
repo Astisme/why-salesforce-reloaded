@@ -21,10 +21,10 @@ html {
 }
 
 html,
-:not(:has([style*=transparent])){
-  transition-property: color background-color;
-  transition-duration: var(--transition-duration);
-  transition-timing-function: var(--transition-timing-function);
+:not(:has([style*="transparent"])) {
+	transition-property: color background-color;
+	transition-duration: var(--transition-duration);
+	transition-timing-function: var(--transition-timing-function);
 }
 
 body {
@@ -148,11 +148,11 @@ button {
 }
 
 .invisible {
-  opacity: 0;
+	opacity: 0;
 }
 
 .visibility-transition {
-  transition-property: opacity;
-  transition-duration: var(--transition-duration);
-  transition-timing-function: 1s;
+	transition-property: opacity;
+	transition-duration: var(--transition-duration);
+	transition-timing-function: 1s;
 }
