@@ -48,7 +48,7 @@ jobs:
                   echo "SAFARI_VERSION=${{ env.SAFARI }}-v${{ env.VERSION }}" >> $GITHUB_ENV
 
             - name: Build Safari
-              uses: ./.github/workflows/build-extension.yml
+              uses: ./.github/actions/build-extension
               with:
                   target_broswer: "safari"
                   target_file: ${{ env.DIRECTORY }}/${{ env.SAFARI_VERSION }}.zip
@@ -56,7 +56,7 @@ jobs:
                   release_name: ${{ env.SAFARI_VERSION }}
 
             - name: Build Firefox
-              uses: ./.github/workflows/build-extension.yml
+              uses: ./.github/actions/build-extension
               with:
                   target_broswer: "firefox"
                   target_file: ${{ env.DIRECTORY }}/${{ env.FIREFOX_VERSION }}.zip
@@ -64,7 +64,7 @@ jobs:
                   release_name: ${{ env.FIREFOX_VERSION }}
 
             - name: Build Chrome
-              uses: ./.github/workflows/build-extension.yml
+              uses: ./.github/actions/build-extension
               with:
                   target_broswer: "chrome"
                   target_file: ${{ env.DIRECTORY }}/${{ env.CHROME_VERSION }}.zip
