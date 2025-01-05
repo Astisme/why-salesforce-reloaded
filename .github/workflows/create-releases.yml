@@ -50,7 +50,7 @@ jobs:
             - name: Build Safari
               uses: ./.github/actions/build-extension
               with:
-                  target_broswer: "safari"
+                  target_browser: "safari"
                   target_file: ${{ env.DIRECTORY }}/${{ env.SAFARI_VERSION }}.zip
                   release_notes: "./docs/Release Notes/v${{ env.VERSION }}.md"
                   release_name: ${{ env.SAFARI_VERSION }}
@@ -58,7 +58,7 @@ jobs:
             - name: Build Firefox
               uses: ./.github/actions/build-extension
               with:
-                  target_broswer: "firefox"
+                  target_browser: "firefox"
                   target_file: ${{ env.DIRECTORY }}/${{ env.FIREFOX_VERSION }}.zip
                   release_notes: "./docs/Release Notes/v${{ env.VERSION }}.md"
                   release_name: ${{ env.FIREFOX_VERSION }}
@@ -66,7 +66,7 @@ jobs:
             - name: Build Chrome
               uses: ./.github/actions/build-extension
               with:
-                  target_broswer: "chrome"
+                  target_browser: "chrome"
                   target_file: ${{ env.DIRECTORY }}/${{ env.CHROME_VERSION }}.zip
                   release_notes: "./docs/Release Notes/v${{ env.VERSION }}.md"
                   release_name: ${{ env.CHROME_VERSION }}
