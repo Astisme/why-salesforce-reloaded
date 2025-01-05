@@ -11,6 +11,10 @@ on:
                 description: "The file path and name for the release"
                 required: true
                 type: string
+            release_notes:
+                description: "The file path for the release notes"
+                required: true
+                type: string
 
 permissions:
     contents: write
@@ -30,12 +34,22 @@ jobs:
             - name: Make ${{ inputs.target_browser }} Manifest
               run: deno run dev-${{ inputs.target_browser }}
 
+            - name: Check if release file exists
+              run: |
+                if [ ! -f ${{ inputs.target_file }} ]; then
+                  echo "File ${{ inputs.target_file }} not found!"
+                  exit 1
+                else
+                  echo "File ${{ inputs.target_file }} was created!"
+                fi
+
             - name: Zip ${{ inputs.target_browser }} extension
               run: zip -r ${{ inputs.target_file }}\
-                action assets background salesforce *.js LICENSE.txt README.md manifest.json\
+                action assets background salesforce *.js LICENSE* README.md manifest.json\
                 -x "*/README.md"
 
             - name: Create ${{ inputs.target_browser }} Release
               uses: softprops/action-gh-release@v1
               with:
+                body_path: ${{ inputs.release_notes }}
                 files: ${{ inputs.target_file }}

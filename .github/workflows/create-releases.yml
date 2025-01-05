@@ -52,15 +52,18 @@ jobs:
               with:
                   target_broswer: "chrome"
                   target_file: ${{ env.DIRECTORY }}/${{ env.CHROME_VERSION }}.zip
+                  release_notes: "./docs/Release Notes/v${{ env.VERSION }}.md"
 
             - name: Build Firefox
               uses: ./.github/workflows/build-extension.yml
               with:
                   target_broswer: "firefox"
                   target_file: ${{ env.DIRECTORY }}/${{ env.FIREFOX_VERSION }}.zip
+                  release_notes: "./docs/Release Notes/v${{ env.VERSION }}.md"
 
             - name: Build Safari
               uses: ./.github/workflows/build-extension.yml
               with:
                   target_broswer: "safari"
                   target_file: ${{ env.DIRECTORY }}/${{ env.SAFARI_VERSION }}.zip
+                  release_notes: "./docs/Release Notes/v${{ env.VERSION }}.md"
