@@ -18,23 +18,49 @@ let wasOnSavedTab;
 let isCurrentlyOnSavedTab;
 let fromHrefUpdate;
 
+/**
+ * Sends a message to the background script with the current URL.
+ *
+ * @param {Object} message - The message object to send.
+ * @param {Function} callback - The callback function to execute after sending the message.
+ */
 function sendMessage(message, callback) {
 	chrome.runtime.sendMessage({ message, url: location.href }, callback);
 }
 
+/**
+ * Retrieves saved tab data from storage.
+ *
+ * @param {Function} callback - The callback function to handle the retrieved data.
+ */
 function getStorage(callback) {
 	sendMessage({ what: "get" }, callback);
 }
 
+/**
+ * Reloads the saved tabs and shows a success toast message when storage is set.
+ */
 function afterSet() {
 	reloadTabs();
 	showToast(`"Again, Why Salesforce" tabs saved.`);
 }
 
+/**
+ * Saves the current tabs to storage.
+ *
+ * @param {Array} tabs - The array of tabs to save.
+ */
 function setStorage(tabs) {
 	sendMessage({ what: "set", tabs }, afterSet);
 }
 
+/**
+ * Cleans up and normalizes the given URL.
+ *
+ * @param {string} url - The URL to clean up.
+ * @param {boolean} [nochange=null] - Optional parameter to control URL transformation behavior. If false, the URL returned will contain the entire Salesforce Setup link.
+ * @returns {string} - The cleaned-up URL.
+ */
 function cleanupUrl(url, nochange = null) {
 	const asis = nochange == null ? url.startsWith("http") : nochange;
 	if (url.startsWith("/lightning") || url.startsWith("/_ui/common")) { // normalized setup pages won't get here
@@ -54,6 +80,14 @@ function cleanupUrl(url, nochange = null) {
 	return asis ? url : `${baseUrl}${setupLightning}${url}`;
 }
 
+/**
+ * Generates the HTML for a tab row.
+ *
+ * @param {Object} row - The tab data object containing title and URL.
+ * @param {string} row.tabTitle - The title of the tab.
+ * @param {string} row.url - The URL of the tab.
+ * @returns {HTMLElement} - The generated list item element representing the tab.
+ */
 function generateRowTemplate(row) {
 	let { tabTitle, url } = row;
 	url = cleanupUrl(url);
@@ -95,6 +129,13 @@ function generateRowTemplate(row) {
 	return li;
 }
 
+/**
+ * Generates the HTML for a toast message.
+ *
+ * @param {string} message - The message to display in the toast.
+ * @param {boolean} isSuccess - Indicates whether the message is a success or error.
+ * @returns {string} - The generated HTML for the toast message.
+ */
 function generateSldsToastMessage(message, isSuccess) {
 	const toastType = isSuccess ? "success" : "error";
 	return `<div id="${toastId}" class="toastContainer slds-notify_container slds-is-relative" data-aura-rendered-by="7381:0">
@@ -128,6 +169,12 @@ function generateSldsToastMessage(message, isSuccess) {
             </div>`;
 }
 
+/**
+ * Displays a toast message in the UI.
+ *
+ * @param {string} message - The message to display in the toast.
+ * @param {boolean} [isSuccess=true] - Whether the toast message is a success (default is true).
+ */
 function showToast(message, isSuccess = true) {
 	const hanger = document.getElementsByClassName(
 		"oneConsoleTabset navexConsoleTabset",
@@ -141,6 +188,11 @@ function showToast(message, isSuccess = true) {
 	}, 4000);
 }
 
+/**
+ * Initializes the default tabs and saves them to storage.
+ *
+ * @returns {Array} - The list of initialized tabs.
+ */
 function initTabs() {
 	const tabs = [
 		{ tabTitle: "⚡", url: "/lightning" },
@@ -151,6 +203,11 @@ function initTabs() {
 	return tabs;
 }
 
+/**
+ * Generates the HTML for the favourite button.
+ *
+ * @returns {string} - The generated HTML for the favourite button.
+ */
 function generateFavouriteButton() {
 	const assetDir = chrome.runtime.getURL("assets");
 	const star = chrome.runtime.getURL("assets/svgs/star.svg");
@@ -173,6 +230,12 @@ function generateFavouriteButton() {
             </button>`;
 }
 
+/**
+ * Toggles the visibility of the favourite button based on whether the tab is saved.
+ *
+ * @param {HTMLElement} button - The favourite button element.
+ * @param {boolean} isSaved - Optional flag indicating whether the tab is saved.
+ */
 function toggleFavouriteButton(button, isSaved) {
 	const star = button.querySelector(`#${starId}`);
 	const slashedStar = button.querySelector(`#${slashedStarId}`);
@@ -190,6 +253,11 @@ function toggleFavouriteButton(button, isSaved) {
 	}
 }
 
+/**
+ * Adds or removes the current tab from the saved tabs list based on the button's state.
+ *
+ * @param {HTMLElement} parent - The parent element of the favourite button.
+ */
 function actionFavourite(parent) {
 	const url = cleanupUrl(href);
 	if (isCurrentlyOnSavedTab) {
@@ -206,6 +274,11 @@ function actionFavourite(parent) {
 	setStorage(currentTabs);
 }
 
+/**
+ * Displays the favourite button in the UI if applicable.
+ *
+ * @param {number} [count=0] - The number of retry attempts to find headers.
+ */
 function showFavouriteButton(count = 0) {
 	if (count > 5) {
 		console.error("Again, Why Salesforce - failed to find headers.");
@@ -246,6 +319,13 @@ function showFavouriteButton(count = 0) {
 	}
 }
 
+/**
+ * Initializes and sets up the storage for the tabs with default data or from the stored data.
+ *
+ * @param {Array<Object>} items - The items retrieved from storage. If no data is found, the default tabs will be initialized.
+ * @param {string} items.key - The key used to fetch the stored data.
+ * @param {Array<Object>} items[key] - The array of tab data retrieved from storage or the default tabs.
+ */
 function init(items) {
 	//call inittabs if we did not find data inside storage
 	const rowObj = (items == null || items[items.key] == null)
@@ -259,6 +339,12 @@ function init(items) {
 	showFavouriteButton();
 }
 
+/**
+ * Determines if the current tab is a saved tab or not based on the URL.
+ *
+ * @param {boolean} [isFromHrefUpdate=false] - A flag to determine if the check is due to a URL update.
+ * @returns {boolean} - True if the current tab is a saved tab, otherwise false.
+ */
 function isOnSavedTab(isFromHrefUpdate = false) {
 	if (fromHrefUpdate && !isFromHrefUpdate) {
 		fromHrefUpdate = false;
@@ -273,6 +359,9 @@ function isOnSavedTab(isFromHrefUpdate = false) {
 	return isCurrentlyOnSavedTab;
 }
 
+/**
+ * Handles the update of the current URL, reloading tabs if necessary.
+ */
 function onHrefUpdate() {
 	const newRef = window.location.href;
 	if (newRef === href) {
@@ -283,6 +372,11 @@ function onHrefUpdate() {
 	else showFavouriteButton();
 }
 
+/**
+ * Delays the loading of setup tabs until the relevant DOM elements are available.
+ *
+ * @param {number} [count=0] - A counter to limit the number of retry attempts.
+ */
 function delayLoadSetupTabs(count = 0) {
 	if (count > 5) {
 		console.error("Why Salesforce - failed to find setup tab.");
@@ -305,6 +399,9 @@ function delayLoadSetupTabs(count = 0) {
 	}
 }
 
+/**
+ * Reloads the tabs by clearing the current list and fetching the updated data from storage.
+ */
 function reloadTabs() {
 	while (setupTabUl.childElementCount > 3) { // hidden li + Home + Object Manager
 		setupTabUl.removeChild(setupTabUl.lastChild);
@@ -313,6 +410,11 @@ function reloadTabs() {
 	getStorage(init);
 }
 
+/**
+ * Generates the HTML structure for the import modal.
+ *
+ * @returns {string} - The HTML string for the import modal.
+ */
 function generateSldsImport() {
 	return `<div id="${importId}" style="width: 100%;display: flex;align-items: center;justify-content: center;position: fixed;left: 0;">
                 <!-- focus on div -->
@@ -346,6 +448,9 @@ function generateSldsImport() {
             </div>`;
 }
 
+/**
+ * Displays the import modal for uploading tab data.
+ */
 function showFileImport() {
 	setupTabUl.insertAdjacentHTML("beforeend", generateSldsImport());
 	document.getElementById(closeModalId).addEventListener(
@@ -354,6 +459,12 @@ function showFileImport() {
 	);
 }
 
+/**
+ * Handles the imported tab data and updates the storage with the newly imported tabs.
+ *
+ * @param {Object} message - The message containing the imported tab data.
+ * @param {Array<Object>} message.imported - The array of imported tab data.
+ */
 function importer(message) {
 	const importedArray = message.imported;
 	currentTabs.push(...importedArray);
@@ -362,6 +473,9 @@ function importer(message) {
 	setStorage(currentTabs);
 }
 
+/**
+ * Reorders the tabs based on their new order in the DOM and saves the updated list to storage.
+ */
 function reorderTabs() {
 	// get the list of tabs
 	const tabs = [];

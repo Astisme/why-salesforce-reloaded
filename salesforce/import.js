@@ -1,5 +1,9 @@
 "use strict";
 
+/**
+ * Sets up event listeners for file upload through both input field and drag-and-drop.
+ * The function reads the uploaded file if it is a JSON file and sends the content to the postMessage API.
+ */
 function listenToFileUpload() {
 	const dropArea = document.getElementById("again-why-salesforce-import");
 
