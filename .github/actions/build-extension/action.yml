@@ -1,63 +1,47 @@
 name: Build extension single browser
+description: Builds the browser extension for a specified browser
 
-on:
-    workflow_call:
-        inputs:
-            target_browser:
-                description: "The broswer for which to build the extension"
-                required: true
-                type: string
-            target_file:
-                description: "The file path and name for the release"
-                required: true
-                type: string
-            release_notes:
-                description: "The file path for the release notes"
-                required: true
-                type: string
-            release_name:
-                description: "The name of the release to be built"
-                required: true
-                type: string
+inputs:
+    target_browser:
+        description: "The broswer for which to build the extension"
+        required: true
+    target_file:
+        description: "The file path and name for the release"
+        required: true
+    release_notes:
+        description: "The file path for the release notes"
+        required: true
+    release_name:
+        description: "The name of the release to be built"
+        required: true
 
-permissions:
-    contents: write
+runs:
+  using: 'composite'
+  steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-jobs:
-    build:
-        runs-on: ubuntu-latest
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
+      - name: Setup Deno
+        uses: denoland/setup-deno@v2
+        with:
+            deno-version: v2.x
 
-            - name: Setup Deno
-              uses: denoland/setup-deno@v2
-              with:
-                  deno-version: v2.x
+      - name: Make Manifest
+        shell: bash
+        run: deno run dev-${{ inputs.target_browser }}
 
-            - name: Make ${{ inputs.target_browser }} Manifest
-              run: deno run dev-${{ inputs.target_browser }}
+      - name: Zip ${{ inputs.target_browser }} extension
+        shell: bash
+        run: zip -r ${{ inputs.target_file }}\
+          action assets background salesforce *.js LICENSE* README.md manifest.json\
+          -x "*/README.md"
 
-            - name: Check if release file exists
-              run: |
-                if [ ! -f ${{ inputs.target_file }} ]; then
-                  echo "File ${{ inputs.target_file }} not found!"
-                  exit 1
-                else
-                  echo "File ${{ inputs.target_file }} was created!"
-                fi
-
-            - name: Zip ${{ inputs.target_browser }} extension
-              run: zip -r ${{ inputs.target_file }}\
-                action assets background salesforce *.js LICENSE* README.md manifest.json\
-                -x "*/README.md"
-
-            - name: Create ${{ inputs.target_browser }} Release
-              uses: softprops/action-gh-release@v2.2.0
-              with:
-                name: ${{ inputs.release_name }}
-                body: See release notes at ${{ inputs.release_notes }}.
-                body_path: ${{ inputs.release_notes }}
-                files: ${{ inputs.target_file }}
-                generate_release_notes: true
-                make_latest: true
+      - name: Create ${{ inputs.target_browser }} Release
+        uses: softprops/action-gh-release@v2.2.0
+        with:
+          name: ${{ inputs.release_name }}
+          body: See release notes at ${{ inputs.release_notes }}.
+          body_path: ${{ inputs.release_notes }}
+          files: ${{ inputs.target_file }}
+          generate_release_notes: true
+          make_latest: true
