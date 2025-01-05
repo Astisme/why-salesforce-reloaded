@@ -73,102 +73,32 @@ jobs:
                   echo "FIREFOX_VERSION=${{ env.FIREFOX }}-v${{ env.VERSION }}" >> $GITHUB_OUTPUT
                   echo "SAFARI_VERSION=${{ env.SAFARI }}-v${{ env.VERSION }}" >> $GITHUB_OUTPUT
 
-    chrome:
+    build:
         runs-on: ubuntu-latest
         needs: setup
         env:
             DIRECTORY: ${{ needs.setup.outputs.DIRECTORY }}
             CHROME_VERSION: ${{ needs.setup.outputs.CHROME_VERSION }}
+            FIREFOX_VERSION: ${{ needs.setup.outputs.FIREFOX_VERSION }}
+            SAFARI_VERSION: ${{ needs.setup.outputs.SAFARI_VERSION }}
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
 
-            - name: Trigger Build
+            - name: Build Chrome
               uses: ./.github/workflows/build-extension.yml
               with:
                   target_broswer: "chrome"
                   target_file: $DIRECTORY/CHROME_VERSION.zip
 
-    firefox:
-        runs-on: ubuntu-latest
-        needs: [setup, chrome]
-        env:
-            DIRECTORY: ${{ needs.setup.outputs.DIRECTORY }}
-            VERSION: ${{ needs.setup.outputs.VERSION }}
-            FIREFOX_VERSION: ${{ needs.setup.outputs.FIREFOX_VERSION }}
-            BRANCH_NAME: ${{ needs.setup.outputs.BRANCH_NAME }}
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-
-            - name: Switch to version branch
-              run: |
-                  git fetch origin "$BRANCH_NAME"
-                  git switch $BRANCH_NAME
-
-            - name: Setup Deno
-              uses: denoland/setup-deno@v2
+            - name: Build Firefox
+              uses: ./.github/workflows/build-extension.yml
               with:
-                  deno-version: v2.x
+                  target_broswer: "firefox"
+                  target_file: $DIRECTORY/FIREFOX_VERSION.zip
 
-            - name: Make Firefox Manifest
-              run: deno run dev-firefox
-
-            - name: Zip Firefox extension
-              run: zip -r $DIRECTORY/$FIREFOX_VERSION.zip action assets background salesforce *.js LICENSE.txt README.md manifest.json -x "*/README.md"
-
-            - name: Upload Firefox artifact
-              uses: actions/upload-artifact@v3
+            - name: Build Safari
+              uses: ./.github/workflows/build-extension.yml
               with:
-                  name: $FIREFOX_VERSION
-                  path: $DIRECTORY/$FIREFOX_VERSION.zip
-
-            - name: Push Firefox artifact
-              run: |
-                  git config user.name "github-actions"
-                  git config user.email = "github-actions@github.com"
-                  git add dist
-                  git commit -m "Firefox v$VERSION"
-                  git push
-
-    safari:
-        runs-on: ubuntu-latest
-        needs: [setup, firefox]
-        env:
-            DIRECTORY: ${{ needs.setup.outputs.DIRECTORY }}
-            VERSION: ${{ needs.setup.outputs.VERSION }}
-            SAFARI_VERSION: ${{ needs.setup.outputs.SAFARI_VERSION }}
-            BRANCH_NAME: ${{ needs.setup.outputs.BRANCH_NAME }}
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-
-            - name: Switch to version branch
-              run: |
-                  git fetch origin "$BRANCH_NAME"
-                  git switch $BRANCH_NAME
-
-            - name: Setup Deno
-              uses: denoland/setup-deno@v2
-              with:
-                  deno-version: v2.x
-
-            - name: Make Safari Manifest
-              run: deno run dev-safari
-
-            - name: Zip Safari extension
-              run: zip -r $DIRECTORY/$SAFARI_VERSION.zip action assets background salesforce *.js LICENSE.txt README.md manifest.json -x "*/README.md"
-
-            - name: Upload Safari artifact
-              uses: actions/upload-artifact@v3
-              with:
-                  name: $SAFARI_VERSION
-                  path: $DIRECTORY/$SAFARI_VERSION.zip
-
-            - name: Push Safari artifact
-              run: |
-                  git config user.name "github-actions"
-                  git config user.email = "github-actions@github.com"
-                  git add dist
-                  git commit -m "Safari v$VERSION"
-                  git push
+                  target_broswer: "safari"
+                  target_file: $DIRECTORY/SAFARI_VERSION.zip

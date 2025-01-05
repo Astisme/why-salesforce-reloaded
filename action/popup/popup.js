@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-window
 "use strict";
-import { handleSwitchColorTheme, initTheme } from "../themeHandler.js";
+import { handleSwitchColorTheme, initTheme } from "../../themeHandler.js";
 
 const html = document.documentElement;
 const sun = document.getElementById("sun");
@@ -21,7 +21,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
 	// is null if the extension cannot access the current tab
 	if (tabs[0].url == null || !tabs[0].url.match(".*\/lightning\/setup\/.*")) {
 		window.location.href = chrome.runtime.getURL(
-			`action/notSalesforceSetup.html${
+			`action/notSalesforceSetup/notSalesforceSetup.html${
 				tabs[0].url != null ? "?url=" + tabs[0].url : ""
 			}`,
 		);

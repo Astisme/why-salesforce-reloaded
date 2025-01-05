@@ -1,22 +1,26 @@
 // deno-lint-ignore-file no-window
-import { handleSwitchColorTheme, initTheme } from "../themeHandler.js";
+import { handleSwitchColorTheme, initTheme } from "../../themeHandler.js";
 initTheme();
 
-const authorizedDomainRegex =
-	/^https:\/\/[a-zA-Z0-9.-]+\.lightning\.force\.com\/.*/;
-const page = new URLSearchParams(window.location.search).get("url");
-const sfsetupTextEl = document.querySelector("h3");
+/**
+ * Dynamically creates and inserts content into the page based on the "url" query parameter.
+ * Validates if the URL corresponds to a valid Salesforce Lightning Setup page.
+ * Updates the DOM with appropriate text and button visibility based on the validation.
+ */
 
 const div = document.createElement("div");
 const prefix = document.createTextNode("This is not a ");
 const strongEl = document.createElement("strong");
 const otherText = document.createTextNode("");
 
+const sfsetupTextEl = document.querySelector("h3");
 sfsetupTextEl.innerText = "";
 sfsetupTextEl.appendChild(div);
+
 let insertPrefix = true;
 let strongFirst = true;
 
+const page = new URLSearchParams(window.location.search).get("url");
 if (page != null) { // we're in a salesforce page
 	let domain;
 
@@ -31,6 +35,8 @@ if (page != null) { // we're in a salesforce page
 	// domain is null if an error occurred
 	if (domain != null) {
 		// Validate the domain (make sure it's a Salesforce domain)
+    const authorizedDomainRegex =
+      /^https:\/\/[a-zA-Z0-9.-]+\.lightning\.force\.com\/.*/;
 		if (!authorizedDomainRegex.test(page)) {
 			strongEl.textContent = "Invalid Salesforce";
 			otherText.textContent = " domain detected.";
