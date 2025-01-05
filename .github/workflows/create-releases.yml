@@ -1,12 +1,11 @@
-name: Create Release
+name: Create all Releases
 
 on:
-    workflow_call:
-        inputs:
-            target_branch:
-                description: "The branch to push the changes to"
-                required: true
-                type: string
+    pull_request:
+        types:
+            - closed
+        branches:
+            - main
     workflow_dispatch:
 
 permissions:
@@ -55,9 +54,13 @@ jobs:
               run: |
                   git config user.name "github-actions"
                   git config user.email = "github-actions@github.com"
-                  BRANCH_NAME=${{ inputs.target_branch }} || "release/v-$VERSION"
+
+                  target_branch=${{ github.event_name == 'workflow_dispatch' && '${{ env.BRANCH_NAME }}' || github.event.pull_request.base.ref }}
+                  BRANCH_NAME=$target_branch || "release/v-$VERSION"
+
                   git branch $BRANCH_NAME
                   git switch $BRANCH_NAME
+
                   git add dist
                   git commit -m "Created new directory"
                   git push --set-upstream origin $BRANCH_NAME
@@ -75,41 +78,16 @@ jobs:
         needs: setup
         env:
             DIRECTORY: ${{ needs.setup.outputs.DIRECTORY }}
-            VERSION: ${{ needs.setup.outputs.VERSION }}
             CHROME_VERSION: ${{ needs.setup.outputs.CHROME_VERSION }}
-            BRANCH_NAME: ${{ needs.setup.outputs.BRANCH_NAME }}
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
-            - name: Switch to version branch
-              run: |
-                  git fetch origin "$BRANCH_NAME"
-                  git switch $BRANCH_NAME
-
-            - name: Setup Deno
-              uses: denoland/setup-deno@v2
+            - name: Trigger Build
+              uses: ./.github/workflows/build-extension.yml
               with:
-                  deno-version: v2.x
-
-            - name: Make Chrome Manifest
-              run: deno run dev-chrome
-
-            - name: Zip Chrome extension
-              run: zip -r $DIRECTORY/$CHROME_VERSION.zip action assets background salesforce *.js LICENSE.txt README.md manifest.json -x "*/README.md"
-
-            - name: Create Chrome Release
-              uses: softprops/action-gh-release@v1
-              with:
-                files: $DIRECTORY/$CHROME_VERSION.zip 
-
-            - name: Push Chrome artifact
-              run: |
-                  git config user.name "github-actions"
-                  git config user.email = "github-actions@github.com"
-                  git add dist
-                  git commit -m "Chrome v$VERSION"
-                  git push
+                  target_broswer: "chrome"
+                  target_file: $DIRECTORY/CHROME_VERSION.zip
 
     firefox:
         runs-on: ubuntu-latest
@@ -121,7 +99,7 @@ jobs:
             BRANCH_NAME: ${{ needs.setup.outputs.BRANCH_NAME }}
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: Switch to version branch
               run: |
@@ -163,7 +141,7 @@ jobs:
             BRANCH_NAME: ${{ needs.setup.outputs.BRANCH_NAME }}
         steps:
             - name: Checkout repository
-              uses: actions/checkout@v3
+              uses: actions/checkout@v4
 
             - name: Switch to version branch
               run: |
