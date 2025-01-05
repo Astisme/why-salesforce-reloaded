@@ -3,7 +3,7 @@ let systemColorListener = null;
 
 /**
  * Sends a message to the runtime to update the theme.
- * 
+ *
  * @param {string} theme - The theme to be applied.
  */
 function sendMessageTheme(theme) {
@@ -12,7 +12,7 @@ function sendMessageTheme(theme) {
 
 /**
  * Updates the theme and applies the changes to the HTML document.
- * 
+ *
  * @param {string} theme - The theme to be applied.
  * @param {boolean} [updateUserTheme=false] - A flag to determine if the user theme should be updated in localStorage.
  */
@@ -30,7 +30,7 @@ function messageAndUpdateTheme(theme, updateUserTheme = false) {
 
 /**
  * Handles the system color scheme change event and updates the theme accordingly.
- * 
+ *
  * @param {MediaQueryListEvent} e - The event triggered when the system color scheme changes.
  */
 function handleSystemColorSchemeChange(e) {
@@ -44,7 +44,7 @@ function handleSystemColorSchemeChange(e) {
 
 /**
  * Enables or disables the listener for system color scheme changes, and updates the theme based on system preferences.
- * 
+ *
  * @param {boolean} enable - A flag to enable or disable the system color scheme listener.
  */
 export function systemColorSchemeListener(enable = true) {

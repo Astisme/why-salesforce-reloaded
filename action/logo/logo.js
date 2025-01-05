@@ -5,7 +5,7 @@ initTheme();
 const html = document.documentElement;
 /**
  * set the data-theme attribute on the html tag to the given theme
- * @param {string} theme - The name of the theme to apply (e.g., "light", "dark"). 
+ * @param {string} theme - The name of the theme to apply (e.g., "light", "dark").
  */
 function updateTheme(theme) {
 	html.dataset.theme = theme;

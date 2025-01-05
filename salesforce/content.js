@@ -20,7 +20,7 @@ let fromHrefUpdate;
 
 /**
  * Sends a message to the background script with the current URL.
- * 
+ *
  * @param {Object} message - The message object to send.
  * @param {Function} callback - The callback function to execute after sending the message.
  */
@@ -30,7 +30,7 @@ function sendMessage(message, callback) {
 
 /**
  * Retrieves saved tab data from storage.
- * 
+ *
  * @param {Function} callback - The callback function to handle the retrieved data.
  */
 function getStorage(callback) {
@@ -47,7 +47,7 @@ function afterSet() {
 
 /**
  * Saves the current tabs to storage.
- * 
+ *
  * @param {Array} tabs - The array of tabs to save.
  */
 function setStorage(tabs) {
@@ -56,7 +56,7 @@ function setStorage(tabs) {
 
 /**
  * Cleans up and normalizes the given URL.
- * 
+ *
  * @param {string} url - The URL to clean up.
  * @param {boolean} [nochange=null] - Optional parameter to control URL transformation behavior. If false, the URL returned will contain the entire Salesforce Setup link.
  * @returns {string} - The cleaned-up URL.
@@ -82,7 +82,7 @@ function cleanupUrl(url, nochange = null) {
 
 /**
  * Generates the HTML for a tab row.
- * 
+ *
  * @param {Object} row - The tab data object containing title and URL.
  * @param {string} row.tabTitle - The title of the tab.
  * @param {string} row.url - The URL of the tab.
@@ -131,7 +131,7 @@ function generateRowTemplate(row) {
 
 /**
  * Generates the HTML for a toast message.
- * 
+ *
  * @param {string} message - The message to display in the toast.
  * @param {boolean} isSuccess - Indicates whether the message is a success or error.
  * @returns {string} - The generated HTML for the toast message.
@@ -171,7 +171,7 @@ function generateSldsToastMessage(message, isSuccess) {
 
 /**
  * Displays a toast message in the UI.
- * 
+ *
  * @param {string} message - The message to display in the toast.
  * @param {boolean} [isSuccess=true] - Whether the toast message is a success (default is true).
  */
@@ -190,7 +190,7 @@ function showToast(message, isSuccess = true) {
 
 /**
  * Initializes the default tabs and saves them to storage.
- * 
+ *
  * @returns {Array} - The list of initialized tabs.
  */
 function initTabs() {
@@ -205,7 +205,7 @@ function initTabs() {
 
 /**
  * Generates the HTML for the favourite button.
- * 
+ *
  * @returns {string} - The generated HTML for the favourite button.
  */
 function generateFavouriteButton() {
@@ -232,7 +232,7 @@ function generateFavouriteButton() {
 
 /**
  * Toggles the visibility of the favourite button based on whether the tab is saved.
- * 
+ *
  * @param {HTMLElement} button - The favourite button element.
  * @param {boolean} isSaved - Optional flag indicating whether the tab is saved.
  */
@@ -255,7 +255,7 @@ function toggleFavouriteButton(button, isSaved) {
 
 /**
  * Adds or removes the current tab from the saved tabs list based on the button's state.
- * 
+ *
  * @param {HTMLElement} parent - The parent element of the favourite button.
  */
 function actionFavourite(parent) {
@@ -274,10 +274,9 @@ function actionFavourite(parent) {
 	setStorage(currentTabs);
 }
 
-
 /**
  * Displays the favourite button in the UI if applicable.
- * 
+ *
  * @param {number} [count=0] - The number of retry attempts to find headers.
  */
 function showFavouriteButton(count = 0) {
@@ -322,7 +321,7 @@ function showFavouriteButton(count = 0) {
 
 /**
  * Initializes and sets up the storage for the tabs with default data or from the stored data.
- * 
+ *
  * @param {Array<Object>} items - The items retrieved from storage. If no data is found, the default tabs will be initialized.
  * @param {string} items.key - The key used to fetch the stored data.
  * @param {Array<Object>} items[key] - The array of tab data retrieved from storage or the default tabs.
@@ -342,7 +341,7 @@ function init(items) {
 
 /**
  * Determines if the current tab is a saved tab or not based on the URL.
- * 
+ *
  * @param {boolean} [isFromHrefUpdate=false] - A flag to determine if the check is due to a URL update.
  * @returns {boolean} - True if the current tab is a saved tab, otherwise false.
  */
@@ -375,7 +374,7 @@ function onHrefUpdate() {
 
 /**
  * Delays the loading of setup tabs until the relevant DOM elements are available.
- * 
+ *
  * @param {number} [count=0] - A counter to limit the number of retry attempts.
  */
 function delayLoadSetupTabs(count = 0) {
@@ -413,7 +412,7 @@ function reloadTabs() {
 
 /**
  * Generates the HTML structure for the import modal.
- * 
+ *
  * @returns {string} - The HTML string for the import modal.
  */
 function generateSldsImport() {
@@ -449,7 +448,6 @@ function generateSldsImport() {
             </div>`;
 }
 
-
 /**
  * Displays the import modal for uploading tab data.
  */
@@ -463,7 +461,7 @@ function showFileImport() {
 
 /**
  * Handles the imported tab data and updates the storage with the newly imported tabs.
- * 
+ *
  * @param {Object} message - The message containing the imported tab data.
  * @param {Array<Object>} message.imported - The array of imported tab data.
  */

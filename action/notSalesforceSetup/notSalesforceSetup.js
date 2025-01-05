@@ -35,8 +35,8 @@ if (page != null) { // we're in a salesforce page
 	// domain is null if an error occurred
 	if (domain != null) {
 		// Validate the domain (make sure it's a Salesforce domain)
-    const authorizedDomainRegex =
-      /^https:\/\/[a-zA-Z0-9.-]+\.lightning\.force\.com\/.*/;
+		const authorizedDomainRegex =
+			/^https:\/\/[a-zA-Z0-9.-]+\.lightning\.force\.com\/.*/;
 		if (!authorizedDomainRegex.test(page)) {
 			strongEl.textContent = "Invalid Salesforce";
 			otherText.textContent = " domain detected.";
