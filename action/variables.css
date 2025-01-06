@@ -18,7 +18,7 @@ html {
 	--lightblue: #49c2d4;
 	--darklightblue: #2794a5;
 	--transition-duration: 500ms;
-	--transition-timitng-function: ease-in-out;
+	--transition-timing-function: ease-in-out;
 }
 
 html, /* default to light theme */

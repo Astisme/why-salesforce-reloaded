@@ -1,8 +1,11 @@
+//import { createSwapy } from "./swapy.min.js";
+
 let table;
 let ul;
 let container;
 let closestTag;
 let dragSrcEl = null;
+let swapy;
 
 function handleDragStart(e) {
 	// Check if the dragged element is an icon (or any other specific element) within the row
@@ -68,12 +71,19 @@ function handleDrop(e) {
 	return false;
 }
 
-function createListeners() {
+function createListeners(container) {
+  /*
 	container.addEventListener("dragstart", handleDragStart, false); // when dragging begins
 	container.addEventListener("drag", handleDrag, false); // while it is being dragged
 	container.addEventListener("dragover", handleDragOver, false); // while over a valid target
 	container.addEventListener("dragend", handleDragEnd, false); // when mouse released
 	container.addEventListener("drop", handleDrop, false); // when element is dropped
+  */
+  swapy = createSwapy(container, {
+    animation: "spring",
+    autoScrollOnDrag: true,
+    dragAxis: 'y' // vertical
+  });
 }
 
 function setup() {
@@ -81,7 +91,7 @@ function setup() {
 	ul = document.getElementsByClassName("tabBarItems slds-grid")[0];
 	container = table || ul;
 	closestTag = table != null ? "tr" : "li";
-	if (container != null) createListeners();
+	if (container != null) createListeners(container);
 	else setTimeout(() => setup(), 500);
 }
 

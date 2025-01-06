@@ -22,7 +22,7 @@ html {
 
 html,
 :not(:has([style*="transparent"])) {
-	transition-property: color background-color;
+	transition-property: color, background-color;
 	transition-duration: var(--transition-duration);
 	transition-timing-function: var(--transition-timing-function);
 }
@@ -44,7 +44,6 @@ header {
 	align-items: center;
 	justify-content: space-between;
 	flex: 1;
-	min-width: 0;
 
 	& > object {
 		height: 2.5rem;

@@ -10,7 +10,7 @@
 		<link rel="stylesheet" href="../basic.css" />
 		<script src="../../themeHandler.js" type="module"></script>
 		<script src="./popup.js" type="module"></script>
-		<script src="../../dragHandler.js" type="module"></script>
+		<script src="../../swapy.min.js" type="module"></script>
 	</head>
 
 	<body>
@@ -83,97 +83,57 @@
 					/>
 				</div>
 			</header>
-			<table id="sortable-table">
-				<thead>
-					<tr>
-						<th scope="col">
+			<div class="table" id="sortable-table">
+				<div class="thead">
+					<div class="tr">
+						<div class="th" scope="col">
 							<div><!-- used for the svg --></div>
-						</th>
-						<th scope="col">
+						</div>
+						<div class="th" scope="col">
 							<div>Tab Label</div>
-						</th>
-						<th scope="col">
+						</div>
+						<div class="th" scope="col">
 							<div>Tab Url</div>
-						</th>
-						<th scope="col" style="width: 3.25rem">
+						</div>
+						<div class="th" scope="col">
 							<div class="slds-assistive-text">
 								Actions
 							</div>
-						</th>
-					</tr>
-				</thead>
-				<tbody id="tabs"></tbody>
-			</table>
+						</div>
+					</div>
+				</div>
+				<div class="tbody" id="tabs"></div>
+			</div>
 		</div>
 
 		<template id="tr_template">
-			<tr class="tab" draggable="true">
-				<td scope="row">
-					<svg
-						data-draggable="true"
-						viewBox="0 0 72 72"
-						xmlns="http://www.w3.org/2000/svg"
-					>
-						<g>
-							<line
-								x1="16"
-								x2="56"
-								y1="26"
-								y2="26"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-miterlimit="10"
-								stroke-width="2"
-							/>
-							<line
-								x1="16"
-								x2="56"
-								y1="36"
-								y2="36"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-miterlimit="10"
-								stroke-width="2"
-							/>
-							<line
-								x1="16"
-								x2="56"
-								y1="46"
-								y2="46"
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-miterlimit="10"
-								stroke-width="2"
-							/>
-						</g>
-					</svg>
-				</td>
-				<td data-label="Tab Label" scope="row">
-					<div>
-						<input
-							type="text"
-							name="tabTitle"
-							class="tabTitle"
-							placeholder="Flows"
-							title="Enter the label for this URL"
-						/>
-					</div>
-				</td>
-				<td data-label="Tab Url">
-					<div>
-						<input
-							type="text"
-							name="url"
-							class="url"
-							placeholder="Flows/home"
-							title="Enter the sub-URL where you want to be redirected."
-						/>
-					</div>
-				</td>
-				<td>
-					<button class="delete error">Delete</button>
-				</td>
-			</tr>
-		</template>
+      <div class="tr tab" data-swapy-slot="empty-tab">
+        <div class="wrapper" data-swapy-item="empty-tab">
+          <div class="td" scope="row">
+            <svg data-draggable="true" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" data-swapy-handle>
+              <g>
+                <line x1="16" x2="56" y1="26" y2="26" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2" />
+                <line x1="16" x2="56" y1="36" y2="36" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2" />
+                <line x1="16" x2="56" y1="46" y2="46" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2" />
+              </g>
+            </svg>
+          </div>
+          <div class="td" data-label="Tab Label" scope="row" data-swapy-item="empty-tab">
+            <div>
+              <input type="text" name="tabTitle" class="tabTitle" placeholder="Flows" title="Enter the label for this URL" />
+            </div>
+          </div>
+          <div class="td" data-label="Tab Url">
+            <div>
+              <input type="text" name="url" class="url" placeholder="Flows/home" title="Enter the sub-URL where you want to be redirected." />
+            </div>
+          </div>
+          <div class="td">
+            <button class="delete error">Delete</button>
+          </div>
+        </div>
+      </div>
+    </template>
+
 	</body>
 </html>

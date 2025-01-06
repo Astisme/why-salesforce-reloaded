@@ -249,10 +249,17 @@ function loadTabs(items) {
 		element.querySelector(".tabTitle").value = tab.tabTitle;
 		element.querySelector(".url").value = tab.url;
 		element.querySelector(".delete").disabled = false;
+
+    // update the data-swapy attributes
+    const swapyName = `${tab.tabTitle}&${tab.url}`;
+    element.dataset.swapySlot = swapyName;
+    element.querySelector(".wrapper").dataset.swapyItem = swapyName;
+
 		const logger = loggers.pop();
 		logger.last_input.title = tab.tabTitle;
 		logger.last_input.url = tab.url;
 		loggers.push(logger);
+
 		elements.push(element);
 	}
 	tabAppendElement.append(...elements);
