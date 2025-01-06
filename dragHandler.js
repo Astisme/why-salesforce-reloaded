@@ -72,18 +72,18 @@ function handleDrop(e) {
 }
 
 function createListeners(container) {
-  /*
+	/*
 	container.addEventListener("dragstart", handleDragStart, false); // when dragging begins
 	container.addEventListener("drag", handleDrag, false); // while it is being dragged
 	container.addEventListener("dragover", handleDragOver, false); // while over a valid target
 	container.addEventListener("dragend", handleDragEnd, false); // when mouse released
 	container.addEventListener("drop", handleDrop, false); // when element is dropped
   */
-  swapy = createSwapy(container, {
-    animation: "spring",
-    autoScrollOnDrag: true,
-    dragAxis: 'y' // vertical
-  });
+	swapy = createSwapy(container, {
+		animation: "spring",
+		autoScrollOnDrag: true,
+		dragAxis: "y", // vertical
+	});
 }
 
 function setup() {

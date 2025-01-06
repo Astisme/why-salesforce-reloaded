@@ -15,7 +15,7 @@
 				"./dragHandler.js",
 				"./salesforce/content.js",
 				"./salesforce/import.js",
-        "./swapy.min.js"
+				"./swapy.min.js"
 			],
 			"run_at": "document_end"
 		}

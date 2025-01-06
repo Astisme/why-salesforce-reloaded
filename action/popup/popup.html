@@ -107,33 +107,81 @@
 		</div>
 
 		<template id="tr_template">
-      <div class="tr tab" data-swapy-slot="empty-tab">
-        <div class="wrapper" data-swapy-item="empty-tab">
-          <div class="td" scope="row">
-            <svg data-draggable="true" viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg" data-swapy-handle>
-              <g>
-                <line x1="16" x2="56" y1="26" y2="26" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2" />
-                <line x1="16" x2="56" y1="36" y2="36" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2" />
-                <line x1="16" x2="56" y1="46" y2="46" stroke-linecap="round" stroke-linejoin="round" stroke-miterlimit="10" stroke-width="2" />
-              </g>
-            </svg>
-          </div>
-          <div class="td" data-label="Tab Label" scope="row" data-swapy-item="empty-tab">
-            <div>
-              <input type="text" name="tabTitle" class="tabTitle" placeholder="Flows" title="Enter the label for this URL" />
-            </div>
-          </div>
-          <div class="td" data-label="Tab Url">
-            <div>
-              <input type="text" name="url" class="url" placeholder="Flows/home" title="Enter the sub-URL where you want to be redirected." />
-            </div>
-          </div>
-          <div class="td">
-            <button class="delete error">Delete</button>
-          </div>
-        </div>
-      </div>
-    </template>
-
+			<div class="tr tab" data-swapy-slot="empty-tab">
+				<div class="wrapper" data-swapy-item="empty-tab">
+					<div class="td" scope="row">
+						<svg
+							data-draggable="true"
+							viewBox="0 0 72 72"
+							xmlns="http://www.w3.org/2000/svg"
+							data-swapy-handle
+						>
+							<g>
+								<line
+									x1="16"
+									x2="56"
+									y1="26"
+									y2="26"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-miterlimit="10"
+									stroke-width="2"
+								/>
+								<line
+									x1="16"
+									x2="56"
+									y1="36"
+									y2="36"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-miterlimit="10"
+									stroke-width="2"
+								/>
+								<line
+									x1="16"
+									x2="56"
+									y1="46"
+									y2="46"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-miterlimit="10"
+									stroke-width="2"
+								/>
+							</g>
+						</svg>
+					</div>
+					<div
+						class="td"
+						data-label="Tab Label"
+						scope="row"
+						data-swapy-item="empty-tab"
+					>
+						<div>
+							<input
+								type="text"
+								name="tabTitle"
+								class="tabTitle"
+								placeholder="Flows"
+								title="Enter the label for this URL"
+							/>
+						</div>
+					</div>
+					<div class="td" data-label="Tab Url">
+						<div>
+							<input
+								type="text"
+								name="url"
+								class="url"
+								placeholder="Flows/home"
+								title="Enter the sub-URL where you want to be redirected."
+							/>
+						</div>
+					</div>
+					<div class="td">
+						<button class="delete error">Delete</button>
+					</div>
+				</div>
+			</div>
+		</template>
 	</body>
 </html>

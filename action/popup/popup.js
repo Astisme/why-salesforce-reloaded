@@ -250,10 +250,10 @@ function loadTabs(items) {
 		element.querySelector(".url").value = tab.url;
 		element.querySelector(".delete").disabled = false;
 
-    // update the data-swapy attributes
-    const swapyName = `${tab.tabTitle}&${tab.url}`;
-    element.dataset.swapySlot = swapyName;
-    element.querySelector(".wrapper").dataset.swapyItem = swapyName;
+		// update the data-swapy attributes
+		const swapyName = `${tab.tabTitle}&${tab.url}`;
+		element.dataset.swapySlot = swapyName;
+		element.querySelector(".wrapper").dataset.swapyItem = swapyName;
 
 		const logger = loggers.pop();
 		logger.last_input.title = tab.tabTitle;
