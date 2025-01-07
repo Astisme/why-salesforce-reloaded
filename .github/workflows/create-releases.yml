@@ -3,7 +3,9 @@ name: Create all Releases
 on:
   push:
     tags:
-      - "v*.*.*"
+      - "chrome-v*.*.*"
+      - "firefox-v*.*.*"
+      - "safari-v*.*.*"
 
 permissions:
     contents: write
@@ -15,48 +17,22 @@ jobs:
             - name: Define prefix
               run: echo "AWSF=awsf" >> $GITHUB_ENV
 
-            - name: Define file names no version
-              run: |
-                  echo "CHROME=${{ env.AWSF }}-chrome" >> $GITHUB_ENV
-                  echo "FIREFOX=${{ env.AWSF }}-firefox" >> $GITHUB_ENV
-                  echo "SAFARI=${{ env.AWSF }}-safari" >> $GITHUB_ENV
-
             - name: Setup repo
               uses: actions/checkout@v4
 
-            - name: Extract current version
-              id: get_version
-              run: echo "VERSION=$(grep -oP '"version":\s*"\K[0-9.]+' manifest/template-manifest.json)" >> $GITHUB_ENV
-
-            - name: Define file names with version
+            - name: Define file name with version
               run: |
-                  echo "CHROME_VERSION=${{ env.CHROME }}-v${{ env.VERSION }}" >> $GITHUB_ENV
-                  echo "FIREFOX_VERSION=${{ env.FIREFOX }}-v${{ env.VERSION }}" >> $GITHUB_ENV
-                  echo "SAFARI_VERSION=${{ env.SAFARI }}-v${{ env.VERSION }}" >> $GITHUB_ENV
+                TAG="${GITHUB_REF_NAME}"
+                BROWSER=${TAG%%-v*} # Extract substring before '-v'
+                echo "BROWSER=$BROWSER" >> $GITHUB_ENV
+                echo "VERSION=$(grep -oP '"version":\s*"\K[0-9.]+' manifest/template-manifest.json)" >> $GITHUB_ENV
+                echo "BROWSER_VERSION=${{ env.AWSF }}-$BROWSER-v${{ env.VERSION }}" >> $GITHUB_ENV
 
-            - name: Build Safari
+            - name: Build Extension
               uses: ./.github/actions/build-extension
               with:
-                  target_browser: "safari"
-                  target_file: ${{ env.SAFARI_VERSION }}.zip
+                  target_browser: ${{ env.BROWSER }}
+                  target_file: ${{ env.BROWSER_VERSION }}.zip
                   release_notes: "./docs/Release Notes/v${{ env.VERSION }}.md"
-                  release_name: ${{ env.SAFARI_VERSION }}
-                  target_tag: "v${{ env.VERSION }}"
-
-            - name: Build Firefox
-              uses: ./.github/actions/build-extension
-              with:
-                  target_browser: "firefox"
-                  target_file: ${{ env.FIREFOX_VERSION }}.zip
-                  release_notes: "./docs/Release Notes/v${{ env.VERSION }}.md"
-                  release_name: ${{ env.FIREFOX_VERSION }}
-                  target_tag: "v${{ env.VERSION }}"
-
-            - name: Build Chrome
-              uses: ./.github/actions/build-extension
-              with:
-                  target_browser: "chrome"
-                  target_file: ${{ env.CHROME_VERSION }}.zip
-                  release_notes: "./docs/Release Notes/v${{ env.VERSION }}.md"
-                  release_name: ${{ env.CHROME_VERSION }}
+                  release_name: ${{ env.BROWSER_VERSION }}
                   target_tag: "v${{ env.VERSION }}"
