@@ -49,7 +49,11 @@ jobs:
                 deno task dev-${{ env.BROWSER }}
                 ls manifest.json # if the file does not exist, fails the script
 
-            - name: Create ${{ inputs.target_browser }} Release
+            - name: Zip ${{ env.BROWSER }} extension
+              shell: bash
+              run: zip -r ${{ env.BROWSER_VERSION_NAME }} action assets background salesforce *.js LICENSE* README.md manifest.json -x "*/README.md"
+
+            - name: Create ${{ env.BROWSER }} Release
               uses: softprops/action-gh-release@v2.2.0
               with:
                 name: ${{ env.BROWSER_VERSION_NAME }}
@@ -59,17 +63,4 @@ jobs:
                 make_latest: true
                 tag_name: ${{ env.TRIGGERING_TAG }}
                 prerelease: ${{ env.PRERELEASE }}
-                files: |
-                  action/*
-                  action/popup/*
-                  action/notSalesforceSetup/*
-                  action/logo/*
-                  assets/*
-                  assets/svgs/*
-                  assets/icons/*
-                  background/*
-                  salesforce/*
-                  *.js
-                  LICENSE*
-                  README.md
-                  manifest.json
+                files: ${{ env.BROWSER_VERSION_NAME }}
