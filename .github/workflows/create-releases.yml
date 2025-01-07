@@ -40,6 +40,6 @@ jobs:
               with:
                   target_browser: ${{ env.BROWSER }}
                   target_file: ${{ env.BROWSER_VERSION_NAME }}.zip
-                  release_notes: "./docs/Release Notes/v${{ env.VERSION }}.md"
+                  release_notes: "./docs/Release Notes/v${{ env.TAG_VERSION }}.md"
                   release_name: ${{ env.BROWSER_VERSION_NAME }}
                   target_tag: ${{ env.TRIGGERING_TAG }}
