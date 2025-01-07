@@ -1,3 +1,4 @@
+// deno-lint-ignore-file no-window
 const html = document.documentElement;
 let systemColorListener = null;
 

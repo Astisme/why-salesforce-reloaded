@@ -12,15 +12,8 @@ permissions:
     contents: write
 
 jobs:
-    setup:
+    setup-and-build:
         runs-on: ubuntu-latest
-        outputs:
-            DIRECTORY: ${{ steps.make_dir.outputs.DIST }}
-            VERSION: ${{ steps.get_version.outputs.VERSION }}
-            CHROME_VERSION: ${{ steps.def_file_name.outputs.CHROME_VERSION }}
-            FIREFOX_VERSION: ${{ steps.def_file_name.outputs.FIREFOX_VERSION }}
-            SAFARI_VERSION: ${{ steps.def_file_name.outputs.SAFARI_VERSION }}
-            BRANCH_NAME: ${{ steps.push_dir.outputs.BRANCH_NAME }}
         steps:
             - name: Define prefix
               run: echo "AWSF=awsf" >> $GITHUB_ENV
@@ -36,69 +29,34 @@ jobs:
 
             - name: Extract current version
               id: get_version
-              run: |
-                  VERSION=$(grep -oP '"version":\s*"\K[0-9.]+' manifest/template-manifest.json)
-                  echo "VERSION=$VERSION" >> $GITHUB_ENV
-                  echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
-
-            - name: Create versioned directory
-              id: make_dir
-              run: |
-                  DIST=dist/v${{ env.VERSION }}
-                  mkdir -p $DIST
-                  touch $DIST/.gitkeep
-                  echo "DIST=$DIST" >> $GITHUB_OUTPUT
-
-            - name: Push versioned directory
-              id: push_dir
-              run: |
-                  git config user.name "github-actions"
-                  git config user.email = "github-actions@github.com"
-
-                  target_branch=${{ github.event_name == 'workflow_dispatch' && '${{ env.BRANCH_NAME }}' || github.event.pull_request.base.ref }}
-                  BRANCH_NAME=$target_branch || "release/v-$VERSION"
-
-                  git branch $BRANCH_NAME
-                  git switch $BRANCH_NAME
-
-                  git add dist
-                  git commit -m "Created new directory"
-                  git push --set-upstream origin $BRANCH_NAME
-                  echo "BRANCH_NAME=$BRANCH_NAME" >> $GITHUB_OUTPUT
+              run: echo "VERSION=$(grep -oP '"version":\s*"\K[0-9.]+' manifest/template-manifest.json)" >> $GITHUB_ENV
 
             - name: Define file names with version
-              id: def_file_name
               run: |
-                  echo "CHROME_VERSION=${{ env.CHROME }}-v${{ env.VERSION }}" >> $GITHUB_OUTPUT
-                  echo "FIREFOX_VERSION=${{ env.FIREFOX }}-v${{ env.VERSION }}" >> $GITHUB_OUTPUT
-                  echo "SAFARI_VERSION=${{ env.SAFARI }}-v${{ env.VERSION }}" >> $GITHUB_OUTPUT
-
-    build:
-        runs-on: ubuntu-latest
-        needs: setup
-        env:
-            DIRECTORY: ${{ needs.setup.outputs.DIRECTORY }}
-            CHROME_VERSION: ${{ needs.setup.outputs.CHROME_VERSION }}
-            FIREFOX_VERSION: ${{ needs.setup.outputs.FIREFOX_VERSION }}
-            SAFARI_VERSION: ${{ needs.setup.outputs.SAFARI_VERSION }}
-        steps:
-            - name: Checkout repository
-              uses: actions/checkout@v4
-
-            - name: Build Chrome
-              uses: ./.github/workflows/build-extension.yml
-              with:
-                  target_broswer: "chrome"
-                  target_file: $DIRECTORY/CHROME_VERSION.zip
-
-            - name: Build Firefox
-              uses: ./.github/workflows/build-extension.yml
-              with:
-                  target_broswer: "firefox"
-                  target_file: $DIRECTORY/FIREFOX_VERSION.zip
+                  echo "CHROME_VERSION=${{ env.CHROME }}-v${{ env.VERSION }}" >> $GITHUB_ENV
+                  echo "FIREFOX_VERSION=${{ env.FIREFOX }}-v${{ env.VERSION }}" >> $GITHUB_ENV
+                  echo "SAFARI_VERSION=${{ env.SAFARI }}-v${{ env.VERSION }}" >> $GITHUB_ENV
 
             - name: Build Safari
-              uses: ./.github/workflows/build-extension.yml
+              uses: ./.github/actions/build-extension
               with:
-                  target_broswer: "safari"
-                  target_file: $DIRECTORY/SAFARI_VERSION.zip
+                  target_browser: "safari"
+                  target_file: ${{ env.SAFARI_VERSION }}.zip
+                  release_notes: "./docs/Release Notes/v${{ env.VERSION }}.md"
+                  release_name: ${{ env.SAFARI_VERSION }}
+
+            - name: Build Firefox
+              uses: ./.github/actions/build-extension
+              with:
+                  target_browser: "firefox"
+                  target_file: ${{ env.FIREFOX_VERSION }}.zip
+                  release_notes: "./docs/Release Notes/v${{ env.VERSION }}.md"
+                  release_name: ${{ env.FIREFOX_VERSION }}
+
+            - name: Build Chrome
+              uses: ./.github/actions/build-extension
+              with:
+                  target_browser: "chrome"
+                  target_file: ${{ env.CHROME_VERSION }}.zip
+                  release_notes: "./docs/Release Notes/v${{ env.VERSION }}.md"
+                  release_name: ${{ env.CHROME_VERSION }}
