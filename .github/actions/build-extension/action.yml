@@ -31,7 +31,9 @@ runs:
 
       - name: Make Manifest
         shell: bash
-        run: deno run dev-${{ inputs.target_browser }}
+        run: |
+          deno task dev-${{ inputs.target_browser }}
+          ls manifest.json # if the file does not exist, fails the script
 
       - name: Zip ${{ inputs.target_browser }} extension
         shell: bash

@@ -1,7 +1,7 @@
 "use strict";
 import process from "node:process";
 import manifest from "./template-manifest.json" with { type: "json" };
-import { writeFileSync } from "fs";
+import { writeFileSync } from "node:fs";
 
 const browser = process.argv[2];
 if (browser === "firefox") {
