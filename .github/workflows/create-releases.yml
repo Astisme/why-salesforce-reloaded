@@ -31,11 +31,14 @@ jobs:
 
                 PRERELEASE=$([ "$TAG_VERSION" != "$MANIFEST_VERSION" ] && echo "true" || echo "false")
 
+                BROWSER_VERSION_NAME="${{ env.AWSF }}-$BROWSER-v$MANIFEST_VERSION"
+
                 echo "TRIGGERING_TAG=$TAG" >> $GITHUB_ENV
                 echo "BROWSER=$BROWSER" >> $GITHUB_ENV
                 echo "TAG_VERSION=$TAG_VERSION" >> $GITHUB_ENV
                 echo "MANIFEST_VERSION=$MANIFEST_VERSION" >> $GITHUB_ENV
-                echo "BROWSER_VERSION_NAME=${{ env.AWSF }}-$BROWSER-v$MANIFEST_VERSION" >> $GITHUB_ENV
+                echo "BROWSER_VERSION_NAME=$BROWSER_VERSION_NAME" >> $GITHUB_ENV
+                echo "ZIP_NAME=$BROWSER_VERSION_NAME.zip" >> $GITHUB_ENV
                 echo "RELEASE_NOTES=./docs/Release Notes/v$PURE_VERSION.md" >> $GITHUB_ENV
                 echo "PRERELEASE=$PRERELEASE" >> $GITHUB_ENV
 
@@ -51,7 +54,7 @@ jobs:
 
             - name: Zip ${{ env.BROWSER }} extension
               shell: bash
-              run: zip -r ${{ env.BROWSER_VERSION_NAME }} action assets background salesforce *.js LICENSE* README.md manifest.json -x "*/README.md"
+              run: zip -r ${{ env.ZIP_NAME }} action assets background salesforce *.js LICENSE* README.md manifest.json -x "*/README.md"
 
             - name: Create ${{ env.BROWSER }} Release
               uses: softprops/action-gh-release@v2.2.0
@@ -63,4 +66,4 @@ jobs:
                 make_latest: true
                 tag_name: ${{ env.TRIGGERING_TAG }}
                 prerelease: ${{ env.PRERELEASE }}
-                files: ${{ env.BROWSER_VERSION_NAME }}
+                files: ${{ env.ZIP_NAME }}
