@@ -57,7 +57,7 @@ jobs:
               run: zip -r ${{ env.ZIP_NAME }} action assets background salesforce *.js LICENSE* README.md manifest.json -x "*/README.md"
 
             - name: Create ${{ env.BROWSER }} Release
-              uses: softprops/action-gh-release@v2.2.0
+              uses: softprops/action-gh-release@v2
               with:
                 name: ${{ env.BROWSER_VERSION_NAME }}
                 body: See release notes at ${{ env.RELEASE_NOTES }}.
