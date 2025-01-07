@@ -23,16 +23,23 @@ jobs:
             - name: Define file name with version
               run: |
                 TAG="${GITHUB_REF_NAME}"
+
                 BROWSER=${TAG%%-v*} # Extract substring before '-v'
+                TAG_VERSION=${TAG##*-v} # Extract substring after '-v'
+                MANIFEST_VERSION=$(grep -oP '"version":\s*"\K[0-9.]+' manifest/template-manifest.json) # Get version from manifest
+
+                echo "TRIGGERING_TAG=$TAG" >> $GITHUB_ENV
                 echo "BROWSER=$BROWSER" >> $GITHUB_ENV
-                echo "VERSION=$(grep -oP '"version":\s*"\K[0-9.]+' manifest/template-manifest.json)" >> $GITHUB_ENV
-                echo "BROWSER_VERSION=${{ env.AWSF }}-$BROWSER-v${{ env.VERSION }}" >> $GITHUB_ENV
+                echo "TAG_VERSION=$TAG_VERSION" >> $GITHUB_ENV
+                echo "MANIFEST_VERSION=$MANIFEST_VERSION" >> $GITHUB_ENV
+                echo "BROWSER_VERSION_NAME=${{ env.AWSF }}-$BROWSER-v$MANIFEST_VERSION" >> $GITHUB_ENV
 
             - name: Build Extension
+              if: env.TAG_VERSION == env.MANIFEST_VERSION
               uses: ./.github/actions/build-extension
               with:
                   target_browser: ${{ env.BROWSER }}
-                  target_file: ${{ env.BROWSER_VERSION }}.zip
+                  target_file: ${{ env.BROWSER_VERSION_NAME }}.zip
                   release_notes: "./docs/Release Notes/v${{ env.VERSION }}.md"
-                  release_name: ${{ env.BROWSER_VERSION }}
-                  target_tag: "v${{ env.VERSION }}"
+                  release_name: ${{ env.BROWSER_VERSION_NAME }}
+                  target_tag: ${{ env.TRIGGERING_TAG }}
