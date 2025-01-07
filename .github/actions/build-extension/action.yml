@@ -37,10 +37,7 @@ runs:
 
       - name: Zip ${{ inputs.target_browser }} extension
         shell: bash
-        run: |
-          zip -r ${{ inputs.target_file }}\
-          action assets background salesforce *.js LICENSE* README.md manifest.json\
-          -x "*/README.md"
+        run: zip -r ${{ inputs.target_file }} action assets background salesforce *.js LICENSE* README.md manifest.json -x "*/README.md"
 
       - name: Create ${{ inputs.target_browser }} Release
         uses: softprops/action-gh-release@v2.2.0
