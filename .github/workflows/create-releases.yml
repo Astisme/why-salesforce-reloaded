@@ -29,7 +29,7 @@ jobs:
                 PURE_VERSION=${TAG_VERSION%%-*} # Extract substring before any additional '-' (like '-alpha')
                 MANIFEST_VERSION=$(grep -oP '"version":\s*"\K[0-9.]+' manifest/template-manifest.json) # Get version from manifest
 
-                PRERELEASE=$([ "${{ env.TAG_VERSION }}" != "${{ env.MANIFEST_VERSION }}" ] && echo "true" || echo "false")
+                PRERELEASE=$([ "$TAG_VERSION" != "$MANIFEST_VERSION" ] && echo "true" || echo "false")
 
                 echo "TRIGGERING_TAG=$TAG" >> $GITHUB_ENV
                 echo "BROWSER=$BROWSER" >> $GITHUB_ENV
@@ -61,7 +61,12 @@ jobs:
                 prerelease: ${{ env.PRERELEASE }}
                 files: |
                   action/*
+                  action/popup/*
+                  action/notSalesforceSetup/*
+                  action/logo/*
                   assets/*
+                  assets/svgs/*
+                  assets/icons/*
                   background/*
                   salesforce/*
                   *.js
