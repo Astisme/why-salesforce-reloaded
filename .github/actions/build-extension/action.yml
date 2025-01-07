@@ -35,7 +35,8 @@ runs:
 
       - name: Zip ${{ inputs.target_browser }} extension
         shell: bash
-        run: zip -r ${{ inputs.target_file }}\
+        run: |
+          zip -r ${{ inputs.target_file }}\
           action assets background salesforce *.js LICENSE* README.md manifest.json\
           -x "*/README.md"
 
