@@ -50,7 +50,7 @@ jobs:
 
             - name: Make Manifest
               run: |
-                deno task dev-${{ inputs.target_browser }}
+                deno task dev-${{ env.BROWSER }}
                 ls manifest.json # if the file does not exist, fails the script
 
             - name: Create ${{ inputs.target_browser }} Release
