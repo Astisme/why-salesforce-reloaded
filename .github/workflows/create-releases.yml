@@ -26,6 +26,7 @@ jobs:
 
                 BROWSER=${TAG%%-v*} # Extract substring before '-v'
                 TAG_VERSION=${TAG##*-v} # Extract substring after '-v'
+                PURE_VERSION=${TAG_VERSION%%-*} # Extract substring before any additional '-' (like '-alpha')
                 MANIFEST_VERSION=$(grep -oP '"version":\s*"\K[0-9.]+' manifest/template-manifest.json) # Get version from manifest
 
                 PRERELEASE=$([ "${{ env.TAG_VERSION }}" != "${{ env.MANIFEST_VERSION }}" ] && echo "true" || echo "false")
@@ -35,7 +36,7 @@ jobs:
                 echo "TAG_VERSION=$TAG_VERSION" >> $GITHUB_ENV
                 echo "MANIFEST_VERSION=$MANIFEST_VERSION" >> $GITHUB_ENV
                 echo "BROWSER_VERSION_NAME=${{ env.AWSF }}-$BROWSER-v$MANIFEST_VERSION" >> $GITHUB_ENV
-                echo "RELEASE_NOTES=\"./docs/Release Notes/v$TAG_VERSION.md\"" >> $GITHUB_ENV
+                echo "RELEASE_NOTES=\"./docs/Release Notes/v$PURE_VERSION.md\"" >> $GITHUB_ENV
                 echo "PRERELEASE=$PRERELEASE" >> $GITHUB_ENV
 
             - name: Setup Deno
