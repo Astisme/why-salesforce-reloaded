@@ -1,12 +1,11 @@
 name: Create all Releases
 
 on:
-    pull_request:
-        types:
-            - closed
-        branches:
-            - main
-    workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*.*.*"
 
 permissions:
     contents: write
