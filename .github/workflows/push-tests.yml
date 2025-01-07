@@ -32,7 +32,7 @@ jobs:
             - name: Ensure Changes Exist
               continue-on-error: true
               run: |
-                git diff --exit-code
+                git diff --output differ
                 echo "no_changes=$(ls -l differ | awk '{print $5}')" >> $GITHUB_ENV
 
             - name: Set up Git user

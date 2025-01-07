@@ -1,12 +1,11 @@
 name: Create all Releases
 
 on:
-    pull_request:
-        types:
-            - closed
-        branches:
-            - main
-    workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - "v*.*.*"
 
 permissions:
     contents: write
@@ -44,6 +43,7 @@ jobs:
                   target_file: ${{ env.SAFARI_VERSION }}.zip
                   release_notes: "./docs/Release Notes/v${{ env.VERSION }}.md"
                   release_name: ${{ env.SAFARI_VERSION }}
+                  target_tag: "v${{ env.VERSION }}"
 
             - name: Build Firefox
               uses: ./.github/actions/build-extension
@@ -52,6 +52,7 @@ jobs:
                   target_file: ${{ env.FIREFOX_VERSION }}.zip
                   release_notes: "./docs/Release Notes/v${{ env.VERSION }}.md"
                   release_name: ${{ env.FIREFOX_VERSION }}
+                  target_tag: "v${{ env.VERSION }}"
 
             - name: Build Chrome
               uses: ./.github/actions/build-extension
@@ -60,3 +61,4 @@ jobs:
                   target_file: ${{ env.CHROME_VERSION }}.zip
                   release_notes: "./docs/Release Notes/v${{ env.VERSION }}.md"
                   release_name: ${{ env.CHROME_VERSION }}
+                  target_tag: "v${{ env.VERSION }}"
