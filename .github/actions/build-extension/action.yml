@@ -48,4 +48,4 @@ runs:
           files: ${{ inputs.target_file }}
           generate_release_notes: true
           make_latest: true
-          tag_nam: ${{ inputs.target_tag }}
+          tag_name: ${{ inputs.target_tag }}
