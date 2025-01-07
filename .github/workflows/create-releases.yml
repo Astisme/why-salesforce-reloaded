@@ -36,7 +36,7 @@ jobs:
                 echo "TAG_VERSION=$TAG_VERSION" >> $GITHUB_ENV
                 echo "MANIFEST_VERSION=$MANIFEST_VERSION" >> $GITHUB_ENV
                 echo "BROWSER_VERSION_NAME=${{ env.AWSF }}-$BROWSER-v$MANIFEST_VERSION" >> $GITHUB_ENV
-                echo "RELEASE_NOTES=\"./docs/Release Notes/v$PURE_VERSION.md\"" >> $GITHUB_ENV
+                echo "RELEASE_NOTES=./docs/Release Notes/v$PURE_VERSION.md" >> $GITHUB_ENV
                 echo "PRERELEASE=$PRERELEASE" >> $GITHUB_ENV
 
             - name: Setup Deno
@@ -60,10 +60,10 @@ jobs:
                 tag_name: ${{ env.TRIGGERING_TAG }}
                 prerelease: ${{ env.PRERELEASE }}
                 files: |
-                  action
-                  assets
-                  background
-                  salesforce
+                  action/*
+                  assets/*
+                  background/*
+                  salesforce/*
                   *.js
                   LICENSE*
                   README.md
