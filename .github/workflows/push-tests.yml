@@ -68,7 +68,8 @@ jobs:
                       --base "main" \
                       --title "Deno formatting changes" \
                       --body "This PR includes formatting updates made by the workflow." \
-                      2>&1)
+                      --json url \
+                      -q '.url')
                 echo "PR_URL=$PR_URL" >> $GITHUB_OUTPUT
 
     merge-pr:
