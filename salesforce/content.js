@@ -109,7 +109,7 @@ function generateRowTemplate(row) {
 	a.setAttribute("data-draggable", "true");
 	a.setAttribute("role", "tab");
 	a.setAttribute("tabindex", "-1");
-	a.setAttribute("title", tabTitle);
+	a.setAttribute("title", url);
 	a.setAttribute("aria-selected", "false");
 	a.setAttribute("href", url);
 	a.classList.add("tabHeader", "slds-context-bar__label-action");
@@ -205,30 +205,65 @@ function initTabs() {
 }
 
 /**
- * Generates the HTML for the favourite button.
+ * Generates the element for the favourite button.
  *
- * @returns {string} - The generated HTML for the favourite button.
+ * @returns {Element} - The generated element for the favourite button.
  */
 function generateFavouriteButton() {
-	const assetDir = chrome.runtime.getURL("assets");
+	//const assetDir = chrome.runtime.getURL("assets");
 	const star = chrome.runtime.getURL("assets/svgs/star.svg");
 	const slashedStar = chrome.runtime.getURL("assets/svgs/slashed-star.svg");
-	return `<button aria-live="off" type="button" id="${buttonId}" class="slds-button slds-button--neutral uiButton" aria-label="" data-aura-rendered-by="3:829;a" data-aura-class="uiButton">
-                <span dir="ltr" class=" label bBody" data-aura-rendered-by="6:829;a">
-                    <!--⭐-->
-                    <!--
-                    <img id="${starId}" src="${assetDir}/star.svg" alt="Save as Tab">
-                    <img id="${slashedStarId}" class="hidden" src="${assetDir}/slashed-star.svg" alt="Remove Tab">
-                    -->
-                    <img id="${starId}" src="${star}" alt="Save as Tab">
-                    <img id="${slashedStarId}" class="hidden" src="${slashedStar}" alt="Remove Tab">
-                    <style type="text/css">
-                        .hidden {
-                            display: none;
-                        }
-                    </style>
-                </span>
-            </button>`;
+
+    const button = document.createElement("button");
+    button.setAttribute("id", buttonId);
+    button.classList.add("slds-button", "slds-button--neutral", "uiButton");
+    button.setAttribute("type", "button");
+    button.setAttribute("aria-live", "off");
+    button.setAttribute("aria-label", "");
+    button.setAttribute("data-aura-rendered-by", "3:829;a");
+    button.setAttribute("data-aura-class", "uiButton");
+
+    const span = document.createElement("span");
+    span.classList.add("label", "bBody");
+    span.setAttribute("dir", "ltr");
+    span.setAttribute("data-aura-rendered-by", "6:829;a");
+
+    function createImageElement(id, src, alt) {
+        const img = document.createElement("img");
+        img.setAttribute("id", id);
+        img.setAttribute("src", src);
+        img.setAttribute("alt", alt);
+
+        const span = document.createElement("span");
+        span.textContent = alt;
+        span.classList.add("hidden", id);
+
+        img.addEventListener("error", function() {
+            if(!img.classList.contains("hidden"))
+                span.classList.remove("hidden");
+            img.remove();
+            console.log(`${alt} image failed to load, image removed.`);
+        });
+
+        return { img, span };
+    }
+
+    const { img: starImg, span: starSpan } = createImageElement(starId, star, "Save as Tab");
+
+    const { img: slashedStarImg, span: slashedStarSpan } = createImageElement(slashedStarId, slashedStar, "Remove Tab");
+    slashedStarSpan.classList.add("hidden");
+
+    const style = document.createElement("style");
+    style.textContent = ".hidden { display: none; }";
+
+    span.appendChild(starImg);
+    span.appendChild(starSpan);
+    span.appendChild(slashedStarImg);
+    span.appendChild(slashedStarSpan);
+    span.appendChild(style);
+    button.appendChild(span);
+
+    return button;
 }
 
 /**
@@ -238,8 +273,9 @@ function generateFavouriteButton() {
  * @param {boolean} isSaved - Optional flag indicating whether the tab is saved.
  */
 function toggleFavouriteButton(button, isSaved) {
-	const star = button.querySelector(`#${starId}`);
-	const slashedStar = button.querySelector(`#${slashedStarId}`);
+    // will use the class identifier if there was an error with the image (and was removed)
+	const star = button.querySelector(`#${starId}`) ?? button.querySelector(`.${starId}`);
+	const slashedStar = button.querySelector(`#${slashedStarId}`) ?? button.querySelector(`.${slashedStarId}`);
 	if (isSaved == null) {
 		star.classList.toggle("hidden");
 		slashedStar.classList.toggle("hidden");
@@ -283,7 +319,7 @@ function actionFavourite(parent) {
 function showFavouriteButton(count = 0) {
 	if (count > 5) {
 		console.error("Again, Why Salesforce - failed to find headers.");
-		return;
+		return setTimeout(showFavouriteButton(), 5000);
 	}
 
 	// Do not add favourite button on Home and Object Manager
@@ -296,10 +332,8 @@ function showFavouriteButton(count = 0) {
 	const headers = Array.from(
 		document.querySelectorAll("div.overflow.uiBlock > div.bRight"),
 	);
-	if (headers == null || headers.length < 1) {
-		setTimeout(() => showFavouriteButton(count + 1), 500);
-		return;
-	}
+	if (headers == null || headers.length < 1)
+		return setTimeout(() => showFavouriteButton(count + 1), 500);
 
 	// ensure we have clean data
 	if (wasOnSavedTab == null && isCurrentlyOnSavedTab == null) {
@@ -310,7 +344,7 @@ function showFavouriteButton(count = 0) {
 		if (header.querySelector(`#${buttonId}`) != null) { // already inserted my button
 			continue;
 		}
-		header.insertAdjacentHTML("beforeend", generateFavouriteButton());
+		header.appendChild(generateFavouriteButton());
 		const button = header.querySelector(`#${buttonId}`);
 		toggleFavouriteButton(button, isCurrentlyOnSavedTab); // init correctly
 		button.addEventListener(
@@ -381,43 +415,42 @@ function onHrefUpdate() {
 function delayLoadSetupTabs(count = 0) {
 	if (count > 5) {
 		console.error("Why Salesforce - failed to find setup tab.");
-		return;
+		return setTimeout(delayLoadSetupTabs(), 5000);
 	}
 
 	setupTabUl = document.getElementsByClassName("tabBarItems slds-grid")[0];
-	if (setupTabUl == null) {
-		setTimeout(() => delayLoadSetupTabs(count + 1), 500);
-	} else {
-		// Start observing changes to the DOM to then check for URL change
-		// when URL changes, show the favourite button
-		new MutationObserver(() => setTimeout(onHrefUpdate, 500))
-			.observe(document.querySelector(".tabsetBody"), {
-				childList: true,
-				subtree: true,
-			});
+	if (setupTabUl == null)
+		return setTimeout(() => delayLoadSetupTabs(count + 1), 500);
 
-		// Add overflow scroll behavior only if not already present
-		if (!setupTabUl.style.overflow.includes("scroll")) {
-			setupTabUl.setAttribute(
-				"style",
-				`overflow-x: scroll; overflow-y: hidden; ${
-					setupTabUl.getAttribute("style") ?? ""
-				}`,
-			);
-		}
+    // Start observing changes to the DOM to then check for URL change
+    // when URL changes, show the favourite button
+    new MutationObserver(() => setTimeout(onHrefUpdate, 500))
+        .observe(document.querySelector(".tabsetBody"), {
+            childList: true,
+            subtree: true,
+        });
 
-		// Listen to mouse wheel to easily move left & right
-		if (!setupTabUl.dataset.wheelListenerApplied) {
-			setupTabUl.addEventListener("wheel", (e) => {
-				e.preventDefault();
-				setupTabUl.scrollLeft += e.deltaY;
-			});
+    // Add overflow scroll behavior only if not already present
+    if (!setupTabUl.style.overflow.includes("scroll")) {
+        setupTabUl.setAttribute(
+            "style",
+            `overflow-x: auto; overflow-y: hidden; scrollbar-width: none; ${
+                setupTabUl.getAttribute("style") ?? ""
+            }`,
+        );
+    }
 
-			setupTabUl.dataset.wheelListenerApplied = true;
-		}
-		// initialize
-		getStorage(init);
-	}
+    // Listen to mouse wheel to easily move left & right
+    if (!setupTabUl.dataset.wheelListenerApplied) {
+        setupTabUl.addEventListener("wheel", (e) => {
+            e.preventDefault();
+            setupTabUl.scrollLeft += e.deltaY;
+        });
+
+        setupTabUl.dataset.wheelListenerApplied = true;
+    }
+    // initialize
+    getStorage(init);
 }
 
 /**
@@ -556,5 +589,5 @@ addEventListener("message", (e) => {
 // queries the currently active tab of the current active window
 // this prevents showing the tabs when not in a setup page (like Sales or Service Console)
 if (href.includes(setupLightning)) {
-	delayLoadSetupTabs();
+    delayLoadSetupTabs();
 }
