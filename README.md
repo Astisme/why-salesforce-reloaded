@@ -6,7 +6,7 @@
 
 ![Release version](https://img.shields.io/github/manifest-json/v/Astisme/again-why-salesforce?filename=manifest%2Ftemplate-manifest.json&label=Version)
 ![Last commit](https://img.shields.io/github/last-commit/Astisme/again-why-salesforce?labelColor=black&color=white)
-![License](https://img.shields.io/github/license/Astisme/again-why-salesforce)
+![License](https://img.shields.io/github/license/Astisme/again-why-salesforce?color=238636)
 ![Code size](https://img.shields.io/github/languages/code-size/Astisme/again-why-salesforce)
 
 <!--
@@ -24,7 +24,21 @@ This is a fork of [Why Salesforce](https://www.github.com/walters954/why-salesfo
 
 [Demo Video](https://youtu.be/BtlKRvac9ZQ)
 
-[Install on Chrome Web Store](https://chrome.google.com/webstore/detail/why-salesforce/ghakkjfjpnhpggbkfkeplbefkipfoaod)
+## Install on browser
+
+<a href="https://chromewebstore.google.com/detail/again-why-salesforce/bceeoimjhgjbihanbiifgpndmkklajbi" target="_blank">
+  <img src="https://www.google.com/chrome/static/images/chrome-logo-m100.svg" title="Add to Chrome" width="100px" height="100px" align="right"/>
+</a>
+<a href="https://addons.mozilla.org/en-US/firefox/addon/again-why-salesforce/" target="_blank">
+  <img src="https://www.mozilla.org/media/protocol/img/logos/firefox/browser/logo.eb1324e44442.svg" title="Add to Firefox" width="100px" height="100px" align="right"/>
+</a>
+
+Click on the browser icon to be redirected to the extension page.
+
+You may find the release for this extension [here](https://github.com/Astisme/again-why-salesforce/releases).
+You can download these releases to verify what is the code that's been uploaded to the extension stores.
+
+If you prefer, you can build this extension by downloading it and running `deno task dev-(browser)` then add it to your browser following its specific steps.
 
 ## Roadmap
 

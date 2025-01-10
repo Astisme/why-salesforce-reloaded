@@ -36,8 +36,8 @@ html[data-theme="light"] {
 	--border-color: var(--midgray);
 	--error: var(--red);
 	--error-hover: var(--darkred);
-	--button-background-color: var(--midgray);
-	--button-background-color-hover: var(--darkgray);
+	--button-background-color: var(--darkgray);
+	--button-background-color-hover: var(--midgray);
 	--theme-fill: var(--lightblue);
 }
 
@@ -55,7 +55,7 @@ html[data-theme="dark"] {
 	--border-color: var(--darkgray);
 	--error: var(--red);
 	--error-hover: var(--darkred);
-	--button-background-color: var(--midgray);
+	--button-background-color: var(--darkergray);
 	--button-background-color-hover: var(--darkgray);
 	--theme-fill: var(--darklightblue);
 }

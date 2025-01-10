@@ -14,6 +14,7 @@ const slashedStarId = `${prefix}-slashed-star`;
 const toastId = `${prefix}-toast`;
 const importId = `${prefix}-import`;
 const closeModalId = `${prefix}-closeModal`;
+const overrideId = `${prefix}-override`;
 let wasOnSavedTab;
 let isCurrentlyOnSavedTab;
 let fromHrefUpdate;
@@ -394,6 +395,26 @@ function delayLoadSetupTabs(count = 0) {
 				childList: true,
 				subtree: true,
 			});
+
+		// Add overflow scroll behavior only if not already present
+		if (!setupTabUl.style.overflow.includes("scroll")) {
+			setupTabUl.setAttribute(
+				"style",
+				`overflow-x: scroll; overflow-y: hidden; ${
+					setupTabUl.getAttribute("style") ?? ""
+				}`,
+			);
+		}
+
+		// Listen to mouse wheel to easily move left & right
+		if (!setupTabUl.dataset.wheelListenerApplied) {
+			setupTabUl.addEventListener("wheel", (e) => {
+				e.preventDefault();
+				setupTabUl.scrollLeft += e.deltaY;
+			});
+
+			setupTabUl.dataset.wheelListenerApplied = true;
+		}
 		// initialize
 		getStorage(init);
 	}
@@ -444,10 +465,15 @@ function generateSldsImport() {
                         </span>
                         <span class="slds-file-selector__text slds-medium-show">Or drop files</span>
                     </label>
+                    <label>
+                        <input id=${overrideId} type="checkbox" name="override-tabs" value="false">
+                        Override saved tabs
+                    </label>
                 </div>
             </div>`;
 }
 
+let overridePick;
 /**
  * Displays the import modal for uploading tab data.
  */
@@ -456,6 +482,11 @@ function showFileImport() {
 	document.getElementById(closeModalId).addEventListener(
 		"click",
 		() => document.getElementById(importId).remove(),
+	);
+	overridePick = false;
+	document.getElementById(overrideId).addEventListener(
+		"click",
+		() => overridePick = !overridePick,
 	);
 }
 
@@ -467,6 +498,9 @@ function showFileImport() {
  */
 function importer(message) {
 	const importedArray = message.imported;
+	if (overridePick) {
+		currentTabs.length = 0;
+	}
 	currentTabs.push(...importedArray);
 	// remove file import
 	setupTabUl.removeChild(setupTabUl.querySelector(`#${importId}`));
@@ -513,6 +547,8 @@ addEventListener("message", (e) => {
 		reorderTabs();
 	} else if (what === "import") {
 		importer(e.data);
+	} else if (what === "error") {
+		showToast(e.data.message, false);
 	}
 	//else if(what === "saved")
 });

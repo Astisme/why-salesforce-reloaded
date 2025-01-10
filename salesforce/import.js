@@ -9,16 +9,43 @@ function listenToFileUpload() {
 
 	function readFile(file) {
 		if (file.type !== "application/json") {
+			postMessage({
+				what: "error",
+				message: "Invalid file type. Only JSON files are supported.",
+			});
 			return;
 		}
 
 		const reader = new FileReader();
 
 		reader.onload = function (e) {
-			const contents = e.target.result;
-			const imported = JSON.parse(contents);
-			const message = { what: "import", imported };
-			postMessage(message, "*");
+			try {
+				const contents = e.target.result;
+				const imported = JSON.parse(contents);
+
+				// Validate JSON structure
+				if (
+					Array.isArray(imported) &&
+					imported.every((item) =>
+						typeof item.tabTitle === "string" &&
+						typeof item.url === "string"
+					)
+				) {
+					const message = { what: "import", imported };
+					postMessage(message, "*");
+				} else {
+					postMessage({
+						what: "error",
+						message:
+							"Invalid JSON structure. Your file must contain an array in which each item must have 'tabTitle' and 'url' as strings.",
+					});
+				}
+			} catch (error) {
+				postMessage({
+					what: "error",
+					message: `Error parsing JSON: ${error.message}`,
+				});
+			}
 		};
 
 		reader.readAsText(file);

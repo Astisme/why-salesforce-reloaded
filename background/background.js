@@ -59,7 +59,7 @@ browserObj.runtime.onMessage.addListener((request, _, sendResponse) => {
 	} else if (message.what === "set") {
 		setStorage(message.tabs, sendResponse);
 		captured = true;
-	} else if (["saved", "add", "theme"].includes(message.what)) {
+	} else if (["saved", "add", "theme", "error"].includes(message.what)) {
 		const notify = (count = 0) => {
 			browserObj.tabs.query(
 				{ active: true, currentWindow: true },
