@@ -25,14 +25,14 @@ This is a fork of [Why Salesforce](https://www.github.com/walters954/why-salesfo
 [Demo Video](https://youtu.be/BtlKRvac9ZQ)
 
 ## Install on browser
-Click on the browser icon to be redirected to the extension page.
-
 <a href="https://chromewebstore.google.com/detail/again-why-salesforce/bceeoimjhgjbihanbiifgpndmkklajbi">
-  <img src="https://www.google.com/chrome/static/images/chrome-logo-m100.svg" title="Add to Chrome" width="100px" height="100px"/>
+  <img src="https://www.google.com/chrome/static/images/chrome-logo-m100.svg" title="Add to Chrome" width="100px" height="100px" align="right"/>
 </a>
 <a href="https://addons.mozilla.org/firefox/downloads/file/4415635/again_why_salesforce-1.4.0.xpi">
-  <img src="https://www.mozilla.org/media/protocol/img/logos/firefox/browser/logo.eb1324e44442.svg" title="Add to Firefox" width="100px" height="100px"/>
+  <img src="https://www.mozilla.org/media/protocol/img/logos/firefox/browser/logo.eb1324e44442.svg" title="Add to Firefox" width="100px" height="100px" align="right"/>
 </a>
+
+Click on the browser icon to be redirected to the extension page.
 
 You may find the release for this extension [here](https://github.com/Astisme/again-why-salesforce/releases).
 You can download these releases to verify what is the code that's been uploaded to the extension stores.
