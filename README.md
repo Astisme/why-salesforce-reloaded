@@ -6,7 +6,7 @@
 
 ![Release version](https://img.shields.io/github/manifest-json/v/Astisme/again-why-salesforce?filename=manifest%2Ftemplate-manifest.json&label=Version)
 ![Last commit](https://img.shields.io/github/last-commit/Astisme/again-why-salesforce?labelColor=black&color=white)
-![License](https://img.shields.io/github/license/Astisme/again-why-salesforce)
+![License](https://img.shields.io/github/license/Astisme/again-why-salesforce?color=238636)
 ![Code size](https://img.shields.io/github/languages/code-size/Astisme/again-why-salesforce)
 
 <!--
