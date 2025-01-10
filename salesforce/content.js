@@ -214,56 +214,65 @@ function generateFavouriteButton() {
 	const star = chrome.runtime.getURL("assets/svgs/star.svg");
 	const slashedStar = chrome.runtime.getURL("assets/svgs/slashed-star.svg");
 
-    const button = document.createElement("button");
-    button.setAttribute("id", buttonId);
-    button.classList.add("slds-button", "slds-button--neutral", "uiButton");
-    button.setAttribute("type", "button");
-    button.setAttribute("aria-live", "off");
-    button.setAttribute("aria-label", "");
-    button.setAttribute("data-aura-rendered-by", "3:829;a");
-    button.setAttribute("data-aura-class", "uiButton");
+	const button = document.createElement("button");
+	button.setAttribute("id", buttonId);
+	button.classList.add("slds-button", "slds-button--neutral", "uiButton");
+	button.setAttribute("type", "button");
+	button.setAttribute("aria-live", "off");
+	button.setAttribute("aria-label", "");
+	button.setAttribute("data-aura-rendered-by", "3:829;a");
+	button.setAttribute("data-aura-class", "uiButton");
 
-    const span = document.createElement("span");
-    span.classList.add("label", "bBody");
-    span.setAttribute("dir", "ltr");
-    span.setAttribute("data-aura-rendered-by", "6:829;a");
+	const span = document.createElement("span");
+	span.classList.add("label", "bBody");
+	span.setAttribute("dir", "ltr");
+	span.setAttribute("data-aura-rendered-by", "6:829;a");
 
-    function createImageElement(id, src, alt) {
-        const img = document.createElement("img");
-        img.setAttribute("id", id);
-        img.setAttribute("src", src);
-        img.setAttribute("alt", alt);
+	function createImageElement(id, src, alt) {
+		const img = document.createElement("img");
+		img.setAttribute("id", id);
+		img.setAttribute("src", src);
+		img.setAttribute("alt", alt);
 
-        const span = document.createElement("span");
-        span.textContent = alt;
-        span.classList.add("hidden", id);
+		const span = document.createElement("span");
+		span.textContent = alt;
+		span.classList.add("hidden", id);
 
-        img.addEventListener("error", function() {
-            if(!img.classList.contains("hidden"))
-                span.classList.remove("hidden");
-            img.remove();
-            console.log(`${alt} image failed to load, image removed.`);
-        });
+		img.addEventListener("error", function () {
+			if (!img.classList.contains("hidden")) {
+				span.classList.remove("hidden");
+			}
+			img.remove();
+			console.log(`${alt} image failed to load, image removed.`);
+		});
 
-        return { img, span };
-    }
+		return { img, span };
+	}
 
-    const { img: starImg, span: starSpan } = createImageElement(starId, star, "Save as Tab");
+	const { img: starImg, span: starSpan } = createImageElement(
+		starId,
+		star,
+		"Save as Tab",
+	);
 
-    const { img: slashedStarImg, span: slashedStarSpan } = createImageElement(slashedStarId, slashedStar, "Remove Tab");
-    slashedStarSpan.classList.add("hidden");
+	const { img: slashedStarImg, span: slashedStarSpan } = createImageElement(
+		slashedStarId,
+		slashedStar,
+		"Remove Tab",
+	);
+	slashedStarSpan.classList.add("hidden");
 
-    const style = document.createElement("style");
-    style.textContent = ".hidden { display: none; }";
+	const style = document.createElement("style");
+	style.textContent = ".hidden { display: none; }";
 
-    span.appendChild(starImg);
-    span.appendChild(starSpan);
-    span.appendChild(slashedStarImg);
-    span.appendChild(slashedStarSpan);
-    span.appendChild(style);
-    button.appendChild(span);
+	span.appendChild(starImg);
+	span.appendChild(starSpan);
+	span.appendChild(slashedStarImg);
+	span.appendChild(slashedStarSpan);
+	span.appendChild(style);
+	button.appendChild(span);
 
-    return button;
+	return button;
 }
 
 /**
@@ -273,9 +282,11 @@ function generateFavouriteButton() {
  * @param {boolean} isSaved - Optional flag indicating whether the tab is saved.
  */
 function toggleFavouriteButton(button, isSaved) {
-    // will use the class identifier if there was an error with the image (and was removed)
-	const star = button.querySelector(`#${starId}`) ?? button.querySelector(`.${starId}`);
-	const slashedStar = button.querySelector(`#${slashedStarId}`) ?? button.querySelector(`.${slashedStarId}`);
+	// will use the class identifier if there was an error with the image (and was removed)
+	const star = button.querySelector(`#${starId}`) ??
+		button.querySelector(`.${starId}`);
+	const slashedStar = button.querySelector(`#${slashedStarId}`) ??
+		button.querySelector(`.${slashedStarId}`);
 	if (isSaved == null) {
 		star.classList.toggle("hidden");
 		slashedStar.classList.toggle("hidden");
@@ -332,8 +343,9 @@ function showFavouriteButton(count = 0) {
 	const headers = Array.from(
 		document.querySelectorAll("div.overflow.uiBlock > div.bRight"),
 	);
-	if (headers == null || headers.length < 1)
+	if (headers == null || headers.length < 1) {
 		return setTimeout(() => showFavouriteButton(count + 1), 500);
+	}
 
 	// ensure we have clean data
 	if (wasOnSavedTab == null && isCurrentlyOnSavedTab == null) {
@@ -419,38 +431,39 @@ function delayLoadSetupTabs(count = 0) {
 	}
 
 	setupTabUl = document.getElementsByClassName("tabBarItems slds-grid")[0];
-	if (setupTabUl == null)
+	if (setupTabUl == null) {
 		return setTimeout(() => delayLoadSetupTabs(count + 1), 500);
+	}
 
-    // Start observing changes to the DOM to then check for URL change
-    // when URL changes, show the favourite button
-    new MutationObserver(() => setTimeout(onHrefUpdate, 500))
-        .observe(document.querySelector(".tabsetBody"), {
-            childList: true,
-            subtree: true,
-        });
+	// Start observing changes to the DOM to then check for URL change
+	// when URL changes, show the favourite button
+	new MutationObserver(() => setTimeout(onHrefUpdate, 500))
+		.observe(document.querySelector(".tabsetBody"), {
+			childList: true,
+			subtree: true,
+		});
 
-    // Add overflow scroll behavior only if not already present
-    if (!setupTabUl.style.overflow.includes("scroll")) {
-        setupTabUl.setAttribute(
-            "style",
-            `overflow-x: auto; overflow-y: hidden; scrollbar-width: none; ${
-                setupTabUl.getAttribute("style") ?? ""
-            }`,
-        );
-    }
+	// Add overflow scroll behavior only if not already present
+	if (!setupTabUl.style.overflow.includes("scroll")) {
+		setupTabUl.setAttribute(
+			"style",
+			`overflow-x: auto; overflow-y: hidden; scrollbar-width: none; ${
+				setupTabUl.getAttribute("style") ?? ""
+			}`,
+		);
+	}
 
-    // Listen to mouse wheel to easily move left & right
-    if (!setupTabUl.dataset.wheelListenerApplied) {
-        setupTabUl.addEventListener("wheel", (e) => {
-            e.preventDefault();
-            setupTabUl.scrollLeft += e.deltaY;
-        });
+	// Listen to mouse wheel to easily move left & right
+	if (!setupTabUl.dataset.wheelListenerApplied) {
+		setupTabUl.addEventListener("wheel", (e) => {
+			e.preventDefault();
+			setupTabUl.scrollLeft += e.deltaY;
+		});
 
-        setupTabUl.dataset.wheelListenerApplied = true;
-    }
-    // initialize
-    getStorage(init);
+		setupTabUl.dataset.wheelListenerApplied = true;
+	}
+	// initialize
+	getStorage(init);
 }
 
 /**
@@ -589,5 +602,5 @@ addEventListener("message", (e) => {
 // queries the currently active tab of the current active window
 // this prevents showing the tabs when not in a setup page (like Sales or Service Console)
 if (href.includes(setupLightning)) {
-    delayLoadSetupTabs();
+	delayLoadSetupTabs();
 }

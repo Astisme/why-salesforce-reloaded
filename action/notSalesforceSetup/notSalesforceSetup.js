@@ -38,8 +38,8 @@ if (page != null) { // we're in a salesforce page
 		const authorizedDomainRegex =
 			/^https:\/\/[a-zA-Z0-9.-]+\.lightning\.force\.com\/.*/;
 		if (!authorizedDomainRegex.test(page)) {
-            strongEl.textContent = "Salesforce Lightning";
-            otherText.textContent = " Setup Page";
+			strongEl.textContent = "Salesforce Lightning";
+			otherText.textContent = " Setup Page";
 		} else {
 			// switch which button is shown
 			document.getElementById("login").classList.add("hidden");
