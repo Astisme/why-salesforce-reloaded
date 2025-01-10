@@ -22,7 +22,6 @@ initThemeSvg();
 // queries the currently active tab of the current active window
 chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
 	// is null if the extension cannot access the current tab
-	console.log({ tabs });
 	if (tabs[0].url == null || !tabs[0].url.match(".*\/lightning\/setup\/.*")) {
 		window.location.href = chrome.runtime.getURL(
 			`action/notSalesforceSetup/notSalesforceSetup.html${
