@@ -25,6 +25,7 @@ This is a fork of [Why Salesforce](https://www.github.com/walters954/why-salesfo
 [Demo Video](https://youtu.be/BtlKRvac9ZQ)
 
 ## Install on browser
+
 <a href="https://chromewebstore.google.com/detail/again-why-salesforce/bceeoimjhgjbihanbiifgpndmkklajbi">
   <img src="https://www.google.com/chrome/static/images/chrome-logo-m100.svg" title="Add to Chrome" width="100px" height="100px" align="right"/>
 </a>

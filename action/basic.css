@@ -96,6 +96,7 @@ button {
 }
 
 .success {
+	color: var(--color) !important;
 	background-color: var(--success);
 
 	&:hover {
@@ -112,7 +113,7 @@ button {
 }
 
 .highlight {
-	color: var(--background-color);
+	color: var(--white) !important;
 	background-color: var(--highlight);
 
 	&:hover {
@@ -121,13 +122,16 @@ button {
 }
 
 :disabled {
-	color: var(--background-color);
-	background-color: var(--shade-hover);
 	cursor: not-allowed !important;
+	background-color: var(--shade-hover);
 
 	&:hover {
 		background-color: var(--shade-hover);
 	}
+}
+
+html[data-theme="dark"] :is(.button, button) {
+	color: var(--background-color);
 }
 
 .slds-assistive-text {
