@@ -11,6 +11,13 @@ div#top {
 	display: block;
 }
 
+html,
+:not(:has([style*="transparent"])) {
+	transition-property: color background-color;
+	transition-duration: var(--transition-duration);
+	transition-timing-function: var(--transition-timing-function);
+}
+
 header {
 	& > iframe {
 		border: none;
