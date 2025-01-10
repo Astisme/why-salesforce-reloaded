@@ -394,11 +394,24 @@ function delayLoadSetupTabs(count = 0) {
 				childList: true,
 				subtree: true,
 			});
-		// add overflow scroll behavior
-		setupTabUl.setAttribute(
-			"style",
-			`overflow: scroll; ${setupTabUl.getAttribute("style") ?? ""}`,
-		);
+
+        // Add overflow scroll behavior only if not already present
+        if (!setupTabUl.style.overflow.includes("scroll")) {
+            setupTabUl.setAttribute(
+                "style",
+                `overflow-x: scroll; overflow-y: hidden; ${setupTabUl.getAttribute("style") ?? ""}`
+            );
+        }
+
+        // Listen to mouse wheel to easily move left & right
+        if (!setupTabUl.dataset.wheelListenerApplied) {
+            setupTabUl.addEventListener("wheel", (e) => {
+                e.preventDefault();
+                setupTabUl.scrollLeft += e.deltaY;
+            });
+
+            setupTabUl.dataset.wheelListenerApplied = true;
+        }
 		// initialize
 		getStorage(init);
 	}
