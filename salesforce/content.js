@@ -518,10 +518,9 @@ addEventListener("message", (e) => {
 		reorderTabs();
 	} else if (what === "import") {
 		importer(e.data);
+	} else if (what === "error") {
+		showToast(e.data.message, false);
 	}
-    else if (what === "error") {
-        showToast(e.data.message, false);
-    }
 	//else if(what === "saved")
 });
 
