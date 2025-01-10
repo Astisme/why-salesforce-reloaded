@@ -26,10 +26,10 @@ This is a fork of [Why Salesforce](https://www.github.com/walters954/why-salesfo
 
 ## Install on browser
 
-<a href="https://chromewebstore.google.com/detail/again-why-salesforce/bceeoimjhgjbihanbiifgpndmkklajbi">
+<a href="https://chromewebstore.google.com/detail/again-why-salesforce/bceeoimjhgjbihanbiifgpndmkklajbi" target="_blank">
   <img src="https://www.google.com/chrome/static/images/chrome-logo-m100.svg" title="Add to Chrome" width="100px" height="100px" align="right"/>
 </a>
-<a href="https://addons.mozilla.org/firefox/downloads/file/4415635/again_why_salesforce-1.4.0.xpi">
+<a href="https://addons.mozilla.org/en-US/firefox/addon/again-why-salesforce/" target="_blank">
   <img src="https://www.mozilla.org/media/protocol/img/logos/firefox/browser/logo.eb1324e44442.svg" title="Add to Firefox" width="100px" height="100px" align="right"/>
 </a>
 
