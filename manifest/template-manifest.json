@@ -3,8 +3,8 @@
 	"name": "Again, Why Salesforce",
 	"version": "1.4.1",
 	"permissions": ["storage", "tabs", "activeTab"],
-	"description": "Easily set favourite tabs in Setup.",
-	"homepage_url": "https://github.com/astisme/again-why-salesforce",
+	"description": "Create and manage custom tabs in the available space on Salesforce Lightning Setup page.",
+	"homepage_url": "https://github.com/Astisme/again-why-salesforce",
 	"content_scripts": [
 		{
 			"matches": [
