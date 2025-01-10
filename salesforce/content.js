@@ -394,6 +394,8 @@ function delayLoadSetupTabs(count = 0) {
 				childList: true,
 				subtree: true,
 			});
+        // add overflow scroll behavior
+        setupTabUl.setAttribute("style", `overflow: scroll; ${setupTabUl.getAttribute("style") ?? ""}`);
 		// initialize
 		getStorage(init);
 	}
