@@ -63,14 +63,12 @@ jobs:
               if: env.no_changes != '0'
               id: make_pr
               run: |
-                PR_URL=$(gh pr create \
-                      --head "fmt/${{ github.sha }}" \
-                      --base "main" \
-                      --title "Deno formatting changes" \
-                      --body "This PR includes formatting updates made by the workflow." \
-                      --json url \
-                      -q '.url')
-                echo "PR_URL=$PR_URL" >> $GITHUB_OUTPUT
+                gh pr create \
+                    --head "fmt/${{ github.sha }}" \
+                    --base "main" \
+                    --title "Deno formatting changes" \
+                    --body "This PR includes formatting updates made by the workflow."
+                echo "PR_URL=$(gh pr view --json url -q ".url")" >> $GITHUB_OUTPUT
 
     merge-pr:
         runs-on: ubuntu-latest
