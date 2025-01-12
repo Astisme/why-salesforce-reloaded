@@ -266,7 +266,10 @@ function generateFavouriteButton() {
 		img.setAttribute("id", id);
 		img.setAttribute("src", src);
 		img.setAttribute("alt", alt);
-		img.setAttribute("style", "height: 2rem; filter: invert(60%) sepia(100%) saturate(500%) hue-rotate(170deg) brightness(90%);");
+		img.setAttribute(
+			"style",
+			"height: 2rem; filter: invert(60%) sepia(100%) saturate(500%) hue-rotate(170deg) brightness(90%);",
+		);
 
 		const span = document.createElement("span");
 		span.textContent = alt;

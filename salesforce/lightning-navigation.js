@@ -33,6 +33,6 @@ addEventListener("message", (e) => {
 	}
 	const what = e.data.what;
 	if (what === "lightningNavigation") {
-        doLightningNavigation(e.data)
+		doLightningNavigation(e.data);
 	}
 });
