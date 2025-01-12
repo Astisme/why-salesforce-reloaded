@@ -37,6 +37,25 @@ function setStorage(tabs, callback) {
 }
 
 /**
+ * Sends the same message back to other parts of the extension.
+ *
+ * @param {JSONObject} message - the message to be sent
+ * @param {int} count = 0 - how many times the function has been called
+ */
+function notify(message, count = 0) {
+	browserObj.tabs.query(
+		{ active: true, currentWindow: true },
+		(tabs) => {
+			if (tabs && tabs[0]) {
+				browserObj.tabs.sendMessage(tabs[0].id, message);
+			} else if (count < 5) {
+				setTimeout(() => notify(count + 1), 500);
+			}
+		},
+	);
+}
+
+/**
  * Listens for incoming messages and processes requests to get, set, or notify about storage changes.
  * Also handles theme updates and tab-related messages.
  *
@@ -60,23 +79,11 @@ browserObj.runtime.onMessage.addListener((request, _, sendResponse) => {
 		setStorage(message.tabs, sendResponse);
 		captured = true;
 	} else if (["saved", "add", "theme", "error"].includes(message.what)) {
-		const notify = (count = 0) => {
-			browserObj.tabs.query(
-				{ active: true, currentWindow: true },
-				function (tabs) {
-					if (tabs && tabs[0]) {
-						browserObj.tabs.sendMessage(tabs[0].id, message);
-					} else if (count < 5) {
-						setTimeout(() => notify(count + 1), 500);
-					}
-				},
-			);
-		};
-		notify();
+		notify(message);
 		sendResponse(null);
 		return false; // we won't call sendResponse
 	}
-	captured = captured || ["import", "saved", "add"].includes(message.what);
+	captured = captured || ["import"].includes(message.what);
 	if (!captured) {
 		console.error({ "error": "Unknown message", message, request });
 	}
