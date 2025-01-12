@@ -19,6 +19,12 @@ let wasOnSavedTab;
 let isCurrentlyOnSavedTab;
 let fromHrefUpdate;
 
+{
+	const script = document.createElement("script");
+	script.src = chrome.runtime.getURL("salesforce/lightning-navigation.js");
+	(document.head || document.documentElement).appendChild(script);
+}
+
 /**
  * Sends a message to the background script with the current URL.
  *
@@ -81,6 +87,31 @@ function cleanupUrl(url, nochange = null) {
 	return asis ? url : `${baseUrl}${setupLightning}${url}`;
 }
 
+function getLinkTarget(e) {
+	return (e.ctrlKey || e.metaKey) ? "_blank" : "_top";
+}
+/**
+ * Handles the redirection to another Salesforce page without requiring a full reload.
+ *
+ * @param {Event} e - the click event
+ */
+function handleLightningLinkClick(e) {
+	e.preventDefault(); // Prevent the default link behavior (href navigation)
+	const url = e.currentTarget.href;
+	const aTarget = e.currentTarget.target;
+	const target = aTarget || getLinkTarget(e);
+	if (target === "_blank") {
+		open(url, target);
+	} else {
+		postMessage({
+			what: "lightningNavigation",
+			navigationType: "url",
+			url,
+			fallbackURL: url,
+		}, "*");
+	}
+}
+
 /**
  * Generates the HTML for a tab row.
  *
@@ -114,6 +145,9 @@ function generateRowTemplate(row) {
 	a.setAttribute("href", url);
 	a.classList.add("tabHeader", "slds-context-bar__label-action");
 	a.style.zIndex = 0;
+	if (url.includes(setupLightning)) {
+		a.addEventListener("click", handleLightningLinkClick);
+	}
 
 	const span = document.createElement("span");
 	span.classList.add("title", "slds-truncate");
@@ -210,7 +244,6 @@ function initTabs() {
  * @returns {Element} - The generated element for the favourite button.
  */
 function generateFavouriteButton() {
-	//const assetDir = chrome.runtime.getURL("assets");
 	const star = chrome.runtime.getURL("assets/svgs/star.svg");
 	const slashedStar = chrome.runtime.getURL("assets/svgs/slashed-star.svg");
 
@@ -233,6 +266,10 @@ function generateFavouriteButton() {
 		img.setAttribute("id", id);
 		img.setAttribute("src", src);
 		img.setAttribute("alt", alt);
+		img.setAttribute(
+			"style",
+			"height: 2rem; filter: invert(60%) sepia(100%) saturate(500%) hue-rotate(170deg) brightness(90%);",
+		);
 
 		const span = document.createElement("span");
 		span.textContent = alt;
@@ -243,7 +280,6 @@ function generateFavouriteButton() {
 				span.classList.remove("hidden");
 			}
 			img.remove();
-			console.log(`${alt} image failed to load, image removed.`);
 		});
 
 		return { img, span };
@@ -444,7 +480,7 @@ function delayLoadSetupTabs(count = 0) {
 		});
 
 	// Add overflow scroll behavior only if not already present
-	if (!setupTabUl.style.overflow.includes("scroll")) {
+	if (!setupTabUl.style.overflowX.includes("auto")) {
 		setupTabUl.setAttribute(
 			"style",
 			`overflow-x: auto; overflow-y: hidden; scrollbar-width: none; ${
@@ -574,6 +610,7 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 	if (message == null || message.what == null) {
 		return;
 	}
+	console.log(message);
 	if (message.what === "saved") {
 		sendResponse(null);
 		afterSet();

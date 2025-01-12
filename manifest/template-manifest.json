@@ -19,6 +19,26 @@
 			"run_at": "document_end"
 		}
 	],
+	"web_accessible_resources": [
+		{
+			"resources": [
+				"salesforce/lightning-navigation.js"
+			],
+			"matches": [
+				"*://*.my.salesforce-setup.com/*",
+				"*://*.lightning.force.com/*"
+			]
+		},
+		{
+			"resources": [
+				"assets/svgs/*.svg"
+			],
+			"matches": [
+				"*://*.my.salesforce-setup.com/*",
+				"*://*.lightning.force.com/*"
+			]
+		}
+	],
 	"icons": {
 		"16": "./assets/icons/awsf-16.png",
 		"32": "./assets/icons/awsf-32.png",
