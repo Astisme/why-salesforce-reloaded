@@ -87,6 +87,12 @@ function cleanupUrl(url, nochange = null) {
 	return asis ? url : `${baseUrl}${setupLightning}${url}`;
 }
 
+/**
+ * Picks a link target between _blank and _top based on whether the user is click CTRL or the meta key.
+ *
+ * @param {Event} e - the click event
+ * @returns {String} "_blank" | "_top"
+ */
 function getLinkTarget(e) {
 	return (e.ctrlKey || e.metaKey) ? "_blank" : "_top";
 }
@@ -100,7 +106,8 @@ function handleLightningLinkClick(e) {
 	const url = e.currentTarget.href;
 	const aTarget = e.currentTarget.target;
 	const target = aTarget || getLinkTarget(e);
-	if (target === "_blank") {
+	// open link into new page when requested or if the user is clicking the favourite tab one more time
+	if (target === "_blank" || url === href) {
 		open(url, target);
 	} else {
 		postMessage({
