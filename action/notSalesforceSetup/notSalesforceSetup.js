@@ -65,3 +65,10 @@ if (strongFirst) {
 	div.appendChild(otherText);
 	div.appendChild(strongEl);
 }
+
+// close the popup when the user clicks on the redirection link
+document.querySelectorAll("a").forEach(a => {
+    a.addEventListener("click", () => {
+        setTimeout(() => close(), 100);
+    });
+});
