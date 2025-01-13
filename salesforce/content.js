@@ -1,10 +1,9 @@
-// deno-lint-ignore-file no-window
 "use strict";
 
 let setupTabUl; // This is on Salesforce Setup
 const setupLightning = "/lightning/setup/";
-let href = window.location.href;
-const baseUrl = href.slice(0, href.indexOf(setupLightning));
+let href = globalThis.location.href;
+const baseUrl = globalThis.origin;
 const currentTabs = [];
 
 const prefix = "again-why-salesforce";
@@ -453,7 +452,7 @@ function isOnSavedTab(isFromHrefUpdate = false) {
  * Handles the update of the current URL, reloading tabs if necessary.
  */
 function onHrefUpdate() {
-	const newRef = window.location.href;
+	const newRef = globalThis.location.href;
 	if (newRef === href) {
 		return;
 	}
