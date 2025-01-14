@@ -68,9 +68,9 @@ if (strongFirst) {
 
 // close the popup when the user clicks on the redirection link
 document.querySelectorAll("a").forEach((a) => {
-	a.addEventListener("click", e => {
-        e.preventDefault();
-        open(a.href, "_blank");
+	a.addEventListener("click", (e) => {
+		e.preventDefault();
+		open(a.href, "_blank");
 		setTimeout(() => close(), 200);
 	});
 });

@@ -3,7 +3,7 @@ a {
 	display: flex;
 	align-items: center;
 	color: var(--color);
-    background-color: transparent;
+	background-color: transparent;
 
 	& > span > img {
 		height: 2rem;
@@ -20,13 +20,13 @@ a {
 }
 
 body {
-    transition-property: background-color;
-    transition-duration: var(--transition-duration);
-    transition-timing-function: var(--transition-timing-function);
+	transition-property: background-color;
+	transition-duration: var(--transition-duration);
+	transition-timing-function: var(--transition-timing-function);
 }
 
 h2 {
-    transition-property: color;
-    transition-duration: var(--transition-duration);
-    transition-timing-function: var(--transition-timing-function);
+	transition-property: color;
+	transition-duration: var(--transition-duration);
+	transition-timing-function: var(--transition-timing-function);
 }
