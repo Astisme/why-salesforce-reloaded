@@ -267,7 +267,7 @@ function showToast(message, isSuccess = true) {
 function initTabs() {
 	const tabs = [
 		{ tabTitle: "⚡", url: "/lightning" },
-		{ tabTitle: "Flows", url: "Flows/home" },
+		{ tabTitle: "Flows", url: "/lightning/app/standard__FlowsApp" },
 		{ tabTitle: "Users", url: "ManageUsers/home" },
 	];
 	setStorage(tabs);
@@ -458,7 +458,8 @@ function init(items) {
 		: items[items.key];
 
 	rowObj.forEach((row) =>
-		generateRowTemplate(row).then((r) => setupTabUl.appendChild(r))
+		generateRowTemplate(row)
+			.then((r) => setupTabUl.appendChild(r))
 	);
 	currentTabs.length = 0;
 	currentTabs.push(...rowObj);

@@ -1,7 +1,8 @@
 const isChrome = navigator.userAgent.includes("Chrome");
 const browserObj = isChrome ? chrome : browser;
 const whyKey = "againWhySalesforce";
-const commonDomain = "my.salesforce-setup.com";
+const commonSetupDomain = "my.salesforce-setup.com";
+const commonMainDomain = "lightning.force.com";
 const setupLightning = "/lightning/setup/";
 
 /**
@@ -83,10 +84,15 @@ function minifyURL(url) {
 	}
 
 	// remove org-specific url
-	if (url.includes(commonDomain)) {
+	if (url.includes(commonMainDomain)) {
 		url = url.slice(
-			url.indexOf(commonDomain) +
-				commonDomain.length,
+			url.indexOf(commonMainDomain) +
+				commonMainDomain.length,
+		);
+	} else if (url.includes(commonSetupDomain)) {
+		url = url.slice(
+			url.indexOf(commonSetupDomain) +
+				commonSetupDomain.length,
 		);
 	}
 
