@@ -17,7 +17,7 @@
 		<div id="top">
 			<header>
 				<iframe src="../logo/logo.html" type="text/html"></iframe>
-				<div>
+				<div id="actions">
 					<div id="theme-selector">
 						<svg
 							id="sun"
@@ -66,14 +66,14 @@
 						</svg>
 					</div>
 					<button id="export" class="success" title="Export all tabs">
-						Export
+                        <span>Export</span>
 					</button>
 					<button
 						id="import"
 						class="highlight"
 						title="Import tabs from json file"
 					>
-						Import
+                        <span>Import</span>
 					</button>
 					<img
 						id="delete-all"
@@ -87,18 +87,18 @@
 				<thead>
 					<tr>
 						<th scope="col">
-							<div><!-- used for the svg --></div>
+							<span><!-- used for the svg --></span>
 						</th>
 						<th scope="col">
-							<div>Tab Label</div>
+							<span>Tab Label</span>
 						</th>
 						<th scope="col">
-							<div>Tab Url</div>
+							<span>Tab Url</span>
 						</th>
 						<th scope="col" style="width: 3.25rem">
-							<div class="slds-assistive-text">
+							<span class="slds-assistive-text">
 								Actions
-							</div>
+							</span>
 						</th>
 					</tr>
 				</thead>
@@ -171,7 +171,7 @@
 					</div>
 				</td>
 				<td>
-					<button class="delete error">Delete</button>
+                    <button class="delete error"><span>Delete</span></button>
 				</td>
 			</tr>
 		</template>
