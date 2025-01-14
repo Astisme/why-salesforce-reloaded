@@ -1,9 +1,11 @@
 "use strict";
 
 let setupTabUl; // This is on Salesforce Setup
-const setupLightning = "/lightning/setup/";
 let href = globalThis.location.href;
-const baseUrl = globalThis.origin;
+let minifiedURL;
+let _expandedURL;
+const baseUrl = globalThis.origin; // https://www.myorgdomain.my.salesforce-setup.com
+const setupLightning = "/lightning/setup/";
 const currentTabs = [];
 
 const prefix = "again-why-salesforce";
@@ -61,29 +63,50 @@ function setStorage(tabs) {
 }
 
 /**
- * Cleans up and normalizes the given URL.
+ * Minifies a URL by the domain and removing Salesforce-specific parts.
  *
- * @param {string} url - The URL to clean up.
- * @param {boolean} [nochange=null] - Optional parameter to control URL transformation behavior. If false, the URL returned will contain the entire Salesforce Setup link.
- * @returns {string} - The cleaned-up URL.
+ * @param {string} url - The URL to minify.
+ * @returns {Promise} A promise containing the minified URL.
+ *
+ * These links would all collapse into "SetupOneHome/home".
+ * https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/
+ * https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home
+ * https://myorgdomain.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/
+ * https://myorgdomain.my.salesforce-setup.com/lightning/setup/SetupOneHome/home
+ * /lightning/setup/SetupOneHome/home/
+ * /lightning/setup/SetupOneHome/home
+ * lightning/setup/SetupOneHome/home/
+ * lightning/setup/SetupOneHome/home
+ * /SetupOneHome/home/
+ * /SetupOneHome/home
+ * SetupOneHome/home/
+ * SetupOneHome/home
  */
-function cleanupUrl(url, nochange = null) {
-	const asis = nochange == null ? url.startsWith("http") : nochange;
-	if (url.startsWith("/lightning") || url.startsWith("/_ui/common")) { // normalized setup pages won't get here
-		return `${baseUrl}${url}`;
-	}
+function minifyURL(url) {
+	return chrome.runtime.sendMessage({ message: { what: "minify", url } });
+}
 
-	if (url.startsWith("/")) {
-		url = url.slice(1);
-	}
-	if (url.endsWith("/")) {
-		url = url.slice(0, url.length - 1);
-	}
-	if (url.includes(setupLightning)) {
-		url = url.slice(url.indexOf(setupLightning) + setupLightning.length);
-	}
-
-	return asis ? url : `${baseUrl}${setupLightning}${url}`;
+/**
+ * Expands a URL by adding the domain and the Salesforce setup parts.
+ * This function undoes what minifyURL did to a URL.
+ *
+ * @param {string} url - The URL to expand.
+ * @returns {string} The expanded URL.
+ *
+ * These links would all collapse into "https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/".
+ * https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/
+ * https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home
+ * https://myorgdomain.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/
+ * https://myorgdomain.my.salesforce-setup.com/lightning/setup/SetupOneHome/home
+ * lightning/setup/SetupOneHome/home/
+ * lightning/setup/SetupOneHome/home
+ * SetupOneHome/home/
+ * SetupOneHome/home
+ */
+function expandURL(url) {
+	return chrome.runtime.sendMessage({
+		message: { what: "expand", url, baseUrl },
+	});
 }
 
 /**
@@ -127,47 +150,54 @@ function handleLightningLinkClick(e) {
  * @returns {HTMLElement} - The generated list item element representing the tab.
  */
 function generateRowTemplate(row) {
-	let { tabTitle, url } = row;
-	url = cleanupUrl(url);
+	const { tabTitle, url } = row;
+	const miniURLpromise = minifyURL(url);
+	const expURLpromise = expandURL(url);
 
-	const li = document.createElement("li");
-	li.setAttribute("role", "presentation");
-	li.classList.add(
-		"oneConsoleTabItem",
-		"tabItem",
-		"slds-context-bar__item",
-		"borderRight",
-		"navexConsoleTabItem",
-		prefix,
-	);
-	li.setAttribute("data-aura-class", "navexConsoleTabItem");
+	return Promise.all([miniURLpromise, expURLpromise])
+		.then(([miniURL, expURL]) => {
+			minifiedURL = miniURL;
+			_expandedURL = expURL;
 
-	const a = document.createElement("a");
-	a.setAttribute("data-draggable", "true");
-	a.setAttribute("role", "tab");
-	a.setAttribute("tabindex", "-1");
-	a.setAttribute("title", url);
-	a.setAttribute("aria-selected", "false");
-	a.setAttribute("href", url);
-	a.classList.add("tabHeader", "slds-context-bar__label-action");
-	a.style.zIndex = 0;
-	if (url.includes(setupLightning)) {
-		a.addEventListener("click", handleLightningLinkClick);
-	}
+			const li = document.createElement("li");
+			li.setAttribute("role", "presentation");
+			li.classList.add(
+				"oneConsoleTabItem",
+				"tabItem",
+				"slds-context-bar__item",
+				"borderRight",
+				"navexConsoleTabItem",
+				prefix,
+			);
+			li.setAttribute("data-aura-class", "navexConsoleTabItem");
 
-	const span = document.createElement("span");
-	span.classList.add("title", "slds-truncate");
-	span.textContent = tabTitle;
+			const a = document.createElement("a");
+			a.setAttribute("data-draggable", "true");
+			a.setAttribute("role", "tab");
+			a.setAttribute("tabindex", "-1");
+			a.setAttribute("title", miniURL);
+			a.setAttribute("aria-selected", "false");
+			a.setAttribute("href", expURL);
+			a.classList.add("tabHeader", "slds-context-bar__label-action");
+			a.style.zIndex = 0;
+			if (expURL.includes(setupLightning)) {
+				a.addEventListener("click", handleLightningLinkClick);
+			}
 
-	a.appendChild(span);
-	li.appendChild(a);
+			const span = document.createElement("span");
+			span.classList.add("title", "slds-truncate");
+			span.textContent = tabTitle;
 
-	// Highlight the tab related to the current page
-	if (href === url) {
-		li.classList.add("slds-is-active");
-	}
+			a.appendChild(span);
+			li.appendChild(a);
 
-	return li;
+			// Highlight the tab related to the current page
+			if (href === expURL) {
+				li.classList.add("slds-is-active");
+			}
+
+			return li;
+		});
 }
 
 /**
@@ -349,19 +379,25 @@ function toggleFavouriteButton(button, isSaved) {
  * @param {HTMLElement} parent - The parent element of the favourite button.
  */
 function actionFavourite(parent) {
-	const url = cleanupUrl(href);
-	if (isCurrentlyOnSavedTab) {
-		const filteredTabs = currentTabs.filter((tabdef) => {
-			return tabdef.url !== url;
+	minifyURL(href)
+		.then((url) => {
+			minifiedURL = url;
+
+			if (isCurrentlyOnSavedTab) {
+				const filteredTabs = currentTabs.filter((tabdef) => {
+					return tabdef.url !== url;
+				});
+				currentTabs.length = 0;
+				currentTabs.push(...filteredTabs);
+			} else {
+				const tabTitle =
+					parent.querySelector(".breadcrumbDetail").innerText;
+				currentTabs.push({ tabTitle, url });
+			}
+
+			toggleFavouriteButton(parent.querySelector(`#${buttonId}`));
+			setStorage(currentTabs);
 		});
-		currentTabs.length = 0;
-		currentTabs.push(...filteredTabs);
-	} else {
-		const tabTitle = parent.querySelector(".breadcrumbDetail").innerText;
-		currentTabs.push({ tabTitle, url });
-	}
-	toggleFavouriteButton(parent.querySelector(`#${buttonId}`));
-	setStorage(currentTabs);
 }
 
 /**
@@ -377,7 +413,7 @@ function showFavouriteButton(count = 0) {
 
 	// Do not add favourite button on Home and Object Manager
 	const standardTabs = ["SetupOneHome/home", "ObjectManager/home"];
-	if (standardTabs.includes(cleanupUrl(href))) {
+	if (standardTabs.includes(minifiedURL)) {
 		return;
 	}
 
@@ -421,7 +457,9 @@ function init(items) {
 		? initTabs()
 		: items[items.key];
 
-	rowObj.forEach((row) => setupTabUl.appendChild(generateRowTemplate(row)));
+	rowObj.forEach((row) =>
+		generateRowTemplate(row).then((r) => setupTabUl.appendChild(r))
+	);
 	currentTabs.length = 0;
 	currentTabs.push(...rowObj);
 	isOnSavedTab();
@@ -434,20 +472,34 @@ function init(items) {
  * @param {boolean} [isFromHrefUpdate=false] - A flag to determine if the check is due to a URL update.
  * @returns {boolean} - True if the current tab is a saved tab, otherwise false.
  */
-function isOnSavedTab(isFromHrefUpdate = false) {
+function isOnSavedTab(isFromHrefUpdate = false, callback) {
 	if (fromHrefUpdate && !isFromHrefUpdate) {
 		fromHrefUpdate = false;
 		return;
 	}
 	fromHrefUpdate = isFromHrefUpdate;
-	const loc = cleanupUrl(href);
-	wasOnSavedTab = isCurrentlyOnSavedTab;
-	isCurrentlyOnSavedTab = currentTabs.some((tabdef) =>
-		tabdef.url.includes(loc)
-	);
-	return isCurrentlyOnSavedTab;
+
+	return minifyURL(href)
+		.then((loc) => {
+			minifiedURL = loc;
+
+			wasOnSavedTab = isCurrentlyOnSavedTab;
+			isCurrentlyOnSavedTab = currentTabs.some((tabdef) =>
+				tabdef.url.includes(loc)
+			);
+
+			isFromHrefUpdate && callback(isCurrentlyOnSavedTab);
+		});
 }
 
+/**
+ * If the user has moved to or from a saved tab, they'll be reloaded to update the highlighted one.
+ * otherwise, the favourite button is shown
+ */
+function afterHrefUpdate(isCurrentlyOnSavedTab) {
+	if (isCurrentlyOnSavedTab || wasOnSavedTab) reloadTabs();
+	else showFavouriteButton();
+}
 /**
  * Handles the update of the current URL, reloading tabs if necessary.
  */
@@ -457,8 +509,7 @@ function onHrefUpdate() {
 		return;
 	}
 	href = newRef;
-	if (isOnSavedTab(true) || wasOnSavedTab) reloadTabs();
-	else showFavouriteButton();
+	isOnSavedTab(true, afterHrefUpdate);
 }
 
 /**
@@ -599,16 +650,23 @@ function importer(message) {
  * Reorders the tabs based on their new order in the DOM and saves the updated list to storage.
  */
 function reorderTabs() {
-	// get the list of tabs
-	const tabs = [];
-	Array.from(setupTabUl.children).slice(3).forEach((tab) => {
-		const tabTitle = tab.querySelector("a > span").innerText;
-		const url = cleanupUrl(tab.querySelector("a").href, true);
-		if (tabTitle && url) {
-			tabs.push({ tabTitle, url });
-		}
-	});
-	setStorage(tabs);
+	// Get the list of tabs
+	const tabPromises = Array.from(setupTabUl.children)
+		.slice(3)
+		.map(async (tab) => {
+			const tabTitle = tab.querySelector("a > span").innerText;
+			const href = tab.querySelector("a").href;
+			const url = await minifyURL(href);
+
+			if (tabTitle && url) {
+				return { tabTitle, url };
+			}
+			return null; // Return null for invalid tabs
+		});
+
+	Promise.all(tabPromises)
+		.then((tabs) => setStorage(tabs.filter((tab) => tab != null)))
+		.catch((err) => console.error("Error processing tabs:", err));
 }
 
 // listen from saves from the action page
@@ -616,7 +674,6 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 	if (message == null || message.what == null) {
 		return;
 	}
-	console.log(message);
 	if (message.what === "saved") {
 		sendResponse(null);
 		afterSet();

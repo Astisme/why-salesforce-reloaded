@@ -1,6 +1,8 @@
 const isChrome = navigator.userAgent.includes("Chrome");
 const browserObj = isChrome ? chrome : browser;
 const whyKey = "againWhySalesforce";
+const commonDomain = "my.salesforce-setup.com";
+const setupLightning = "/lightning/setup/";
 
 /**
  * Adds the key to the items object and invokes the provided callback.
@@ -56,6 +58,83 @@ function notify(message, count = 0) {
 }
 
 /**
+ * Minifies a URL by the domain and removing Salesforce-specific parts.
+ *
+ * @param {string} url - The URL to minify.
+ * @returns {string} The minified URL.
+ *
+ * These links would all collapse into "SetupOneHome/home".
+ * https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/
+ * https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home
+ * https://myorgdomain.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/
+ * https://myorgdomain.my.salesforce-setup.com/lightning/setup/SetupOneHome/home
+ * /lightning/setup/SetupOneHome/home/
+ * /lightning/setup/SetupOneHome/home
+ * lightning/setup/SetupOneHome/home/
+ * lightning/setup/SetupOneHome/home
+ * /SetupOneHome/home/
+ * /SetupOneHome/home
+ * SetupOneHome/home/
+ * SetupOneHome/home
+ */
+function minifyURL(url) {
+	if (url == null || url == "") {
+		return "";
+	}
+
+	// remove org-specific url
+	if (url.includes(commonDomain)) {
+		url = url.slice(
+			url.indexOf(commonDomain) +
+				commonDomain.length,
+		);
+	}
+
+	if (url.includes(setupLightning)) {
+		url = url.slice(
+			url.indexOf(setupLightning) +
+				setupLightning.length,
+		);
+	}
+
+	if (url.endsWith("/")) {
+		url = url.slice(0, url.length - 1);
+	}
+
+	if (url.length === 0) {
+		url = "/";
+	}
+
+	return url;
+}
+
+/**
+ * Expands a URL by adding the domain and the Salesforce setup parts.
+ * This function undoes what minifyURL did to a URL.
+ *
+ * @param {string} url - The URL to expand.
+ * @returns {string} The expanded URL.
+ *
+ * These links would all collapse into "https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/".
+ * https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/
+ * https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home
+ * https://myorgdomain.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/
+ * https://myorgdomain.my.salesforce-setup.com/lightning/setup/SetupOneHome/home
+ * lightning/setup/SetupOneHome/home/
+ * lightning/setup/SetupOneHome/home
+ * SetupOneHome/home/
+ * SetupOneHome/home
+ */
+function expandURL(message) {
+	const { url, baseUrl } = message;
+	if (url == null || url === "" || url.startsWith("https")) {
+		return url;
+	}
+	const isSetupLink = !url.startsWith("/") && url.length > 0;
+	return `${baseUrl}${isSetupLink ? setupLightning : ""}${url}`;
+}
+
+/**
  * Listens for incoming messages and processes requests to get, set, or notify about storage changes.
  * Also handles theme updates and tab-related messages.
  *
@@ -71,21 +150,35 @@ browserObj.runtime.onMessage.addListener((request, _, sendResponse) => {
 		sendResponse(null);
 		return false;
 	}
-	let captured = false;
-	if (message.what === "get") {
-		getStorage(sendResponse);
-		captured = true;
-	} else if (message.what === "set") {
-		setStorage(message.tabs, sendResponse);
-		captured = true;
-	} else if (["saved", "add", "theme", "error"].includes(message.what)) {
-		notify(message);
-		sendResponse(null);
-		return false; // we won't call sendResponse
-	}
-	captured = captured || ["import"].includes(message.what);
-	if (!captured) {
-		console.error({ "error": "Unknown message", message, request });
+	let captured = true;
+
+	switch (message.what) {
+		case "get":
+			getStorage(sendResponse);
+			break;
+		case "set":
+			setStorage(message.tabs, sendResponse);
+			break;
+		case "saved":
+		case "add":
+		case "theme":
+		case "error":
+			notify(message);
+			sendResponse(null);
+			return false; // we won't call sendResponse
+		case "minify":
+			sendResponse(minifyURL(message.url));
+			return false; // we won't call sendResponse
+		case "expand":
+			sendResponse(expandURL(message));
+			return false; // we won't call sendResponse
+
+		default:
+			captured = ["import"].includes(message.what);
+			if (!captured) {
+				console.error({ "error": "Unknown message", message, request });
+			}
+			break;
 	}
 
 	return captured; // will call sendResponse asynchronously if true

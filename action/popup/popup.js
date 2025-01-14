@@ -53,7 +53,6 @@ function switchTheme() {
 const tabTemplate = document.getElementById("tr_template");
 const tabAppendElement = document.getElementById("tabs");
 
-const setupLightning = "/lightning/setup/";
 let knownTabs = [];
 let loggers = [];
 
@@ -108,37 +107,27 @@ function setStorage(tabs, check = true) {
 }
 
 /**
- * Cleans up a URL by removing Salesforce-specific parts.
+ * Minifies a URL by the domain and removing Salesforce-specific parts.
  *
- * @param {string} url - The URL to clean.
- * @returns {string} The cleaned URL.
+ * @param {string} url - The URL to minify.
+ * @returns {Promise} A promise containing the minified URL.
+ *
+ * These links would all collapse into "SetupOneHome/home".
+ * https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/
+ * https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home
+ * https://myorgdomain.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/
+ * https://myorgdomain.my.salesforce-setup.com/lightning/setup/SetupOneHome/home
+ * /lightning/setup/SetupOneHome/home/
+ * /lightning/setup/SetupOneHome/home
+ * lightning/setup/SetupOneHome/home/
+ * lightning/setup/SetupOneHome/home
+ * /SetupOneHome/home/
+ * /SetupOneHome/home
+ * SetupOneHome/home/
+ * SetupOneHome/home
  */
-function cleanupUrl(url) {
-	if (url == null || url == "") {
-		return "";
-	}
-	// remove org-specific url
-	const home =
-		"https:\/\/.*\.my\.salesforce-setup\.com\/lightning\/setup\/.*";
-	if (url.match(home)) {
-		url = url.slice(url.indexOf(setupLightning));
-	}
-
-	if (url.includes(setupLightning)) {
-		url = url.slice(url.indexOf(setupLightning) + setupLightning.length); // remove setup subdirectory
-	} // do not remove anything if the page is not from setup
-	else if (url.includes("/lightning") || url.includes("/_ui/common")) {
-		return url;
-	}
-
-	if (url.startsWith("/")) {
-		url = url.slice(1);
-	}
-	if (url.endsWith("/")) {
-		url = url.slice(0, url.length - 1);
-	}
-
-	return url;
+function minifyURL(url) {
+	return chrome.runtime.sendMessage({ message: { what: "minify", url } });
 }
 
 /**
@@ -189,7 +178,8 @@ function inputTitleUrlListener(type) {
 	const delta = last_input.length - value.length;
 
 	if ((delta < -2 || delta > 2) && type === "url") {
-		element.value = cleanupUrl(value);
+		minifyURL(value)
+			.then((v) => element.value = v);
 	}
 
 	inputObj[type] = value;
@@ -278,17 +268,34 @@ function reloadRows(items) {
  *
  * @returns {Array} An array of tab objects containing title and URL.
  */
-function findTabs() {
-	const tabs = [];
+async function findTabs(callback, doReload) {
 	const tabElements = document.getElementsByClassName("tab");
-	Array.from(tabElements).forEach((tab) => {
-		const tabTitle = tab.querySelector(".tabTitle").value;
-		const url = cleanupUrl(tab.querySelector(".url").value);
-		if (tabTitle && url) {
-			tabs.push({ tabTitle, url });
-		}
-	});
-	return tabs;
+	// Get the list of tabs
+	const tabPromises = Array.from(tabElements)
+		.map(async (tab) => {
+			const tabTitle = tab.querySelector(".tabTitle").value;
+			const href = tab.querySelector(".url").value;
+
+			// Await the minified URL
+			const url = await minifyURL(href);
+
+			if (tabTitle && url) {
+				return { tabTitle, url };
+			}
+			return null; // Return null for invalid tabs
+		});
+
+	let availableTabs;
+	try {
+		// Wait for all promises to resolve and filter out null values
+		const resolvedTabs = await Promise.all(tabPromises);
+		availableTabs = resolvedTabs.filter((tab) => tab !== null);
+	} catch (err) {
+		console.error("Error processing tabs:", err);
+		availableTabs = [];
+	}
+
+	callback(doReload, availableTabs);
 }
 
 /**
@@ -298,7 +305,10 @@ function findTabs() {
  * @param {Array} tabs - The tabs to save.
  */
 function saveTabs(doReload = true, tabs) {
-	tabs = tabs ?? findTabs();
+	tabs = tabs ?? findTabs(saveTabs, doReload);
+	if (tabs == null || !Array.isArray(tabs)) {
+		return;
+	}
 	setStorage(tabs, true);
 	doReload && reloadRows({ tabs, key: "tabs" });
 }
