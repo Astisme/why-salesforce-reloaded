@@ -139,35 +139,34 @@ function deleteTab() {
 	saveTabs();
 }
 
-
 /**
  * Enables or disables the elements of the last td available in the popup.
  *
  * @param {boolean} [enable=true] - if enabling or disabling the elements in the last td
  */
-function updateTabAttributes(enable = true){
-    const deleteButton = tabAppendElement.querySelector(
-        "tr:last-child button.delete",
-    );
-    const tr = tabAppendElement.querySelector("tr:last-child");
-    const svg = tr.querySelector("svg");
+function updateTabAttributes(enable = true) {
+	const deleteButton = tabAppendElement.querySelector(
+		"tr:last-child button.delete",
+	);
+	const tr = tabAppendElement.querySelector("tr:last-child");
+	const svg = tr.querySelector("svg");
 
-    if(enable){
-        deleteButton.removeAttribute("disabled");
-        tr.setAttribute("draggable","true");
-    } else {
-        deleteButton.setAttribute("disabled","true");
-        tr.removeAttribute("draggable");
-    }
-    tr.dataset.draggable = enable;
-    svg.dataset.draggable = enable;
+	if (enable) {
+		deleteButton.removeAttribute("disabled");
+		tr.setAttribute("draggable", "true");
+	} else {
+		deleteButton.setAttribute("disabled", "true");
+		tr.removeAttribute("draggable");
+	}
+	tr.dataset.draggable = enable;
+	svg.dataset.draggable = enable;
 }
 /**
  * Adds a new empty tab at the bottom of the popup and enables the previously last child's delete button.
  */
 function addTab() {
 	if (tabAppendElement.childElementCount >= 1) { // if list is empty, there's nothing to disable
-        updateTabAttributes();
+		updateTabAttributes();
 	}
 	// add a new empty element
 	tabAppendElement.append(createElement());
@@ -177,10 +176,10 @@ function addTab() {
  */
 function removeTab() {
 	if (tabAppendElement.childElementCount >= 2) { // if list is empty, there's nothing to disable
-        tabAppendElement.removeChild(tabAppendElement.lastChild);
-        loggers.pop();
-        updateTabAttributes(false);
-    }
+		tabAppendElement.removeChild(tabAppendElement.lastChild);
+		loggers.pop();
+		updateTabAttributes(false);
+	}
 }
 
 let focusedIndex = 0;
@@ -196,25 +195,26 @@ function inputTitleUrlListener(type) {
 	const value = element.value;
 	const inputObj = currentObj.last_input;
 	const last_input = inputObj[type] || "";
-	const delta =  value.length - last_input.length;
+	const delta = value.length - last_input.length;
 
-    // check if the user copied the url
+	// check if the user copied the url
 	if (delta > 2 && type === "url") {
 		minifyURL(value)
 			.then((v) => element.value = v);
 	}
 
 	inputObj[type] = value;
-    // if the user is on the last td, add a new tab if both fields are non-empty.
-	if(focusedIndex === (loggers.length - 1)){
-        if(inputObj.title && inputObj.url)
-            addTab();
-    }
-    // if the user is on the previous-to-last td, remove the last tab if either one of the fields are empty
-    else if(focusedIndex === (loggers.length - 2)){
-        if(!inputObj.title || !inputObj.url)
-            removeTab();
-    }
+	// if the user is on the last td, add a new tab if both fields are non-empty.
+	if (focusedIndex === (loggers.length - 1)) {
+		if (inputObj.title && inputObj.url) {
+			addTab();
+		}
+	} // if the user is on the previous-to-last td, remove the last tab if either one of the fields are empty
+	else if (focusedIndex === (loggers.length - 2)) {
+		if (!inputObj.title || !inputObj.url) {
+			removeTab();
+		}
+	}
 }
 
 /**
@@ -272,8 +272,8 @@ function loadTabs(items) {
 		logger.last_input.url = tab.url;
 
 		loggers.push(logger);
-        tabAppendElement.append(element);
-        updateTabAttributes();
+		tabAppendElement.append(element);
+		updateTabAttributes();
 	}
 	tabAppendElement.append(createElement()); // always leave a blank at the bottom
 	knownTabs = rowObjs;
