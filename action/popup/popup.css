@@ -152,5 +152,5 @@ input {
 }
 
 .duplicate {
-    background-color: var(--warning) !important;
+	background-color: var(--warning) !important;
 }

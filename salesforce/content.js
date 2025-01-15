@@ -208,12 +208,13 @@ function generateRowTemplate(row) {
  * @returns {HTMLElement} - The generated element for the toast message.
  */
 function generateSldsToastMessage(message, isSuccess, isWarning) {
-	const toastType = isSuccess ? 
-        (isWarning ? "info" : "success") : 
-        (isWarning ? "warning" : "error");
+	const toastType = isSuccess
+		? (isWarning ? "info" : "success")
+		: (isWarning ? "warning" : "error");
 
 	const toastContainer = document.createElement("div");
-    const randomNumber10digits = Math.floor(Math.random() * 9_000_000_000) + 1_000_000_000;
+	const randomNumber10digits = Math.floor(Math.random() * 9_000_000_000) +
+		1_000_000_000;
 	toastContainer.id = `${toastId}-${randomNumber10digits}`;
 	toastContainer.classList.add(
 		"toastContainer",
@@ -335,7 +336,11 @@ function showToast(message, isSuccess = true, isWarning = false) {
 	const hanger = document.getElementsByClassName(
 		"oneConsoleTabset navexConsoleTabset",
 	)[0];
-	const toastElement = generateSldsToastMessage(message, isSuccess, isWarning);
+	const toastElement = generateSldsToastMessage(
+		message,
+		isSuccess,
+		isWarning,
+	);
 	hanger.appendChild(toastElement);
 	setTimeout(() => {
 		hanger.removeChild(document.getElementById(toastElement.id));
@@ -491,7 +496,7 @@ function actionFavourite(parent) {
 function showFavouriteButton(count = 0) {
 	if (count > 5) {
 		console.error("Again, Why Salesforce - failed to find headers.");
-        reload(); // the setup page failed to load, reload it before the use does
+		reload(); // the setup page failed to load, reload it before the use does
 	}
 
 	// Do not add favourite button on Home and Object Manager
@@ -892,12 +897,19 @@ function reorderTabs() {
 /**
  * Find tabs with the given URL and change their background-color
  */
-function makeDuplicatesBold(miniURL){
-    const duplicatetabs = setupTabUl.querySelectorAll(`a[title="${miniURL}"]`);
-    if(duplicatetabs == null)
-        return;
-    duplicatetabs.forEach(a => a.classList.add("slds-theme--warning"));
-    setTimeout(() => duplicatetabs.forEach(a => a.classList.remove("slds-theme--warning")), 4000);
+function makeDuplicatesBold(miniURL) {
+	const duplicatetabs = setupTabUl.querySelectorAll(`a[title="${miniURL}"]`);
+	if (duplicatetabs == null) {
+		return;
+	}
+	duplicatetabs.forEach((a) => a.classList.add("slds-theme--warning"));
+	setTimeout(
+		() =>
+			duplicatetabs.forEach((a) =>
+				a.classList.remove("slds-theme--warning")
+			),
+		4000,
+	);
 }
 
 // listen from saves from the action page
@@ -908,17 +920,16 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 	if (message.what === "saved") {
 		sendResponse(null);
 		afterSet();
-	}
-    else if (message.what === "add") {
+	} else if (message.what === "add") {
 		sendResponse(null);
 		showFileImport();
+	} else if (message.what === "warning") {
+		sendResponse(null);
+		showToast(message.message, false, true);
+		if (message.action === "make-bold") {
+			makeDuplicatesBold(message.url);
+		}
 	}
-    else if(message.what === "warning"){
-        sendResponse(null);
-        showToast(message.message, false, true);
-        if(message.action === "make-bold")
-            makeDuplicatesBold(message.url);
-    }
 });
 
 // listen to possible updates from other modules

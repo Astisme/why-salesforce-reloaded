@@ -17,8 +17,8 @@ html {
 	--darkred: #951414;
 	--lightblue: #49c2d4;
 	--darklightblue: #2794a5;
-    --dirtyyellow: #dd7a01;
-    --darkyellow: #B76501;
+	--dirtyyellow: #dd7a01;
+	--darkyellow: #b76501;
 	--transition-duration: 500ms;
 	--transition-timing-function: ease-in-out;
 }
