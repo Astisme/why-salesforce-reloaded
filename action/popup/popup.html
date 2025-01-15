@@ -107,10 +107,10 @@
 		</div>
 
 		<template id="tr_template">
-			<tr class="tab" draggable="true">
+			<tr class="tab" draggable="false" data-draggable="false">
 				<td scope="row">
 					<svg
-						data-draggable="true"
+						data-draggable="false"
 						viewBox="0 0 72 72"
 						xmlns="http://www.w3.org/2000/svg"
 					>
@@ -171,7 +171,7 @@
 					</div>
 				</td>
 				<td>
-					<button class="delete error"><span>Delete</span></button>
+					<button class="delete error" disabled><span>Delete</span></button>
 				</td>
 			</tr>
 		</template>

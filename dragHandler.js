@@ -79,7 +79,7 @@ function createListeners() {
 function setup() {
 	table = document.getElementById("sortable-table");
 	ul = document.getElementsByClassName("tabBarItems slds-grid")[0];
-	container = table || ul;
+	container = table ?? ul;
 	closestTag = table != null ? "tr" : "li";
 	if (container != null) createListeners();
 	else setTimeout(() => setup(), 500);
