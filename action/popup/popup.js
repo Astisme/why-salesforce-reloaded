@@ -200,7 +200,24 @@ function inputTitleUrlListener(type) {
 	// check if the user copied the url
 	if (delta > 2 && type === "url") {
 		minifyURL(value)
-			.then((v) => element.value = v);
+			.then((v) => {
+                element.value = v;
+                // check eventual duplicates
+                if(knownTabs.some((tab) => tab.url === v)){ 
+                    // show warning in salesforce
+                    sendMessage({ what: "warning", message: "A tab with this URL has already been saved!", action: "make-bold", url: v});
+
+                    // highlight all duplicated rows and scroll to the first one
+                    const trs = Array.from(tabAppendElement.querySelectorAll("tr input.url"))
+                        .filter(input => input.value === v)
+                        .map(input => input.closest("tr"));
+
+                    trs.forEach(tr => tr.classList.add("duplicate"));
+                    trs[0].scrollIntoView({ behavior: "smooth", block: "center" });
+
+                    setTimeout(() => trs.forEach(tr => tr.classList.remove("duplicate")), 4000);
+                }
+            });
 	}
 
 	inputObj[type] = value;

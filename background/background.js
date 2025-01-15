@@ -169,6 +169,7 @@ browserObj.runtime.onMessage.addListener((request, _, sendResponse) => {
 		case "add":
 		case "theme":
 		case "error":
+		case "warning":
 			notify(message);
 			sendResponse(null);
 			return false; // we won't call sendResponse

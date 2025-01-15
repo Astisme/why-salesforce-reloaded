@@ -207,11 +207,14 @@ function generateRowTemplate(row) {
  * @param {boolean} isSuccess - Indicates whether the message is a success or error.
  * @returns {HTMLElement} - The generated element for the toast message.
  */
-function generateSldsToastMessage(message, isSuccess) {
-	const toastType = isSuccess ? "success" : "error";
+function generateSldsToastMessage(message, isSuccess, isWarning) {
+	const toastType = isSuccess ? 
+        (isWarning ? "info" : "success") : 
+        (isWarning ? "warning" : "error");
 
 	const toastContainer = document.createElement("div");
-	toastContainer.id = toastId;
+    const randomNumber10digits = Math.floor(Math.random() * 9_000_000_000) + 1_000_000_000;
+	toastContainer.id = `${toastId}-${randomNumber10digits}`;
 	toastContainer.classList.add(
 		"toastContainer",
 		"slds-notify_container",
@@ -326,12 +329,13 @@ function generateSldsToastMessage(message, isSuccess) {
  *
  * @param {string} message - The message to display in the toast.
  * @param {boolean} [isSuccess=true] - Whether the toast message is a success (default is true).
+ * @param {boolean} [isWarning=false] - Whether the toast message is a warning (default is false).
  */
-function showToast(message, isSuccess = true) {
+function showToast(message, isSuccess = true, isWarning = false) {
 	const hanger = document.getElementsByClassName(
 		"oneConsoleTabset navexConsoleTabset",
 	)[0];
-	const toastElement = generateSldsToastMessage(message, isSuccess);
+	const toastElement = generateSldsToastMessage(message, isSuccess, isWarning);
 	hanger.appendChild(toastElement);
 	setTimeout(() => {
 		hanger.removeChild(document.getElementById(toastElement.id));
@@ -487,7 +491,7 @@ function actionFavourite(parent) {
 function showFavouriteButton(count = 0) {
 	if (count > 5) {
 		console.error("Again, Why Salesforce - failed to find headers.");
-		return setTimeout(showFavouriteButton(), 5000);
+        reload(); // the setup page failed to load, reload it before the use does
 	}
 
 	// Do not add favourite button on Home and Object Manager
@@ -885,6 +889,17 @@ function reorderTabs() {
 		.catch((err) => console.error("Error processing tabs:", err));
 }
 
+/**
+ * Find tabs with the given URL and change their background-color
+ */
+function makeDuplicatesBold(miniURL){
+    const duplicatetabs = setupTabUl.querySelectorAll(`a[title="${miniURL}"]`);
+    if(duplicatetabs == null)
+        return;
+    duplicatetabs.forEach(a => a.classList.add("slds-theme--warning"));
+    setTimeout(() => duplicatetabs.forEach(a => a.classList.remove("slds-theme--warning")), 4000);
+}
+
 // listen from saves from the action page
 chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 	if (message == null || message.what == null) {
@@ -893,13 +908,20 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 	if (message.what === "saved") {
 		sendResponse(null);
 		afterSet();
-	} else if (message.what === "add") {
+	}
+    else if (message.what === "add") {
 		sendResponse(null);
 		showFileImport();
 	}
+    else if(message.what === "warning"){
+        sendResponse(null);
+        showToast(message.message, false, true);
+        if(message.action === "make-bold")
+            makeDuplicatesBold(message.url);
+    }
 });
 
-// listen to possible updates from tableDragHandler
+// listen to possible updates from other modules
 addEventListener("message", (e) => {
 	if (e.source != window) {
 		return;
@@ -910,7 +932,7 @@ addEventListener("message", (e) => {
 	} else if (what === "import") {
 		importer(e.data);
 	} else if (what === "error") {
-		showToast(e.data.message, false);
+		showToast(e.data.message, false, false);
 	}
 	//else if(what === "saved")
 });

@@ -150,3 +150,7 @@ input {
 	transition-duration: var(--transition-duration);
 	transition-timing-function: var(--transition-timing-function);
 }
+
+.duplicate {
+    background-color: var(--warning) !important;
+}
