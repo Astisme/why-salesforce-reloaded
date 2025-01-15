@@ -210,93 +210,115 @@ function generateRowTemplate(row) {
 function generateSldsToastMessage(message, isSuccess) {
 	const toastType = isSuccess ? "success" : "error";
 
-    const toastContainer = document.createElement("div");
-    toastContainer.id = toastId;
-    toastContainer.classList.add("toastContainer","slds-notify_container","slds-is-relative");
-    toastContainer.setAttribute("data-aura-rendered-by", "7381:0");
+	const toastContainer = document.createElement("div");
+	toastContainer.id = toastId;
+	toastContainer.classList.add(
+		"toastContainer",
+		"slds-notify_container",
+		"slds-is-relative",
+	);
+	toastContainer.setAttribute("data-aura-rendered-by", "7381:0");
 
-    const toast = document.createElement("div");
-    toast.setAttribute("role", "alertdialog");
-    toast.setAttribute("aria-describedby", "toastDescription7382:0");
-    toast.setAttribute("aria-label", toastType);
-    toast.setAttribute("data-key", toastType);
-    toast.classList.add(`slds-theme--${toastType}`,"slds-notify--toast","slds-notify","slds-notify--toast","forceToastMessage");
-    toast.setAttribute("data-aura-rendered-by", "7384:0");
-    toast.setAttribute("data-aura-class", "forceToastMessage");
+	const toast = document.createElement("div");
+	toast.setAttribute("role", "alertdialog");
+	toast.setAttribute("aria-describedby", "toastDescription7382:0");
+	toast.setAttribute("aria-label", toastType);
+	toast.setAttribute("data-key", toastType);
+	toast.classList.add(
+		`slds-theme--${toastType}`,
+		"slds-notify--toast",
+		"slds-notify",
+		"slds-notify--toast",
+		"forceToastMessage",
+	);
+	toast.setAttribute("data-aura-rendered-by", "7384:0");
+	toast.setAttribute("data-aura-class", "forceToastMessage");
 
-    const iconContainer = document.createElement("lightning-icon");
-    iconContainer.setAttribute("icon-name", `utility:${toastType}`);
-    iconContainer.classList.add(`slds-icon-utility-${toastType}`,"toastIcon","slds-m-right--small","slds-no-flex","slds-align-top","slds-icon_container");
-    iconContainer.setAttribute("data-data-rendering-service-uid", "1478");
-    iconContainer.setAttribute("data-aura-rendered-by", "7386:0");
+	const iconContainer = document.createElement("lightning-icon");
+	iconContainer.setAttribute("icon-name", `utility:${toastType}`);
+	iconContainer.classList.add(
+		`slds-icon-utility-${toastType}`,
+		"toastIcon",
+		"slds-m-right--small",
+		"slds-no-flex",
+		"slds-align-top",
+		"slds-icon_container",
+	);
+	iconContainer.setAttribute("data-data-rendering-service-uid", "1478");
+	iconContainer.setAttribute("data-aura-rendered-by", "7386:0");
 
-    const boundarySpan = document.createElement("span");
-    boundarySpan.style.cssText = "--sds-c-icon-color-background: var(--slds-c-icon-color-background, transparent)";
-    boundarySpan.setAttribute("part", "boundary");
+	const boundarySpan = document.createElement("span");
+	boundarySpan.style.cssText =
+		"--sds-c-icon-color-background: var(--slds-c-icon-color-background, transparent)";
+	boundarySpan.setAttribute("part", "boundary");
 
-    const primitiveIcon = document.createElement("lightning-primitive-icon");
-    primitiveIcon.setAttribute("size", "small");
-    primitiveIcon.setAttribute("variant", "inverse");
+	const primitiveIcon = document.createElement("lightning-primitive-icon");
+	primitiveIcon.setAttribute("size", "small");
+	primitiveIcon.setAttribute("variant", "inverse");
 
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.classList.add("slds-icon", "slds-icon_small");
-    svg.setAttribute("focusable", "false");
-    svg.setAttribute("data-key", toastType);
-    svg.setAttribute("aria-hidden", "true");
-    svg.setAttribute("viewBox", "0 0 520 520");
-    svg.setAttribute("part", "icon");
+	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+	svg.classList.add("slds-icon", "slds-icon_small");
+	svg.setAttribute("focusable", "false");
+	svg.setAttribute("data-key", toastType);
+	svg.setAttribute("aria-hidden", "true");
+	svg.setAttribute("viewBox", "0 0 520 520");
+	svg.setAttribute("part", "icon");
 
-    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+	const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
 
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute(
-        "d",
-        isSuccess
-            ? "M260 20a240 240 0 100 480 240 240 0 100-480zm134 180L241 355c-6 6-16 6-22 0l-84-85c-6-6-6-16 0-22l22-22c6-6 16-6 22 0l44 45a10 10 0 0015 0l112-116c6-6 16-6 22 0l22 22c7 6 7 16 0 23z"
-            : "M260 20C128 20 20 128 20 260s108 240 240 240 240-108 240-240S392 20 260 20zM80 260a180 180 0 01284-147L113 364a176 176 0 01-33-104zm180 180c-39 0-75-12-104-33l251-251a180 180 0 01-147 284z"
-    );
+	const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+	path.setAttribute(
+		"d",
+		isSuccess
+			? "M260 20a240 240 0 100 480 240 240 0 100-480zm134 180L241 355c-6 6-16 6-22 0l-84-85c-6-6-6-16 0-22l22-22c6-6 16-6 22 0l44 45a10 10 0 0015 0l112-116c6-6 16-6 22 0l22 22c7 6 7 16 0 23z"
+			: "M260 20C128 20 20 128 20 260s108 240 240 240 240-108 240-240S392 20 260 20zM80 260a180 180 0 01284-147L113 364a176 176 0 01-33-104zm180 180c-39 0-75-12-104-33l251-251a180 180 0 01-147 284z",
+	);
 
-    // Assemble icon
-    g.appendChild(path);
-    svg.appendChild(g);
-    primitiveIcon.appendChild(svg);
-    boundarySpan.appendChild(primitiveIcon);
-    iconContainer.appendChild(boundarySpan);
+	// Assemble icon
+	g.appendChild(path);
+	svg.appendChild(g);
+	primitiveIcon.appendChild(svg);
+	boundarySpan.appendChild(primitiveIcon);
+	iconContainer.appendChild(boundarySpan);
 
-    const assistiveText = document.createElement("span");
-    assistiveText.classList.add("slds-assistive-text");
-    assistiveText.textContent = toastType;
-    iconContainer.appendChild(assistiveText);
+	const assistiveText = document.createElement("span");
+	assistiveText.classList.add("slds-assistive-text");
+	assistiveText.textContent = toastType;
+	iconContainer.appendChild(assistiveText);
 
-    const toastContent = document.createElement("div");
-    toastContent.classList.add("toastContent", "slds-notify__content");
-    toastContent.setAttribute("data-aura-rendered-by", "7387:0");
+	const toastContent = document.createElement("div");
+	toastContent.classList.add("toastContent", "slds-notify__content");
+	toastContent.setAttribute("data-aura-rendered-by", "7387:0");
 
-    const contentInner = document.createElement("div");
-    contentInner.classList.add("slds-align-middle", "slds-hyphenate");
-    contentInner.setAttribute("data-aura-rendered-by", "7388:0");
+	const contentInner = document.createElement("div");
+	contentInner.classList.add("slds-align-middle", "slds-hyphenate");
+	contentInner.setAttribute("data-aura-rendered-by", "7388:0");
 
-    const descriptionDiv = document.createElement("div");
-    descriptionDiv.id = "toastDescription7382:0";
-    descriptionDiv.setAttribute("data-aura-rendered-by", "7390:0");
+	const descriptionDiv = document.createElement("div");
+	descriptionDiv.id = "toastDescription7382:0";
+	descriptionDiv.setAttribute("data-aura-rendered-by", "7390:0");
 
-    const messageSpan = document.createElement("span");
-    messageSpan.classList.add("toastMessage", "slds-text-heading--small", "forceActionsText");
-    messageSpan.setAttribute("data-aura-rendered-by", "7395:0");
-    messageSpan.setAttribute("data-aura-class", "forceActionsText");
-    messageSpan.textContent = message;
+	const messageSpan = document.createElement("span");
+	messageSpan.classList.add(
+		"toastMessage",
+		"slds-text-heading--small",
+		"forceActionsText",
+	);
+	messageSpan.setAttribute("data-aura-rendered-by", "7395:0");
+	messageSpan.setAttribute("data-aura-class", "forceActionsText");
+	messageSpan.textContent = message;
 
-    // Assemble the message
-    descriptionDiv.appendChild(messageSpan);
-    contentInner.appendChild(descriptionDiv);
-    toastContent.appendChild(contentInner);
+	// Assemble the message
+	descriptionDiv.appendChild(messageSpan);
+	contentInner.appendChild(descriptionDiv);
+	toastContent.appendChild(contentInner);
 
-    // Assemble the toast
-    toast.appendChild(iconContainer);
-    toast.appendChild(toastContent);
-    toastContainer.appendChild(toast);
+	// Assemble the toast
+	toast.appendChild(iconContainer);
+	toast.appendChild(toastContent);
+	toastContainer.appendChild(toast);
 
-    return toastContainer;
+	return toastContainer;
 }
 
 /**
@@ -309,7 +331,7 @@ function showToast(message, isSuccess = true) {
 	const hanger = document.getElementsByClassName(
 		"oneConsoleTabset navexConsoleTabset",
 	)[0];
-    const toastElement = generateSldsToastMessage(message, isSuccess);
+	const toastElement = generateSldsToastMessage(message, isSuccess);
 	hanger.appendChild(toastElement);
 	setTimeout(() => {
 		hanger.removeChild(document.getElementById(toastElement.id));
@@ -634,8 +656,8 @@ function reloadTabs() {
  * @returns {HTMLElement} - The HTMLElement used to import data.
  */
 function generateSldsImport() {
-    const style = document.createElement("style");
-    style.textContent = `
+	const style = document.createElement("style");
+	style.textContent = `
         #${importId} {
             width: 100%;
             display: flex;
@@ -706,93 +728,100 @@ function generateSldsImport() {
         }
     `;
 
-    const container = document.createElement("div");
-    container.id = importId;
-    container.appendChild(style);
+	const container = document.createElement("div");
+	container.id = importId;
+	container.appendChild(style);
 
-    const overlay = document.createElement("div");
-    overlay.classList.add("overlay");
-    container.appendChild(overlay);
+	const overlay = document.createElement("div");
+	overlay.classList.add("overlay");
+	container.appendChild(overlay);
 
-    const modal = document.createElement("div");
-    modal.classList.add("modal");
-    container.appendChild(modal);
+	const modal = document.createElement("div");
+	modal.classList.add("modal");
+	container.appendChild(modal);
 
-    const closeButton = document.createElement("button");
-    closeButton.id = closeModalId;
-    const closeSpan = document.createElement("span");
-    closeSpan.innerHTML = "&times;";
-    closeButton.appendChild(closeSpan);
-    modal.appendChild(closeButton);
+	const closeButton = document.createElement("button");
+	closeButton.id = closeModalId;
+	const closeSpan = document.createElement("span");
+	closeSpan.innerHTML = "&times;";
+	closeButton.appendChild(closeSpan);
+	modal.appendChild(closeButton);
 
-    const header = document.createElement("h4");
-    header.classList.add("modal-header");
-    header.textContent = "Again, Why Salesforce: Import";
-    modal.appendChild(header);
+	const header = document.createElement("h4");
+	header.classList.add("modal-header");
+	header.textContent = "Again, Why Salesforce: Import";
+	modal.appendChild(header);
 
-    const inputFile = document.createElement("input");
-    inputFile.type = "file";
-    inputFile.id = "input-file-166";
-    inputFile.accept = ".json";
-    inputFile.classList.add("slds-file-selector__input", "slds-assistive-text");
-    inputFile.setAttribute("multiple", "");
-    inputFile.setAttribute("name", "fileInput");
-    inputFile.setAttribute("part", "input");
-    inputFile.setAttribute("aria-labelledby", "form-label-166 file-selector-label-166");
-    modal.appendChild(inputFile);
+	const inputFile = document.createElement("input");
+	inputFile.type = "file";
+	inputFile.id = "input-file-166";
+	inputFile.accept = ".json";
+	inputFile.classList.add("slds-file-selector__input", "slds-assistive-text");
+	inputFile.setAttribute("multiple", "");
+	inputFile.setAttribute("name", "fileInput");
+	inputFile.setAttribute("part", "input");
+	inputFile.setAttribute(
+		"aria-labelledby",
+		"form-label-166 file-selector-label-166",
+	);
+	modal.appendChild(inputFile);
 
-    const fileLabel = document.createElement("label");
-    fileLabel.classList.add("slds-file-selector__body");
-    fileLabel.id = "file-selector-label-166";
-    fileLabel.setAttribute("for", "input-file-166");
-    fileLabel.setAttribute("aria-hidden", "true");
+	const fileLabel = document.createElement("label");
+	fileLabel.classList.add("slds-file-selector__body");
+	fileLabel.id = "file-selector-label-166";
+	fileLabel.setAttribute("for", "input-file-166");
+	fileLabel.setAttribute("aria-hidden", "true");
 
-    const buttonSpan = document.createElement("span");
-    buttonSpan.classList.add("slds-file-selector__button", "slds-button", "slds-button_neutral");
-    buttonSpan.setAttribute("part", "button");
+	const buttonSpan = document.createElement("span");
+	buttonSpan.classList.add(
+		"slds-file-selector__button",
+		"slds-button",
+		"slds-button_neutral",
+	);
+	buttonSpan.setAttribute("part", "button");
 
-    const icon = document.createElement("lightning-primitive-icon");
-    icon.setAttribute("variant", "bare");
+	const icon = document.createElement("lightning-primitive-icon");
+	icon.setAttribute("variant", "bare");
 
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("class", "slds-button__icon slds-button__icon_left");
-    svg.setAttribute("focusable", "false");
-    svg.setAttribute("data-key", "upload");
-    svg.setAttribute("aria-hidden", "true");
-    svg.setAttribute("viewBox", "0 0 520 520");
-    svg.setAttribute("part", "icon");
+	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+	svg.setAttribute("class", "slds-button__icon slds-button__icon_left");
+	svg.setAttribute("focusable", "false");
+	svg.setAttribute("data-key", "upload");
+	svg.setAttribute("aria-hidden", "true");
+	svg.setAttribute("viewBox", "0 0 520 520");
+	svg.setAttribute("part", "icon");
 
-    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    path.setAttribute(
-        "d",
-        "M485 310h-30c-8 0-15 8-15 15v100c0 8-7 15-15 15H95c-8 0-15-7-15-15V325c0-7-7-15-15-15H35c-8 0-15 8-15 15v135a40 40 0 0040 40h400a40 40 0 0040-40V325c0-7-7-15-15-15zM270 24c-6-6-15-6-21 0L114 159c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l56-56c6-6 18-2 18 7v212c0 8 6 15 14 15h30c8 0 16-8 16-15V153c0-9 10-13 17-7l56 56c6 6 15 6 21 0l21-21c6-6 6-15 0-21z"
-    );
-    g.appendChild(path);
-    svg.appendChild(g);
-    icon.appendChild(svg);
-    buttonSpan.appendChild(icon);
-    buttonSpan.append("Upload Files");
+	const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+	const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+	path.setAttribute(
+		"d",
+		"M485 310h-30c-8 0-15 8-15 15v100c0 8-7 15-15 15H95c-8 0-15-7-15-15V325c0-7-7-15-15-15H35c-8 0-15 8-15 15v135a40 40 0 0040 40h400a40 40 0 0040-40V325c0-7-7-15-15-15zM270 24c-6-6-15-6-21 0L114 159c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l56-56c6-6 18-2 18 7v212c0 8 6 15 14 15h30c8 0 16-8 16-15V153c0-9 10-13 17-7l56 56c6 6 15 6 21 0l21-21c6-6 6-15 0-21z",
+	);
+	g.appendChild(path);
+	svg.appendChild(g);
+	icon.appendChild(svg);
+	buttonSpan.appendChild(icon);
+	buttonSpan.append("Upload Files");
 
-    const textSpan = document.createElement("span");
-    textSpan.classList.add("slds-file-selector__text", "slds-medium-show");
-    textSpan.textContent = "Or drop files";
-    fileLabel.appendChild(buttonSpan);
-    fileLabel.appendChild(textSpan);
+	const textSpan = document.createElement("span");
+	textSpan.classList.add("slds-file-selector__text", "slds-medium-show");
+	textSpan.textContent = "Or drop files";
+	fileLabel.appendChild(buttonSpan);
+	fileLabel.appendChild(textSpan);
 
-    modal.appendChild(fileLabel);
+	modal.appendChild(fileLabel);
 
-    const checkboxLabel = document.createElement("label");
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.id = overrideId;
-    checkbox.name = "override-tabs";
-    checkbox.value = "false";
-    checkboxLabel.appendChild(checkbox);
-    checkboxLabel.append("Override saved tabs");
-    modal.appendChild(checkboxLabel);
+	const checkboxLabel = document.createElement("label");
+	const checkbox = document.createElement("input");
+	checkbox.type = "checkbox";
+	checkbox.id = overrideId;
+	checkbox.name = "override-tabs";
+	checkbox.value = "false";
+	checkboxLabel.appendChild(checkbox);
+	checkboxLabel.append("Override saved tabs");
+	modal.appendChild(checkboxLabel);
 
-    return container;
+	return container;
 }
 
 let overridePick;
@@ -800,8 +829,9 @@ let overridePick;
  * Displays the import modal for uploading tab data.
  */
 function showFileImport() {
-    if(setupTabUl.querySelector(`#${importId}`) != null)
-        return;
+	if (setupTabUl.querySelector(`#${importId}`) != null) {
+		return;
+	}
 
 	setupTabUl.appendChild(generateSldsImport());
 	setupTabUl.querySelector(`#${closeModalId}`).addEventListener(
