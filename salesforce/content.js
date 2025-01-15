@@ -629,45 +629,170 @@ function reloadTabs() {
 }
 
 /**
- * Generates the HTML structure for the import modal.
+ * Generates the HTMLElement for the import modal.
  *
- * @returns {string} - The HTML string for the import modal.
+ * @returns {HTMLElement} - The HTMLElement used to import data.
  */
 function generateSldsImport() {
-	return `<div id="${importId}" style="width: 100%;display: flex;align-items: center;justify-content: center;position: fixed;left: 0;">
-                <!-- focus on div -->
-                <!-- z-index of tabs on setupTabUl is == 1 so we have to move up over them -->
-                <div style="position: absolute; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.5); z-index: 2;top:0;left:0;pointer-events: all;"></div>
-                <!-- main content div -->
-                <div style="position: absolute;background-color: lightgoldenrodyellow;top: 2rem;width: 18rem;height: 8rem;display: flex;align-items: center;justify-content: center;text-align: center;border: 1px solid lightskyblue;border-radius: 1rem;flex-direction: column;box-shadow: 1px 2px 3px black;z-index: 3;">
-                    <!-- X button -->
-                    <button 
-                        id="${closeModalId}"
-                        style="position: absolute;top: 0rem;right: 0rem;width: 1.5rem;height: 1.5rem;background: lightskyblue;border: 1px solid black;color: black;font-size: 1.2rem;cursor: pointer;border-radius: 50%;display: flex;align-items: center;justify-content: center; line-height: 1;">
-                        <span style="transform: translateY(-2px) translateX(1px);">
-                            &times;
-                        </span>
-                    </button>
-                    <h4 style="font-weight: revert;font-size: initial;margin-bottom: 0.6rem;">Again, Why Salesforce: Import</h4>
-                    <input accept=".json" class="slds-file-selector__input slds-assistive-text" type="file" id="input-file-166" multiple="" name="fileInput" part="input" aria-labelledby="form-label-166 file-selector-label-166">
-                    <label class="slds-file-selector__body" id="file-selector-label-166" data-file-selector-label="" for="input-file-166" aria-hidden="true">
-                        <span class="slds-file-selector__button slds-button slds-button_neutral" part="button">
-                            <lightning-primitive-icon variant="bare">
-                                <svg class="slds-button__icon slds-button__icon_left" focusable="false" data-key="upload" aria-hidden="true" viewBox="0 0 520 520" part="icon">
-                                    <g>
-                                        <path d="M485 310h-30c-8 0-15 8-15 15v100c0 8-7 15-15 15H95c-8 0-15-7-15-15V325c0-7-7-15-15-15H35c-8 0-15 8-15 15v135a40 40 0 0040 40h400a40 40 0 0040-40V325c0-7-7-15-15-15zM270 24c-6-6-15-6-21 0L114 159c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l56-56c6-6 18-2 18 7v212c0 8 6 15 14 15h30c8 0 16-8 16-15V153c0-9 10-13 17-7l56 56c6 6 15 6 21 0l21-21c6-6 6-15 0-21z"></path>
-                                    </g>
-                                </svg>
-                            </lightning-primitive-icon>Upload Files
-                        </span>
-                        <span class="slds-file-selector__text slds-medium-show">Or drop files</span>
-                    </label>
-                    <label>
-                        <input id=${overrideId} type="checkbox" name="override-tabs" value="false">
-                        Override saved tabs
-                    </label>
-                </div>
-            </div>`;
+    const style = document.createElement("style");
+    style.textContent = `
+        #${importId} {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: fixed;
+            left: 0;
+        }
+        #${importId} > .overlay {
+            position: absolute;
+            width: 100vw;
+            height: 100vh;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2;
+            top: 0;
+            left: 0;
+            pointer-events: all;
+        }
+        #${importId} > .modal {
+            position: absolute;
+            background-color: lightgoldenrodyellow;
+            top: 2rem;
+            width: 18rem;
+            height: 8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border: 1px solid lightskyblue;
+            border-radius: 1rem;
+            flex-direction: column;
+            box-shadow: 1px 2px 3px black;
+            z-index: 3;
+        }
+        #${closeModalId} {
+            position: absolute;
+            top: 0rem;
+            right: 0rem;
+            width: 1.5rem;
+            height: 1.5rem;
+            background: lightskyblue;
+            border: 1px solid black;
+            color: black;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            line-height: 1;
+        }
+        #${closeModalId} > span {
+            transform: translateY(-2px) translateX(1px);
+        }
+        .modal-header {
+            font-weight: revert;
+            font-size: initial;
+            margin-bottom: 0.6rem;
+        }
+        .slds-file-selector__body {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .slds-file-selector__text {
+            margin-left: 0.5rem;
+        }
+    `;
+
+    const container = document.createElement("div");
+    container.id = importId;
+    container.appendChild(style);
+
+    const overlay = document.createElement("div");
+    overlay.classList.add("overlay");
+    container.appendChild(overlay);
+
+    const modal = document.createElement("div");
+    modal.classList.add("modal");
+    container.appendChild(modal);
+
+    const closeButton = document.createElement("button");
+    closeButton.id = closeModalId;
+    const closeSpan = document.createElement("span");
+    closeSpan.innerHTML = "&times;";
+    closeButton.appendChild(closeSpan);
+    modal.appendChild(closeButton);
+
+    const header = document.createElement("h4");
+    header.classList.add("modal-header");
+    header.textContent = "Again, Why Salesforce: Import";
+    modal.appendChild(header);
+
+    const inputFile = document.createElement("input");
+    inputFile.type = "file";
+    inputFile.id = "input-file-166";
+    inputFile.accept = ".json";
+    inputFile.classList.add("slds-file-selector__input", "slds-assistive-text");
+    inputFile.setAttribute("multiple", "");
+    inputFile.setAttribute("name", "fileInput");
+    inputFile.setAttribute("part", "input");
+    inputFile.setAttribute("aria-labelledby", "form-label-166 file-selector-label-166");
+    modal.appendChild(inputFile);
+
+    const fileLabel = document.createElement("label");
+    fileLabel.classList.add("slds-file-selector__body");
+    fileLabel.id = "file-selector-label-166";
+    fileLabel.setAttribute("for", "input-file-166");
+    fileLabel.setAttribute("aria-hidden", "true");
+
+    const buttonSpan = document.createElement("span");
+    buttonSpan.classList.add("slds-file-selector__button", "slds-button", "slds-button_neutral");
+    buttonSpan.setAttribute("part", "button");
+
+    const icon = document.createElement("lightning-primitive-icon");
+    icon.setAttribute("variant", "bare");
+
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "slds-button__icon slds-button__icon_left");
+    svg.setAttribute("focusable", "false");
+    svg.setAttribute("data-key", "upload");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("viewBox", "0 0 520 520");
+    svg.setAttribute("part", "icon");
+
+    const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    path.setAttribute(
+        "d",
+        "M485 310h-30c-8 0-15 8-15 15v100c0 8-7 15-15 15H95c-8 0-15-7-15-15V325c0-7-7-15-15-15H35c-8 0-15 8-15 15v135a40 40 0 0040 40h400a40 40 0 0040-40V325c0-7-7-15-15-15zM270 24c-6-6-15-6-21 0L114 159c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l56-56c6-6 18-2 18 7v212c0 8 6 15 14 15h30c8 0 16-8 16-15V153c0-9 10-13 17-7l56 56c6 6 15 6 21 0l21-21c6-6 6-15 0-21z"
+    );
+    g.appendChild(path);
+    svg.appendChild(g);
+    icon.appendChild(svg);
+    buttonSpan.appendChild(icon);
+    buttonSpan.append("Upload Files");
+
+    const textSpan = document.createElement("span");
+    textSpan.classList.add("slds-file-selector__text", "slds-medium-show");
+    textSpan.textContent = "Or drop files";
+    fileLabel.appendChild(buttonSpan);
+    fileLabel.appendChild(textSpan);
+
+    modal.appendChild(fileLabel);
+
+    const checkboxLabel = document.createElement("label");
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.id = overrideId;
+    checkbox.name = "override-tabs";
+    checkbox.value = "false";
+    checkboxLabel.appendChild(checkbox);
+    checkboxLabel.append("Override saved tabs");
+    modal.appendChild(checkboxLabel);
+
+    return container;
 }
 
 let overridePick;
@@ -675,13 +800,16 @@ let overridePick;
  * Displays the import modal for uploading tab data.
  */
 function showFileImport() {
-	setupTabUl.insertAdjacentHTML("beforeend", generateSldsImport());
-	document.getElementById(closeModalId).addEventListener(
+    if(setupTabUl.querySelector(`#${importId}`) != null)
+        return;
+
+	setupTabUl.appendChild(generateSldsImport());
+	setupTabUl.querySelector(`#${closeModalId}`).addEventListener(
 		"click",
-		() => document.getElementById(importId).remove(),
+		() => setupTabUl.querySelector(`#${importId}`).remove(),
 	);
 	overridePick = false;
-	document.getElementById(overrideId).addEventListener(
+	setupTabUl.querySelector(`#${overrideId}`).addEventListener(
 		"click",
 		() => overridePick = !overridePick,
 	);
