@@ -312,7 +312,7 @@ function generateSldsToastMessage(message, isSuccess, isWarning) {
 	);
 	messageSpan.setAttribute("data-aura-rendered-by", "7395:0");
 	messageSpan.setAttribute("data-aura-class", "forceActionsText");
-	messageSpan.innerHTML = message.replace("\n", "<br />");
+	messageSpan.innerHTML = message.replaceAll("\n", "<br />");
 
 	// Assemble the message
 	descriptionDiv.appendChild(messageSpan);
