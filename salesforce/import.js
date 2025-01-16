@@ -6,32 +6,37 @@ let duplicatePick;
 const reader = new FileReader();
 
 reader.onload = function (e) {
-    try {
-        const imported = JSON.parse(e.target.result);
+	try {
+		const imported = JSON.parse(e.target.result);
 
-        // Validate JSON structure
-        if (
-            Array.isArray(imported) &&
-            imported.every((item) =>
-                typeof item.tabTitle === "string" &&
-                typeof item.url === "string"
-            )
-        ) {
-            const message = { what: "import", imported, override: overridePick, skipDuplicates: duplicatePick };
-            postMessage(message, "*");
-        } else {
-            postMessage({
-                what: "error",
-                message:
-                    "Invalid JSON structure. Your file must contain an array in which each item must have 'tabTitle' and 'url' as strings.",
-            });
-        }
-    } catch (error) {
-        postMessage({
-            what: "error",
-            message: `Error parsing JSON: ${error.message}`,
-        });
-    }
+		// Validate JSON structure
+		if (
+			Array.isArray(imported) &&
+			imported.every((item) =>
+				typeof item.tabTitle === "string" &&
+				typeof item.url === "string"
+			)
+		) {
+			const message = {
+				what: "import",
+				imported,
+				override: overridePick,
+				skipDuplicates: duplicatePick,
+			};
+			postMessage(message, "*");
+		} else {
+			postMessage({
+				what: "error",
+				message:
+					"Invalid JSON structure. Your file must contain an array in which each item must have 'tabTitle' and 'url' as strings.",
+			});
+		}
+	} catch (error) {
+		postMessage({
+			what: "error",
+			message: `Error parsing JSON: ${error.message}`,
+		});
+	}
 };
 /**
  * Sets up event listeners for file upload through both input field and drag-and-drop.
@@ -49,8 +54,8 @@ function listenToFileUpload() {
 			return;
 		}
 
-        overridePick = dropArea.querySelector(`#${overrideId}`).checked;
-        duplicatePick = dropArea.querySelector(`#${duplicateId}`).checked;
+		overridePick = dropArea.querySelector(`#${overrideId}`).checked;
+		duplicatePick = dropArea.querySelector(`#${duplicateId}`).checked;
 		reader.readAsText(file);
 	}
 

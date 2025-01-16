@@ -312,7 +312,7 @@ function generateSldsToastMessage(message, isSuccess, isWarning) {
 	);
 	messageSpan.setAttribute("data-aura-rendered-by", "7395:0");
 	messageSpan.setAttribute("data-aura-class", "forceActionsText");
-	messageSpan.innerHTML = message.replace("\n","<br />");
+	messageSpan.innerHTML = message.replace("\n", "<br />");
 
 	// Assemble the message
 	descriptionDiv.appendChild(messageSpan);
@@ -334,11 +334,11 @@ function generateSldsToastMessage(message, isSuccess, isWarning) {
  * @returns {number} - The estimated reading time in milliseconds.
  */
 function calculateReadingTime(message) {
-    const words = message.split(/\s+/).filter(word => word.length > 0);
-    const wordsPerMinute = 200; // Average reading speed
-    const readingTimeMinutes = words.length / wordsPerMinute;
-    const readingTimeSeconds = Math.ceil(readingTimeMinutes * 60);
-    return (readingTimeSeconds + 2) * 1000;
+	const words = message.split(/\s+/).filter((word) => word.length > 0);
+	const wordsPerMinute = 200; // Average reading speed
+	const readingTimeMinutes = words.length / wordsPerMinute;
+	const readingTimeSeconds = Math.ceil(readingTimeMinutes * 60);
+	return (readingTimeSeconds + 2) * 1000;
 }
 /**
  * Displays a toast message in the UI.
@@ -868,7 +868,7 @@ function showFileImport() {
 	setupTabUl.appendChild(generateSldsImport());
 	setupTabUl.querySelector(`#${closeModalId}`).addEventListener(
 		"click",
-		() => setupTabUl.querySelector(`#${importId}`).remove()
+		() => setupTabUl.querySelector(`#${importId}`).remove(),
 	);
 }
 
@@ -883,19 +883,28 @@ function importer(message) {
 		currentTabs.length = 0;
 	}
 
-    const currentUrls = new Set(currentTabs.map(current => current.url));
+	const currentUrls = new Set(currentTabs.map((current) => current.url));
 	let importedArray = message.imported;
-    let duplicatesArray;
-    if(message.skipDuplicates){
-        importedArray = importedArray.filter(imported => !currentUrls.has(imported.url));
-    } else {
-        // check if there are duplicates to warn the user
-        duplicatesArray = importedArray.filter(imported => currentUrls.has(imported.url));
-        if(duplicatesArray.length >= 1){
-            const duplicatedLabels = duplicatesArray.map(dup => dup.tabTitle).join(", ");
-            showToast(`Some duplicated tabs where imported:\n${duplicatedLabels}`, true, true);
-        }
-    }
+	let duplicatesArray;
+	if (message.skipDuplicates) {
+		importedArray = importedArray.filter((imported) =>
+			!currentUrls.has(imported.url)
+		);
+	} else {
+		// check if there are duplicates to warn the user
+		duplicatesArray = importedArray.filter((imported) =>
+			currentUrls.has(imported.url)
+		);
+		if (duplicatesArray.length >= 1) {
+			const duplicatedLabels = duplicatesArray.map((dup) => dup.tabTitle)
+				.join(", ");
+			showToast(
+				`Some duplicated tabs where imported:\n${duplicatedLabels}`,
+				true,
+				true,
+			);
+		}
+	}
 	currentTabs.push(...importedArray);
 	// remove file import
 	setupTabUl.removeChild(setupTabUl.querySelector(`#${importId}`));
