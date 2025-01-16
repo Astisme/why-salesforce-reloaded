@@ -11,7 +11,7 @@ const duplicateId = `${prefix}-duplicate`;
  *
  * @returns {HTMLElement} - The HTMLElement used to import data.
  */
-function generateSldsImport() {
+function _generateSldsImport() {
 	const style = document.createElement("style");
 	style.textContent = `
         #${importId} {
@@ -198,7 +198,7 @@ function generateSldsImport() {
  * @param {string} row.url - The URL of the tab.
  * @returns {HTMLElement} - The generated list item element representing the tab.
  */
-function generateRowTemplate(row) {
+function _generateRowTemplate(row) {
 	const { tabTitle, url } = row;
 	const miniURLpromise = minifyURL(url);
 	const expURLpromise = expandURL(url);

@@ -319,7 +319,7 @@ function init(items) {
 		: items[items.key];
 
 	rowObj.forEach((row) =>
-		generateRowTemplate(row)
+		_generateRowTemplate(row)
 			.then((r) => setupTabUl.appendChild(r))
 	);
 	currentTabs.length = 0;
@@ -440,7 +440,7 @@ function showFileImport() {
 		return;
 	}
 
-	setupTabUl.appendChild(generateSldsImport());
+	setupTabUl.appendChild(_generateSldsImport());
 	setupTabUl.querySelector(`#${closeModalId}`).addEventListener(
 		"click",
 		() => setupTabUl.querySelector(`#${importId}`).remove(),
