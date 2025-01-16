@@ -458,6 +458,7 @@ function generateFavouriteButton() {
  */
 function toggleFavouriteButton(button, isSaved) {
 	// will use the class identifier if there was an error with the image (and was removed)
+    button = button ?? document.getElementById(buttonId);
 	const star = button.querySelector(`#${starId}`) ??
 		button.querySelector(`.${starId}`);
 	const slashedStar = button.querySelector(`#${slashedStarId}`) ??
@@ -498,7 +499,7 @@ function actionFavourite(parent) {
 				currentTabs.push({ tabTitle, url });
 			}
 
-			toggleFavouriteButton(parent.querySelector(`#${buttonId}`));
+			toggleFavouriteButton();
 			setStorage(currentTabs);
 		});
 }
@@ -874,6 +875,8 @@ function showFileImport() {
 
 /**
  * Handles the imported tab data and updates the storage with the newly imported tabs.
+ * If the user wants to skip the duplicated urls, they won't be imported; otherwise, if duplicates are detected, the user will be warned about it.
+ * If the page where the user is at this moment gets imported, the favourite img is switched to the unfavourite one.
  *
  * @param {Object} message - The message containing the imported tab data.
  * @param {Array<Object>} message.imported - The array of imported tab data.
@@ -886,6 +889,8 @@ function importer(message) {
 	const currentUrls = new Set(currentTabs.map((current) => current.url));
 	let importedArray = message.imported;
 	let duplicatesArray;
+
+    // check for duplicated entries
 	if (message.skipDuplicates) {
 		importedArray = importedArray.filter((imported) =>
 			!currentUrls.has(imported.url)
@@ -905,6 +910,15 @@ function importer(message) {
 			);
 		}
 	}
+
+    // check if the current page is being imported
+    minifyURL(href)
+    .then(miniURL => {
+        minifiedURL = miniURL;
+        if(!currentUrls.has(miniURL) && importedArray.some(imported => imported.url === miniURL))
+            toggleFavouriteButton();
+    })
+
 	currentTabs.push(...importedArray);
 	// remove file import
 	setupTabUl.removeChild(setupTabUl.querySelector(`#${importId}`));
