@@ -458,7 +458,7 @@ function generateFavouriteButton() {
  */
 function toggleFavouriteButton(button, isSaved) {
 	// will use the class identifier if there was an error with the image (and was removed)
-    button = button ?? document.getElementById(buttonId);
+	button = button ?? document.getElementById(buttonId);
 	const star = button.querySelector(`#${starId}`) ??
 		button.querySelector(`.${starId}`);
 	const slashedStar = button.querySelector(`#${slashedStarId}`) ??
@@ -890,7 +890,7 @@ function importer(message) {
 	let importedArray = message.imported;
 	let duplicatesArray;
 
-    // check for duplicated entries
+	// check for duplicated entries
 	if (message.skipDuplicates) {
 		importedArray = importedArray.filter((imported) =>
 			!currentUrls.has(imported.url)
@@ -911,13 +911,17 @@ function importer(message) {
 		}
 	}
 
-    // check if the current page is being imported
-    minifyURL(href)
-    .then(miniURL => {
-        minifiedURL = miniURL;
-        if(!currentUrls.has(miniURL) && importedArray.some(imported => imported.url === miniURL))
-            toggleFavouriteButton();
-    })
+	// check if the current page is being imported
+	minifyURL(href)
+		.then((miniURL) => {
+			minifiedURL = miniURL;
+			if (
+				!currentUrls.has(miniURL) &&
+				importedArray.some((imported) => imported.url === miniURL)
+			) {
+				toggleFavouriteButton();
+			}
+		});
 
 	currentTabs.push(...importedArray);
 	// remove file import
