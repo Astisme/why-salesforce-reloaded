@@ -14,8 +14,10 @@ const starId = `${prefix}-star`;
 const slashedStarId = `${prefix}-slashed-star`;
 const toastId = `${prefix}-toast`;
 const importId = `${prefix}-import`;
+const importFileId = `${importId}-file`;
 const closeModalId = `${prefix}-closeModal`;
 const overrideId = `${prefix}-override`;
+const duplicateId = `${prefix}-duplicate`;
 let wasOnSavedTab;
 let isCurrentlyOnSavedTab;
 let fromHrefUpdate;
@@ -310,7 +312,7 @@ function generateSldsToastMessage(message, isSuccess, isWarning) {
 	);
 	messageSpan.setAttribute("data-aura-rendered-by", "7395:0");
 	messageSpan.setAttribute("data-aura-class", "forceActionsText");
-	messageSpan.textContent = message;
+	messageSpan.innerHTML = message.replace("\n","<br />");
 
 	// Assemble the message
 	descriptionDiv.appendChild(messageSpan);
@@ -325,6 +327,19 @@ function generateSldsToastMessage(message, isSuccess, isWarning) {
 	return toastContainer;
 }
 
+/**
+ * Calculates the estimated time (in milliseconds) it takes to read a given message.
+ *
+ * @param {string} message - The message to calculate the reading time for.
+ * @returns {number} - The estimated reading time in milliseconds.
+ */
+function calculateReadingTime(message) {
+    const words = message.split(/\s+/).filter(word => word.length > 0);
+    const wordsPerMinute = 200; // Average reading speed
+    const readingTimeMinutes = words.length / wordsPerMinute;
+    const readingTimeSeconds = Math.ceil(readingTimeMinutes * 60);
+    return (readingTimeSeconds + 2) * 1000;
+}
 /**
  * Displays a toast message in the UI.
  *
@@ -344,7 +359,7 @@ function showToast(message, isSuccess = true, isWarning = false) {
 	hanger.appendChild(toastElement);
 	setTimeout(() => {
 		hanger.removeChild(document.getElementById(toastElement.id));
-	}, 4000);
+	}, calculateReadingTime(message));
 }
 
 /**
@@ -763,7 +778,7 @@ function generateSldsImport() {
 
 	const inputFile = document.createElement("input");
 	inputFile.type = "file";
-	inputFile.id = "input-file-166";
+	inputFile.id = importFileId;
 	inputFile.accept = ".json";
 	inputFile.classList.add("slds-file-selector__input", "slds-assistive-text");
 	inputFile.setAttribute("multiple", "");
@@ -777,8 +792,7 @@ function generateSldsImport() {
 
 	const fileLabel = document.createElement("label");
 	fileLabel.classList.add("slds-file-selector__body");
-	fileLabel.id = "file-selector-label-166";
-	fileLabel.setAttribute("for", "input-file-166");
+	fileLabel.setAttribute("for", importFileId);
 	fileLabel.setAttribute("aria-hidden", "true");
 
 	const buttonSpan = document.createElement("span");
@@ -820,20 +834,29 @@ function generateSldsImport() {
 
 	modal.appendChild(fileLabel);
 
-	const checkboxLabel = document.createElement("label");
-	const checkbox = document.createElement("input");
-	checkbox.type = "checkbox";
-	checkbox.id = overrideId;
-	checkbox.name = "override-tabs";
-	checkbox.value = "false";
-	checkboxLabel.appendChild(checkbox);
-	checkboxLabel.append("Override saved tabs");
-	modal.appendChild(checkboxLabel);
+	const overrideCheckboxLabel = document.createElement("label");
+	const overrideCheckbox = document.createElement("input");
+	overrideCheckbox.type = "checkbox";
+	overrideCheckbox.id = overrideId;
+	overrideCheckbox.name = "override-tabs";
+	overrideCheckbox.checked = false;
+	overrideCheckboxLabel.appendChild(overrideCheckbox);
+	overrideCheckboxLabel.append("Override saved tabs.");
+	modal.appendChild(overrideCheckboxLabel);
+
+	const duplicateCheckboxLabel = document.createElement("label");
+	const duplicateCheckbox = document.createElement("input");
+	duplicateCheckbox.type = "checkbox";
+	duplicateCheckbox.id = duplicateId;
+	duplicateCheckbox.name = "duplicate-tabs";
+	duplicateCheckbox.checked = true;
+	duplicateCheckboxLabel.appendChild(duplicateCheckbox);
+	duplicateCheckboxLabel.append("Skip duplicate tabs.");
+	modal.appendChild(duplicateCheckboxLabel);
 
 	return container;
 }
 
-let overridePick;
 /**
  * Displays the import modal for uploading tab data.
  */
@@ -845,12 +868,7 @@ function showFileImport() {
 	setupTabUl.appendChild(generateSldsImport());
 	setupTabUl.querySelector(`#${closeModalId}`).addEventListener(
 		"click",
-		() => setupTabUl.querySelector(`#${importId}`).remove(),
-	);
-	overridePick = false;
-	setupTabUl.querySelector(`#${overrideId}`).addEventListener(
-		"click",
-		() => overridePick = !overridePick,
+		() => setupTabUl.querySelector(`#${importId}`).remove()
 	);
 }
 
@@ -861,10 +879,23 @@ function showFileImport() {
  * @param {Array<Object>} message.imported - The array of imported tab data.
  */
 function importer(message) {
-	const importedArray = message.imported;
-	if (overridePick) {
+	if (message.override) {
 		currentTabs.length = 0;
 	}
+
+    const currentUrls = new Set(currentTabs.map(current => current.url));
+	let importedArray = message.imported;
+    let duplicatesArray;
+    if(message.skipDuplicates){
+        importedArray = importedArray.filter(imported => !currentUrls.has(imported.url));
+    } else {
+        // check if there are duplicates to warn the user
+        duplicatesArray = importedArray.filter(imported => currentUrls.has(imported.url));
+        if(duplicatesArray.length >= 1){
+            const duplicatedLabels = duplicatesArray.map(dup => dup.tabTitle).join(", ");
+            showToast(`Some duplicated tabs where imported:\n${duplicatedLabels}`, true, true);
+        }
+    }
 	currentTabs.push(...importedArray);
 	// remove file import
 	setupTabUl.removeChild(setupTabUl.querySelector(`#${importId}`));
