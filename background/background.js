@@ -190,3 +190,51 @@ browserObj.runtime.onMessage.addListener((request, _, sendResponse) => {
 
 	return captured; // will call sendResponse asynchronously if true
 });
+
+const menuItems = [
+    { id: "open-other-org", title: "Open in another Org", contexts: ["link"] },
+    { type: "separator", contexts: ["link"] },
+
+    { id: "move", title: "Move tab", contexts: ["link"] },
+    { id: "move-first", title: "Move first", contexts: ["link"], parentId: "move" },
+    { id: "move-left", title: "Move left", contexts: ["link"], parentId: "move" },
+    { id: "move-right", title: "Move right", contexts: ["link"], parentId: "move" },
+    { id: "move-last", title: "Move last", contexts: ["link"], parentId: "move" },
+    { type: "separator", contexts: ["link"] },
+
+    { id: "remove", title: "Remove tab(s)", contexts: ["link"] },
+    { id: "remove-tab", title: "Remove this tab", contexts: ["link"], parentId: "remove" },
+    { id: "remove-other-tabs", title: "Remove other tabs", contexts: ["link"], parentId: "remove" },
+    { id: "remove-left-tabs", title: "Remove tabs to the left", contexts: ["link"], parentId: "remove" },
+    { id: "remove-right-tabs", title: "Remove tabs to the right", contexts: ["link"], parentId: "remove" },
+
+    { id: "save-tab", title: "Save as tab", contexts: ["page"] },
+];
+
+browserObj.runtime.onInstalled.addListener(() => {
+    browserObj.contextMenus.removeAll(() => {
+        menuItems.forEach(item => browserObj.contextMenus.create({
+            ...item,
+            documentUrlPatterns: [
+				"https://*.my.salesforce-setup.com/lightning/setup/*",
+				"https://*.lightning.force.com/*"
+			]
+        }));
+    });
+});
+
+browserObj.contextMenus.onClicked.addListener((info, _) => {
+    const message = {what: info.menuItemId};
+    switch (info.menuItemId) {
+        case "open-other-org":
+            message.tabUrl = minifyURL(info.pageUrl);
+            message.url = expandURL(info.pageUrl);
+            break;
+        default:
+            message.tabUrl = minifyURL(info.linkUrl);
+            message.url = expandURL(info.linkUrl);
+            message.tabTitle = info.linkText;
+            break;
+    }
+    notify(message);
+});

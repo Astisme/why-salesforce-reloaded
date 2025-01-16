@@ -2,17 +2,18 @@
 	"manifest_version": 3,
 	"name": "Again, Why Salesforce",
 	"version": "1.4.1",
-	"permissions": ["storage", "tabs", "activeTab"],
+	"permissions": ["storage", "tabs", "activeTab", "contextMenus"],
 	"description": "Create and manage custom tabs in the available space on Salesforce Lightning Setup page.",
 	"homepage_url": "https://github.com/Astisme/again-why-salesforce",
 	"content_scripts": [
 		{
 			"matches": [
-				"*://*.my.salesforce-setup.com/lightning/setup/*",
-				"*://*.lightning.force.com/*"
+				"https://*.my.salesforce-setup.com/lightning/setup/*",
+				"https://*.lightning.force.com/*"
 			],
 			"js": [
 				"./dragHandler.js",
+                "./salesforce/generator.js",
 				"./salesforce/content.js",
 				"./salesforce/import.js"
 			],
@@ -25,8 +26,8 @@
 				"salesforce/lightning-navigation.js"
 			],
 			"matches": [
-				"*://*.my.salesforce-setup.com/*",
-				"*://*.lightning.force.com/*"
+				"https://*.my.salesforce-setup.com/*",
+				"https://*.lightning.force.com/*"
 			]
 		},
 		{
@@ -34,8 +35,8 @@
 				"assets/svgs/*.svg"
 			],
 			"matches": [
-				"*://*.my.salesforce-setup.com/*",
-				"*://*.lightning.force.com/*"
+				"https://*.my.salesforce-setup.com/*",
+				"https://*.lightning.force.com/*"
 			]
 		}
 	],
