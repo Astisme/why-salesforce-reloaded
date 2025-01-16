@@ -84,61 +84,6 @@ function minifyURL(url) {
 }
 
 /**
- * Expands a URL by adding the domain and the Salesforce setup parts.
- * This function undoes what minifyURL did to a URL.
- *
- * @param {string} url - The URL to expand.
- * @returns {string} The expanded URL.
- *
- * These links would all collapse into "https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/".
- * https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/
- * https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home
- * https://myorgdomain.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/
- * https://myorgdomain.my.salesforce-setup.com/lightning/setup/SetupOneHome/home
- * lightning/setup/SetupOneHome/home/
- * lightning/setup/SetupOneHome/home
- * SetupOneHome/home/
- * SetupOneHome/home
- */
-function expandURL(url) {
-	return chrome.runtime.sendMessage({
-		message: { what: "expand", url, baseUrl },
-	});
-}
-
-/**
- * Picks a link target between _blank and _top based on whether the user is click CTRL or the meta key.
- *
- * @param {Event} e - the click event
- * @returns {String} "_blank" | "_top"
- */
-function getLinkTarget(e) {
-	return (e.ctrlKey || e.metaKey) ? "_blank" : "_top";
-}
-/**
- * Handles the redirection to another Salesforce page without requiring a full reload.
- *
- * @param {Event} e - the click event
- */
-function handleLightningLinkClick(e) {
-	e.preventDefault(); // Prevent the default link behavior (href navigation)
-	const url = e.currentTarget.href;
-	const aTarget = e.currentTarget.target;
-	const target = aTarget || getLinkTarget(e);
-	// open link into new page when requested or if the user is clicking the favourite tab one more time
-	if (target === "_blank" || url === href) {
-		open(url, target);
-	} else {
-		postMessage({
-			what: "lightningNavigation",
-			navigationType: "url",
-			url,
-			fallbackURL: url,
-		}, "*");
-	}
-}
-
-/**
  * Calculates the estimated time (in milliseconds) it takes to read a given message.
  *
  * @param {string} message - The message to calculate the reading time for.
@@ -162,7 +107,7 @@ function showToast(message, isSuccess = true, isWarning = false) {
 	const hanger = document.getElementsByClassName(
 		"oneConsoleTabset navexConsoleTabset",
 	)[0];
-	const toastElement = generateSldsToastMessage(
+	const toastElement = _generateSldsToastMessage(
 		message,
 		isSuccess,
 		isWarning,
@@ -295,7 +240,7 @@ function showFavouriteButton(count = 0) {
             checkUpdateFavouriteButton();
 			continue;
 		}
-		header.appendChild(generateFavouriteButton());
+		header.appendChild(_generateFavouriteButton());
 		const button = header.querySelector(`#${buttonId}`);
 		toggleFavouriteButton(button, isCurrentlyOnSavedTab); // init correctly
 		button.addEventListener(
@@ -628,11 +573,12 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 		case "remove-right-tabs":
             removeOtherTabs(message.tabUrl, message.tabTitle, false);
 			break;
-		case "save-tab":
+		case "save-tab": {
             const star = document.getElementById(starId);
             if(!star.classList.contains("hidden"))
                 star.click();
 			break;
+        }
 
         default:
             break;

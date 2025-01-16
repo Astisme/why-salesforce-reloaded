@@ -191,6 +191,62 @@ function _generateSldsImport() {
 
 
 /**
+ * Expands a URL by adding the domain and the Salesforce setup parts.
+ * This function undoes what minifyURL did to a URL.
+ *
+ * @param {string} url - The URL to expand.
+ * @returns {string} The expanded URL.
+ *
+ * These links would all collapse into "https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/".
+ * https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/
+ * https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home
+ * https://myorgdomain.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/
+ * https://myorgdomain.my.salesforce-setup.com/lightning/setup/SetupOneHome/home
+ * lightning/setup/SetupOneHome/home/
+ * lightning/setup/SetupOneHome/home
+ * SetupOneHome/home/
+ * SetupOneHome/home
+ */
+function expandURL(url) {
+	return chrome.runtime.sendMessage({
+		message: { what: "expand", url, baseUrl },
+	});
+}
+
+/**
+ * Picks a link target between _blank and _top based on whether the user is click CTRL or the meta key.
+ *
+ * @param {Event} e - the click event
+ * @returns {String} "_blank" | "_top"
+ */
+function getLinkTarget(e) {
+	return (e.ctrlKey || e.metaKey) ? "_blank" : "_top";
+}
+
+/**
+ * Handles the redirection to another Salesforce page without requiring a full reload.
+ *
+ * @param {Event} e - the click event
+ */
+function handleLightningLinkClick(e) {
+	e.preventDefault(); // Prevent the default link behavior (href navigation)
+	const url = e.currentTarget.href;
+	const aTarget = e.currentTarget.target;
+	const target = aTarget || getLinkTarget(e);
+	// open link into new page when requested or if the user is clicking the favourite tab one more time
+	if (target === "_blank" || url === href) {
+		open(url, target);
+	} else {
+		postMessage({
+			what: "lightningNavigation",
+			navigationType: "url",
+			url,
+			fallbackURL: url,
+		}, "*");
+	}
+}
+
+/**
  * Generates the HTML for a tab row.
  *
  * @param {Object} row - The tab data object containing title and URL.
@@ -256,7 +312,7 @@ function _generateRowTemplate(row) {
  * @param {boolean} isSuccess - Indicates whether the message is a success or error.
  * @returns {HTMLElement} - The generated element for the toast message.
  */
-function generateSldsToastMessage(message, isSuccess, isWarning) {
+function _generateSldsToastMessage(message, isSuccess, isWarning) {
 	const toastType = isSuccess
 		? (isWarning ? "info" : "success")
 		: (isWarning ? "warning" : "error");
@@ -379,7 +435,7 @@ function generateSldsToastMessage(message, isSuccess, isWarning) {
  *
  * @returns {Element} - The generated element for the favourite button.
  */
-function generateFavouriteButton() {
+function _generateFavouriteButton() {
 	const star = chrome.runtime.getURL("assets/svgs/star.svg");
 	const slashedStar = chrome.runtime.getURL("assets/svgs/slashed-star.svg");
 
