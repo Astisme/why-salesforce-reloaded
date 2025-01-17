@@ -43,7 +43,7 @@ function _generateRowTemplate(row) {
 
 	return Promise.all([miniURLpromise, expURLpromise])
 		.then(([miniURL, expURL]) => {
-			minifiedURL = miniURL;
+			_minifiedURL = miniURL;
 			_expandedURL = expURL;
 
 			const li = document.createElement("li");

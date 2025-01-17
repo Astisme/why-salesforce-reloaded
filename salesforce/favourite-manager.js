@@ -121,7 +121,7 @@ function toggleFavouriteButton(isSaved, button) {
 function actionFavourite(parent) {
 	minifyURL(href)
 		.then((url) => {
-			minifiedURL = url;
+			_minifiedURL = url;
 
 			if (isCurrentlyOnSavedTab) {
 				removeTab(url);
@@ -143,7 +143,7 @@ function checkUpdateFavouriteButton() {
 	// check if the current page is being imported
 	minifyURL(href)
 		.then((miniURL) => {
-			minifiedURL = miniURL;
+			_minifiedURL = miniURL;
 			const isOnFavouriteTab = currentTabs.some((current) =>
 				current.url === miniURL
 			);
@@ -164,7 +164,7 @@ function showFavouriteButton(count = 0) {
 
 	// Do not add favourite button on Home and Object Manager
 	const standardTabs = ["SetupOneHome/home", "ObjectManager/home"];
-	if (standardTabs.includes(minifiedURL)) {
+	if (standardTabs.includes(_minifiedURL)) {
 		return;
 	}
 

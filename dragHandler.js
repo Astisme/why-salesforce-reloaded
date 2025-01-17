@@ -82,7 +82,7 @@ function setupDrag() {
 	container = table ?? ul;
 	closestTag = table != null ? "tr" : "li";
 	if (container != null) createListeners();
-	else setTimeout(() => setup(), 500);
+	else setTimeout(() => setupDrag(), 500);
 }
 
 setupDrag();
