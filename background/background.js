@@ -196,7 +196,7 @@ browserObj.runtime.onMessage.addListener((request, _, sendResponse) => {
 });
 
 const menuItems = [
-    { id: "open-other-org", title: "Open in another Org", contexts: ["link"] },
+    { id: "open-other-org", title: "Open in another Org", contexts: ["link", "page"] },
     { type: "separator", contexts: ["link"] },
 
     { id: "move", title: "Move tab", contexts: ["link"] },
@@ -212,7 +212,8 @@ const menuItems = [
     { id: "remove-left-tabs", title: "Remove tabs to the left", contexts: ["link"], parentId: "remove" },
     { id: "remove-right-tabs", title: "Remove tabs to the right", contexts: ["link"], parentId: "remove" },
 
-    { id: "save-tab", title: "Save as tab", contexts: ["page"] },
+    { id: "page-save-tab", title: "Save as tab", contexts: ["page"] },
+    { id: "page-remove-tab", title: "Remove tab", contexts: ["page"] },
 ];
 
 browserObj.runtime.onInstalled.addListener(() => {
@@ -225,12 +226,31 @@ browserObj.runtime.onInstalled.addListener(() => {
 			]
         }));
     });
+
+    // TODO add tutorial on install and link to current changes on update
+    if (details.reason == "install") {
+    }
+    else if (details.reason == "update") {
+    }
+});
+
+// TODO update uninstall url
+browserObj.runtime.setUninstallURL("https://www.google.com/", () => {
+    browserObj.contextMenus.removeAll();
 });
 
 browserObj.contextMenus.onClicked.addListener((info, _) => {
     const message = {what: info.menuItemId};
     switch (info.menuItemId) {
         case "open-other-org":
+            message.pageTabUrl = minifyURL(info.pageUrl);
+            message.pageUrl = expandURL(info.pageUrl);
+            message.linkTabUrl = minifyURL(info.linkUrl);
+            message.linkUrl = expandURL(info.linkUrl);
+            message.linkTabTitle = info.linkText;
+            break;
+        case "page-save-tab":
+        case "page-remove-tab":
             message.tabUrl = minifyURL(info.pageUrl);
             message.url = expandURL(info.pageUrl);
             break;

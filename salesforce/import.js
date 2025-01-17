@@ -23,19 +23,16 @@ reader.onload = function (e) {
 				override: overridePick,
 				skipDuplicates: duplicatePick,
 			};
-			postMessage(message, "*");
+            importer(message);
 		} else {
-			postMessage({
-				what: "error",
-				message:
-					"Invalid JSON structure. Your file must contain an array in which each item must have 'tabTitle' and 'url' as strings.",
-			});
+            showToast(
+                "Invalid JSON structure. Your file must contain an array in which each item must have 'tabTitle' and 'url' as strings.", false, false
+			);
 		}
 	} catch (error) {
-		postMessage({
-			what: "error",
-			message: `Error parsing JSON: ${error.message}`,
-		});
+        showToast(
+			`Error parsing JSON: ${error.message}`, false, false
+		);
 	}
 };
 /**
@@ -47,10 +44,9 @@ function listenToFileUpload() {
 
 	function readFile(file) {
 		if (file.type !== "application/json") {
-			postMessage({
-				what: "error",
-				message: "Invalid file type. Only JSON files are supported.",
-			});
+            showToast(
+				"Invalid file type. Only JSON files are supported.", false, false
+			);
 			return;
 		}
 

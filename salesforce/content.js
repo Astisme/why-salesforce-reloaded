@@ -138,18 +138,27 @@ function initTabs() {
 }
 
 /**
+ * Retrieves the favourite button with the specified Id from the page.
+ *
+ * @param {string} favouriteId - the Id of the favourite button to find.
+ * @param {HTMLElement} [button=null] - the HTMLElement of the button which is parent of the favouriteId.
+ */
+function getFavouriteButton(favouriteId, button = null){
+    return button?.querySelector(`#${favouriteId}`) ??
+		button?.querySelector(`.${favouriteId}`) ??
+        document.getElementById(favouriteId) ??
+		document.querySelector(`.${favouriteId}`);
+}
+/**
  * Toggles the visibility of the favourite button based on whether the tab is saved.
  *
  * @param {HTMLElement} button - The favourite button element.
  * @param {boolean} isSaved - Optional flag indicating whether the tab is saved.
  */
-function toggleFavouriteButton(button, isSaved) {
+function toggleFavouriteButton(isSaved, button) {
 	// will use the class identifier if there was an error with the image (and was removed)
-	button = button ?? document.getElementById(buttonId);
-	const star = button.querySelector(`#${starId}`) ??
-		button.querySelector(`.${starId}`);
-	const slashedStar = button.querySelector(`#${slashedStarId}`) ??
-		button.querySelector(`.${slashedStarId}`);
+	const star = getFavouriteButton(starId, button);
+	const slashedStar = getFavouriteButton(slashedStarId, button);
 
 	if (isSaved == null) {
 		star.classList.toggle("hidden");
@@ -204,7 +213,7 @@ function checkUpdateFavouriteButton(){
 		.then((miniURL) => {
 			minifiedURL = miniURL;
             const isOnFavouriteTab = currentTabs.some(current => current.url === miniURL);
-            toggleFavouriteButton(null, isOnFavouriteTab);
+            toggleFavouriteButton(isOnFavouriteTab);
 		});
 }
 
@@ -246,7 +255,7 @@ function showFavouriteButton(count = 0) {
 		}
 		header.appendChild(_generateFavouriteButton());
 		const button = header.querySelector(`#${buttonId}`); // need to repeat this bit of code because I'm inserting it at the previous line
-		toggleFavouriteButton(button, isCurrentlyOnSavedTab); // init correctly
+		toggleFavouriteButton(isCurrentlyOnSavedTab, button); // init correctly
 		button.addEventListener(
 			"click",
 			() => actionFavourite(header.parentNode),
@@ -557,6 +566,22 @@ function removeOtherTabs(miniURL, tabTitle, removeBefore = null){
     setStorage(removeBefore ? currentTabs.slice(index) : currentTabs.slice(0, index + 1));
 }
 
+/**
+ * Performs the specified action for the current page, adding or removing from the tab list.
+ *
+ * @param {boolean} [save=true] - whether the current page should be added or removed as tab
+ */
+function pageActionTab(save = true){
+    const favourite = getFavouriteButton(save ? starId : slashedStarId);
+    if(!favourite.classList.contains("hidden")) favourite.click();
+    else {
+        const message = save ?
+            "Cannot save:\nThis page has already been saved!" :
+            "Cannot remove:\nCannot remove a page that has not been saved before";
+        showToast(message, true, true);
+    }
+}
+
 // listen from saves from the action / background page
 chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 	if (message == null || message.what == null) {
@@ -604,12 +629,12 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 		case "remove-right-tabs":
             removeOtherTabs(message.tabUrl, message.tabTitle, false);
 			break;
-		case "save-tab": {
-            const star = document.getElementById(starId);
-            if(!star.classList.contains("hidden"))
-                star.click();
+		case "page-save-tab":
+            pageActionTab(true);
 			break;
-        }
+		case "page-remove-tab":
+            pageActionTab(false);
+			break;
 
         default:
             break;
@@ -624,10 +649,6 @@ addEventListener("message", (e) => {
 	const what = e.data.what;
 	if (what === "order") {
 		reorderTabs();
-	} else if (what === "import") {
-		importer(e.data);
-	} else if (what === "error") {
-		showToast(e.data.message, false, false);
 	}
 	//else if(what === "saved")
 });
