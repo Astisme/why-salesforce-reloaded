@@ -166,7 +166,6 @@ function initTabs() {
 	return tabs;
 }
 
-
 function removeTab(url, title) {
 	const filteredTabs = currentTabs.filter((tabdef) =>
 		tabdef.url !== url && (title == null || tabdef.tabTitle !== title)
@@ -290,7 +289,7 @@ function delayLoadSetupTabs(count = 0) {
 		setupTabUl.dataset.wheelListenerApplied = true;
 	}
 	// initialize
-    setupDrag();
+	setupDrag();
 	reloadTabs();
 }
 

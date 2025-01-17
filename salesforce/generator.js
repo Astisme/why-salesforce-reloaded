@@ -212,13 +212,12 @@ function _generateSldsToastMessage(message, isSuccess, isWarning) {
 	return toastContainer;
 }
 
-
 function _generateOpenOtherOrgModal(miniURL) {
-    document.createElement("div");
-    div.id = otherOrgId;
+	document.createElement("div");
+	div.id = otherOrgId;
 	document.createElement("a");
-    a.id = closeModalId;
+	a.id = closeModalId;
 	a.href = miniURL;
-    div.appendChild(a);
+	div.appendChild(a);
 	return div;
 }

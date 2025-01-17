@@ -13,7 +13,7 @@
 			],
 			"js": [
 				"./salesforce/generator.js",
-                "./salesforce/favourite-manager.js",
+				"./salesforce/favourite-manager.js",
 				"./dragHandler.js",
 				"./salesforce/import.js",
 				"./salesforce/content.js"
