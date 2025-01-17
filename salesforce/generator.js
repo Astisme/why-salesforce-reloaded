@@ -7,7 +7,7 @@ const importFileId = `${importId}-file`;
 const closeModalId = `${prefix}-closeModal`;
 const overrideId = `${prefix}-override`;
 const duplicateId = `${prefix}-duplicate`;
-const otherOrgId = `${prefix}-other-org`;
+const _otherOrgId = `${prefix}-other-org`;
 /**
  * Generates the HTMLElement for the import modal.
  *

@@ -411,7 +411,7 @@ function showFileImport() {
  * @param {Object} message - The message containing the imported tab data.
  * @param {Array<Object>} message.imported - The array of imported tab data.
  */
-function importer(message) {
+function _importer(message) {
 	if (message.override) {
 		currentTabs.length = 0;
 	}

@@ -23,7 +23,7 @@ reader.onload = function (e) {
 				override: overridePick,
 				skipDuplicates: duplicatePick,
 			};
-            importer(message);
+            _importer(message);
 		} else {
             showToast(
                 "Invalid JSON structure. Your file must contain an array in which each item must have 'tabTitle' and 'url' as strings.", false, false
@@ -37,7 +37,7 @@ reader.onload = function (e) {
 };
 /**
  * Sets up event listeners for file upload through both input field and drag-and-drop.
- * The function reads the uploaded file if it is a JSON file and sends the content to the postMessage API.
+ * The function reads the uploaded file if it is a JSON file and sends the content to the importer function
  */
 function listenToFileUpload() {
 	const dropArea = document.getElementById(importId);

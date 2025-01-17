@@ -227,11 +227,12 @@ browserObj.runtime.onInstalled.addListener(() => {
         }));
     });
 
-    // TODO add tutorial on install and link to current changes on update
+    /* TODO add tutorial on install and link to current changes on update
     if (details.reason == "install") {
     }
     else if (details.reason == "update") {
     }
+    */
 });
 
 // TODO update uninstall url
