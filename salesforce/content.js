@@ -4,14 +4,18 @@ let setupTabUl; // This is on Salesforce Setup
 let href = globalThis.location.href;
 let minifiedURL;
 let _expandedURL;
-const baseUrl = globalThis.origin; // https://www.myorgdomain.my.salesforce-setup.com
 const setupLightning = "/lightning/setup/";
+/** 
+ * tabForCurrentTabs = {
+ *      tabTitle: "string", // this is the label for the URL
+ *      url: "string", // this is the URL in its minified version
+ * }
+ */
 const currentTabs = [];
 
 const buttonId = `${prefix}-button`;
 const starId = `${prefix}-star`;
 const slashedStarId = `${prefix}-slashed-star`;
-const closeModalId = `${prefix}-closeModal`;
 let wasOnSavedTab;
 let isCurrentlyOnSavedTab;
 let fromHrefUpdate;
@@ -212,7 +216,7 @@ function checkUpdateFavouriteButton(){
 function showFavouriteButton(count = 0) {
 	if (count > 5) {
 		console.error("Again, Why Salesforce - failed to find headers.");
-		reload(); // the setup page failed to load, reload it before the use does
+		return setTimeout(() => showFavouriteButton(), 5000);
 	}
 
 	// Do not add favourite button on Home and Object Manager
@@ -241,7 +245,7 @@ function showFavouriteButton(count = 0) {
 			continue;
 		}
 		header.appendChild(_generateFavouriteButton());
-		const button = header.querySelector(`#${buttonId}`);
+		const button = header.querySelector(`#${buttonId}`); // need to repeat this bit of code because I'm inserting it at the previous line
 		toggleFavouriteButton(button, isCurrentlyOnSavedTab); // init correctly
 		button.addEventListener(
 			"click",
@@ -263,12 +267,14 @@ function init(items) {
 		? initTabs()
 		: items[items.key];
 
-	rowObj.forEach((row) =>
-		_generateRowTemplate(row)
-			.then((r) => setupTabUl.appendChild(r))
-	);
 	currentTabs.length = 0;
-	currentTabs.push(...rowObj);
+    if(rowObj.length !== 0){
+        rowObj.forEach((row) =>
+            _generateRowTemplate(row)
+                .then((r) => setupTabUl.appendChild(r))
+        );
+        currentTabs.push(...rowObj);
+    }
 	isOnSavedTab();
 	showFavouriteButton();
 }
@@ -386,10 +392,6 @@ function showFileImport() {
 	}
 
 	setupTabUl.appendChild(_generateSldsImport());
-	setupTabUl.querySelector(`#${closeModalId}`).addEventListener(
-		"click",
-		() => setupTabUl.querySelector(`#${importId}`).remove(),
-	);
 }
 
 /**
@@ -479,9 +481,12 @@ function makeDuplicatesBold(miniURL) {
 
 
 /**
+ * TODO
  * Shows a modal to ask the user into which org they want to open the given URL.
  */
-function showModalOpenOtherOrg(miniURL){}
+function showModalOpenOtherOrg(miniURL){
+    setupTabUl.appendChild(_generateOpenOtherOrgModal(miniURL));
+}
 
 /**
  * Moves a tab to the specified spot and then reloads.
@@ -507,7 +512,23 @@ function showModalOpenOtherOrg(miniURL){}
  * moveTab("c",false,true) 
  * ==> tabs = ["a", "b", "d", "e", "c"]  
  */
-function moveTab(miniURL, tabTitle, moveBefore = true, fullMovement = false){}
+function moveTab(miniURL, tabTitle, moveBefore = true, fullMovement = false){
+    if(tabTitle == null)
+        tabTitle = currentTabs.find(current => current.url === miniURL).tabTitle;
+    const index = currentTabs.findIndex(tab => tab.url === miniURL && tab.tabTitle === tabTitle);
+    if (index === -1) return;
+
+    const [tab] = currentTabs.splice(index, 1);
+
+    if (fullMovement) {
+        moveBefore ? currentTabs.unshift(tab) : currentTabs.push(tab);
+    } else {
+        const newIndex = moveBefore ? Math.max(0, index - 1) : Math.min(currentTabs.length, index + 1);
+        currentTabs.splice(newIndex, 0, tab);
+    }
+
+    setStorage();
+}
 
 /**
  * Removes the other saved tabs and then reloads.
@@ -524,7 +545,17 @@ function moveTab(miniURL, tabTitle, moveBefore = true, fullMovement = false){}
  * removeOtherTabs("b",true) ==> tabs = ["b", "c"]
  * removeOtherTabs("b",false) ==> tabs = ["a", "b"]
  */
-function removeOtherTabs(miniURL, tabTitle, removeBefore = null){}
+function removeOtherTabs(miniURL, tabTitle, removeBefore = null){
+    if(tabTitle == null)
+        tabTitle = currentTabs.find(current => current.url === miniURL).tabTitle;
+    if(removeBefore == null){
+        return setStorage([{tabTitle, url: miniURL}]);
+    }
+    const index = currentTabs.findIndex(tab => tab.url === miniURL && tab.tabTitle === tabTitle);
+    if (index === -1) return;
+
+    setStorage(removeBefore ? currentTabs.slice(index) : currentTabs.slice(0, index + 1));
+}
 
 // listen from saves from the action / background page
 chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {

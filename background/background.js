@@ -179,6 +179,10 @@ browserObj.runtime.onMessage.addListener((request, _, sendResponse) => {
 		case "expand":
 			sendResponse(expandURL(message));
 			return false; // we won't call sendResponse
+        case "reload":
+            sendResponse(null);
+            browserObj.tabs.query({ active: true, currentWindow: true }, tabs => browserObj.tabs.reload(tabs[0].id));
+            return false;
 
 		default:
 			captured = ["import"].includes(message.what);

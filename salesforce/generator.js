@@ -4,8 +4,10 @@ const prefix = "again-why-salesforce";
 const toastId = `${prefix}-toast`;
 const importId = `${prefix}-import`;
 const importFileId = `${importId}-file`;
+const closeModalId = `${prefix}-closeModal`;
 const overrideId = `${prefix}-override`;
 const duplicateId = `${prefix}-duplicate`;
+const otherOrgId = `${prefix}-other-org`;
 /**
  * Generates the HTMLElement for the import modal.
  *
@@ -102,6 +104,11 @@ function _generateSldsImport() {
 	closeSpan.innerHTML = "&times;";
 	closeButton.appendChild(closeSpan);
 	modal.appendChild(closeButton);
+
+    closeButton.addEventListener(
+		"click",
+		() => container.remove(),
+	);
 
 	const header = document.createElement("h4");
 	header.classList.add("modal-header");
@@ -209,7 +216,7 @@ function _generateSldsImport() {
  */
 function expandURL(url) {
 	return chrome.runtime.sendMessage({
-		message: { what: "expand", url, baseUrl },
+        message: { what: "expand", url, baseUrl: globalThis.origin },
 	});
 }
 
@@ -501,4 +508,10 @@ function _generateFavouriteButton() {
 	button.appendChild(span);
 
 	return button;
+}
+
+function _generateOpenOtherOrgModal(miniURL){
+    document.createElement("a");
+    a.href = miniURL;
+    return a;
 }
