@@ -37,7 +37,7 @@ function getLinkTarget(e) {
  *
  * @param {Event} e - the click event
  */
-function handleLightningLinkClick(e) {
+function _handleLightningLinkClick(e) {
 	e.preventDefault(); // Prevent the default link behavior (href navigation)
 	const url = e.currentTarget.href;
 	const aTarget = e.currentTarget.target;

@@ -2,12 +2,8 @@
 
 const prefix = "again-why-salesforce";
 const toastId = `${prefix}-toast`;
-const importId = `${prefix}-import`;
-const importFileId = `${importId}-file`;
 const closeModalId = `${prefix}-closeModal`;
-const overrideId = `${prefix}-override`;
-const duplicateId = `${prefix}-duplicate`;
-const _otherOrgId = `${prefix}-other-org`;
+const otherOrgId = `${prefix}-other-org`;
 
 /**
  * Expands a URL by adding the domain and the Salesforce setup parts.
@@ -72,7 +68,7 @@ function _generateRowTemplate(row) {
 			a.classList.add("tabHeader", "slds-context-bar__label-action");
 			a.style.zIndex = 0;
 			if (expURL.includes(setupLightning)) {
-				a.addEventListener("click", handleLightningLinkClick);
+				a.addEventListener("click", _handleLightningLinkClick);
 			}
 
 			const span = document.createElement("span");
@@ -218,7 +214,11 @@ function _generateSldsToastMessage(message, isSuccess, isWarning) {
 
 
 function _generateOpenOtherOrgModal(miniURL) {
+    document.createElement("div");
+    div.id = otherOrgId;
 	document.createElement("a");
+    a.id = closeModalId;
 	a.href = miniURL;
-	return a;
+    div.appendChild(a);
+	return div;
 }

@@ -2,6 +2,10 @@
 
 let overridePick;
 let duplicatePick;
+const importId = `${prefix}-import`;
+const importFileId = `${importId}-file`;
+const overrideId = `${prefix}-override`;
+const duplicateId = `${prefix}-duplicate`;
 
 const reader = new FileReader();
 
