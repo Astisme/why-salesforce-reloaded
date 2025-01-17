@@ -179,10 +179,13 @@ browserObj.runtime.onMessage.addListener((request, _, sendResponse) => {
 		case "expand":
 			sendResponse(expandURL(message));
 			return false; // we won't call sendResponse
-        case "reload":
-            sendResponse(null);
-            browserObj.tabs.query({ active: true, currentWindow: true }, tabs => browserObj.tabs.reload(tabs[0].id));
-            return false;
+		case "reload":
+			sendResponse(null);
+			browserObj.tabs.query(
+				{ active: true, currentWindow: true },
+				(tabs) => browserObj.tabs.reload(tabs[0].id),
+			);
+			return false;
 
 		default:
 			captured = ["import"].includes(message.what);
@@ -196,38 +199,84 @@ browserObj.runtime.onMessage.addListener((request, _, sendResponse) => {
 });
 
 const menuItems = [
-    { id: "open-other-org", title: "Open in another Org", contexts: ["link", "page"] },
-    { type: "separator", contexts: ["link"] },
+	{
+		id: "open-other-org",
+		title: "Open in another Org",
+		contexts: ["link", "page"],
+	},
+	{ type: "separator", contexts: ["link"] },
 
-    { id: "move", title: "Move tab", contexts: ["link"] },
-    { id: "move-first", title: "Move first", contexts: ["link"], parentId: "move" },
-    { id: "move-left", title: "Move left", contexts: ["link"], parentId: "move" },
-    { id: "move-right", title: "Move right", contexts: ["link"], parentId: "move" },
-    { id: "move-last", title: "Move last", contexts: ["link"], parentId: "move" },
-    { type: "separator", contexts: ["link"] },
+	{ id: "move", title: "Move tab", contexts: ["link"] },
+	{
+		id: "move-first",
+		title: "Move first",
+		contexts: ["link"],
+		parentId: "move",
+	},
+	{
+		id: "move-left",
+		title: "Move left",
+		contexts: ["link"],
+		parentId: "move",
+	},
+	{
+		id: "move-right",
+		title: "Move right",
+		contexts: ["link"],
+		parentId: "move",
+	},
+	{
+		id: "move-last",
+		title: "Move last",
+		contexts: ["link"],
+		parentId: "move",
+	},
+	{ type: "separator", contexts: ["link"] },
 
-    { id: "remove", title: "Remove tab(s)", contexts: ["link"] },
-    { id: "remove-tab", title: "Remove this tab", contexts: ["link"], parentId: "remove" },
-    { id: "remove-other-tabs", title: "Remove other tabs", contexts: ["link"], parentId: "remove" },
-    { id: "remove-left-tabs", title: "Remove tabs to the left", contexts: ["link"], parentId: "remove" },
-    { id: "remove-right-tabs", title: "Remove tabs to the right", contexts: ["link"], parentId: "remove" },
+	{ id: "remove", title: "Remove tab(s)", contexts: ["link"] },
+	{
+		id: "remove-tab",
+		title: "Remove this tab",
+		contexts: ["link"],
+		parentId: "remove",
+	},
+	{
+		id: "remove-other-tabs",
+		title: "Remove other tabs",
+		contexts: ["link"],
+		parentId: "remove",
+	},
+	{
+		id: "remove-left-tabs",
+		title: "Remove tabs to the left",
+		contexts: ["link"],
+		parentId: "remove",
+	},
+	{
+		id: "remove-right-tabs",
+		title: "Remove tabs to the right",
+		contexts: ["link"],
+		parentId: "remove",
+	},
 
-    { id: "page-save-tab", title: "Save as tab", contexts: ["page"] },
-    { id: "page-remove-tab", title: "Remove tab", contexts: ["page"] },
+	{ id: "page-save-tab", title: "Save as tab", contexts: ["page"] },
+	{ id: "page-remove-tab", title: "Remove tab", contexts: ["page"] },
 ];
 
 browserObj.runtime.onInstalled.addListener(() => {
-    browserObj.contextMenus.removeAll(() => {
-        menuItems.forEach(item => browserObj.contextMenus.create({
-            ...item,
-            documentUrlPatterns: [
-				"https://*.my.salesforce-setup.com/lightning/setup/*",
-				"https://*.lightning.force.com/*"
-			]
-        }));
-    });
+	browserObj.contextMenus.removeAll(() => {
+		menuItems.forEach((item) =>
+			browserObj.contextMenus.create({
+				...item,
+				documentUrlPatterns: [
+					"https://*.my.salesforce-setup.com/lightning/setup/*",
+					"https://*.lightning.force.com/*",
+				],
+			})
+		);
+	});
 
-    /* TODO add tutorial on install and link to current changes on update
+	/* TODO add tutorial on install and link to current changes on update
     if (details.reason == "install") {
     }
     else if (details.reason == "update") {
@@ -237,29 +286,29 @@ browserObj.runtime.onInstalled.addListener(() => {
 
 // TODO update uninstall url
 browserObj.runtime.setUninstallURL("https://www.google.com/", () => {
-    browserObj.contextMenus.removeAll();
+	browserObj.contextMenus.removeAll();
 });
 
 browserObj.contextMenus.onClicked.addListener((info, _) => {
-    const message = {what: info.menuItemId};
-    switch (info.menuItemId) {
-        case "open-other-org":
-            message.pageTabUrl = minifyURL(info.pageUrl);
-            message.pageUrl = expandURL(info.pageUrl);
-            message.linkTabUrl = minifyURL(info.linkUrl);
-            message.linkUrl = expandURL(info.linkUrl);
-            message.linkTabTitle = info.linkText;
-            break;
-        case "page-save-tab":
-        case "page-remove-tab":
-            message.tabUrl = minifyURL(info.pageUrl);
-            message.url = expandURL(info.pageUrl);
-            break;
-        default:
-            message.tabUrl = minifyURL(info.linkUrl);
-            message.url = expandURL(info.linkUrl);
-            message.tabTitle = info.linkText;
-            break;
-    }
-    notify(message);
+	const message = { what: info.menuItemId };
+	switch (info.menuItemId) {
+		case "open-other-org":
+			message.pageTabUrl = minifyURL(info.pageUrl);
+			message.pageUrl = expandURL(info.pageUrl);
+			message.linkTabUrl = minifyURL(info.linkUrl);
+			message.linkUrl = expandURL(info.linkUrl);
+			message.linkTabTitle = info.linkText;
+			break;
+		case "page-save-tab":
+		case "page-remove-tab":
+			message.tabUrl = minifyURL(info.pageUrl);
+			message.url = expandURL(info.pageUrl);
+			break;
+		default:
+			message.tabUrl = minifyURL(info.linkUrl);
+			message.url = expandURL(info.linkUrl);
+			message.tabTitle = info.linkText;
+			break;
+	}
+	notify(message);
 });

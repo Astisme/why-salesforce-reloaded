@@ -5,7 +5,7 @@ let href = globalThis.location.href;
 let minifiedURL;
 let _expandedURL;
 const setupLightning = "/lightning/setup/";
-/** 
+/**
  * tabForCurrentTabs = {
  *      tabTitle: "string", // this is the label for the URL
  *      url: "string", // this is the URL in its minified version
@@ -59,7 +59,7 @@ function afterSet() {
  * @param {Array} tabs - The array of tabs to save.
  */
 function setStorage(tabs) {
-    tabs = tabs ?? currentTabs;
+	tabs = tabs ?? currentTabs;
 	sendMessage({ what: "set", tabs }, afterSet);
 }
 
@@ -143,10 +143,10 @@ function initTabs() {
  * @param {string} favouriteId - the Id of the favourite button to find.
  * @param {HTMLElement} [button=null] - the HTMLElement of the button which is parent of the favouriteId.
  */
-function getFavouriteButton(favouriteId, button = null){
-    return button?.querySelector(`#${favouriteId}`) ??
+function getFavouriteButton(favouriteId, button = null) {
+	return button?.querySelector(`#${favouriteId}`) ??
 		button?.querySelector(`.${favouriteId}`) ??
-        document.getElementById(favouriteId) ??
+		document.getElementById(favouriteId) ??
 		document.querySelector(`.${favouriteId}`);
 }
 /**
@@ -175,10 +175,12 @@ function toggleFavouriteButton(isSaved, button) {
 	}
 }
 
-function removeTab(url, title){
-    const filteredTabs = currentTabs.filter((tabdef) => tabdef.url !== url && (title == null || tabdef.tabTitle !== title));
-    currentTabs.length = 0;
-    currentTabs.push(...filteredTabs);
+function removeTab(url, title) {
+	const filteredTabs = currentTabs.filter((tabdef) =>
+		tabdef.url !== url && (title == null || tabdef.tabTitle !== title)
+	);
+	currentTabs.length = 0;
+	currentTabs.push(...filteredTabs);
 }
 /**
  * Adds or removes the current tab from the saved tabs list based on the button's state.
@@ -191,7 +193,7 @@ function actionFavourite(parent) {
 			minifiedURL = url;
 
 			if (isCurrentlyOnSavedTab) {
-                removeTab(url);
+				removeTab(url);
 			} else {
 				const tabTitle =
 					parent.querySelector(".breadcrumbDetail").innerText;
@@ -203,17 +205,18 @@ function actionFavourite(parent) {
 		});
 }
 
-
 /**
  * Checks if the current URL is saved and updates the favourite button accordingly.
  */
-function checkUpdateFavouriteButton(){
+function checkUpdateFavouriteButton() {
 	// check if the current page is being imported
 	minifyURL(href)
 		.then((miniURL) => {
 			minifiedURL = miniURL;
-            const isOnFavouriteTab = currentTabs.some(current => current.url === miniURL);
-            toggleFavouriteButton(isOnFavouriteTab);
+			const isOnFavouriteTab = currentTabs.some((current) =>
+				current.url === miniURL
+			);
+			toggleFavouriteButton(isOnFavouriteTab);
 		});
 }
 
@@ -249,8 +252,8 @@ function showFavouriteButton(count = 0) {
 
 	for (const header of headers) {
 		if (header.querySelector(`#${buttonId}`) != null) {
-            // already inserted my button, check if I should switch it
-            checkUpdateFavouriteButton();
+			// already inserted my button, check if I should switch it
+			checkUpdateFavouriteButton();
 			continue;
 		}
 		header.appendChild(_generateFavouriteButton());
@@ -277,13 +280,13 @@ function init(items) {
 		: items[items.key];
 
 	currentTabs.length = 0;
-    if(rowObj.length !== 0){
-        rowObj.forEach((row) =>
-            _generateRowTemplate(row)
-                .then((r) => setupTabUl.appendChild(r))
-        );
-        currentTabs.push(...rowObj);
-    }
+	if (rowObj.length !== 0) {
+		rowObj.forEach((row) =>
+			_generateRowTemplate(row)
+				.then((r) => setupTabUl.appendChild(r))
+		);
+		currentTabs.push(...rowObj);
+	}
 	isOnSavedTab();
 	showFavouriteButton();
 }
@@ -378,7 +381,7 @@ function delayLoadSetupTabs(count = 0) {
 		setupTabUl.dataset.wheelListenerApplied = true;
 	}
 	// initialize
-    reloadTabs();
+	reloadTabs();
 }
 
 /**
@@ -488,13 +491,12 @@ function makeDuplicatesBold(miniURL) {
 	);
 }
 
-
 /**
  * TODO
  * Shows a modal to ask the user into which org they want to open the given URL.
  */
-function showModalOpenOtherOrg(miniURL){
-    setupTabUl.appendChild(_generateOpenOtherOrgModal(miniURL));
+function showModalOpenOtherOrg(miniURL) {
+	setupTabUl.appendChild(_generateOpenOtherOrgModal(miniURL));
 }
 
 /**
@@ -510,33 +512,40 @@ function showModalOpenOtherOrg(miniURL){
  * tabs = ["a", "b", "c", "d", "e"]
  *
  * moveTab("c") || moveTab("c",true) || moveTab("c",true,false)
- * ==> tabs = ["a", "c", "b", "d", "e"] 
+ * ==> tabs = ["a", "c", "b", "d", "e"]
  *
  * moveTab("c",false) || moveTab("c",false,false)
- * ==> tabs = ["a", "b", "d", "c", "e"] 
+ * ==> tabs = ["a", "b", "d", "c", "e"]
  *
- * moveTab("c",true,true) 
- * ==> tabs = ["c", "a", "b", "d", "e"]  
+ * moveTab("c",true,true)
+ * ==> tabs = ["c", "a", "b", "d", "e"]
  *
- * moveTab("c",false,true) 
- * ==> tabs = ["a", "b", "d", "e", "c"]  
+ * moveTab("c",false,true)
+ * ==> tabs = ["a", "b", "d", "e", "c"]
  */
-function moveTab(miniURL, tabTitle, moveBefore = true, fullMovement = false){
-    if(tabTitle == null)
-        tabTitle = currentTabs.find(current => current.url === miniURL).tabTitle;
-    const index = currentTabs.findIndex(tab => tab.url === miniURL && tab.tabTitle === tabTitle);
-    if (index === -1) return;
+function moveTab(miniURL, tabTitle, moveBefore = true, fullMovement = false) {
+	if (tabTitle == null) {
+		tabTitle = currentTabs.find((current) =>
+			current.url === miniURL
+		).tabTitle;
+	}
+	const index = currentTabs.findIndex((tab) =>
+		tab.url === miniURL && tab.tabTitle === tabTitle
+	);
+	if (index === -1) return;
 
-    const [tab] = currentTabs.splice(index, 1);
+	const [tab] = currentTabs.splice(index, 1);
 
-    if (fullMovement) {
-        moveBefore ? currentTabs.unshift(tab) : currentTabs.push(tab);
-    } else {
-        const newIndex = moveBefore ? Math.max(0, index - 1) : Math.min(currentTabs.length, index + 1);
-        currentTabs.splice(newIndex, 0, tab);
-    }
+	if (fullMovement) {
+		moveBefore ? currentTabs.unshift(tab) : currentTabs.push(tab);
+	} else {
+		const newIndex = moveBefore
+			? Math.max(0, index - 1)
+			: Math.min(currentTabs.length, index + 1);
+		currentTabs.splice(newIndex, 0, tab);
+	}
 
-    setStorage();
+	setStorage();
 }
 
 /**
@@ -554,16 +563,25 @@ function moveTab(miniURL, tabTitle, moveBefore = true, fullMovement = false){
  * removeOtherTabs("b",true) ==> tabs = ["b", "c"]
  * removeOtherTabs("b",false) ==> tabs = ["a", "b"]
  */
-function removeOtherTabs(miniURL, tabTitle, removeBefore = null){
-    if(tabTitle == null)
-        tabTitle = currentTabs.find(current => current.url === miniURL).tabTitle;
-    if(removeBefore == null){
-        return setStorage([{tabTitle, url: miniURL}]);
-    }
-    const index = currentTabs.findIndex(tab => tab.url === miniURL && tab.tabTitle === tabTitle);
-    if (index === -1) return;
+function removeOtherTabs(miniURL, tabTitle, removeBefore = null) {
+	if (tabTitle == null) {
+		tabTitle = currentTabs.find((current) =>
+			current.url === miniURL
+		).tabTitle;
+	}
+	if (removeBefore == null) {
+		return setStorage([{ tabTitle, url: miniURL }]);
+	}
+	const index = currentTabs.findIndex((tab) =>
+		tab.url === miniURL && tab.tabTitle === tabTitle
+	);
+	if (index === -1) return;
 
-    setStorage(removeBefore ? currentTabs.slice(index) : currentTabs.slice(0, index + 1));
+	setStorage(
+		removeBefore
+			? currentTabs.slice(index)
+			: currentTabs.slice(0, index + 1),
+	);
 }
 
 /**
@@ -571,15 +589,15 @@ function removeOtherTabs(miniURL, tabTitle, removeBefore = null){
  *
  * @param {boolean} [save=true] - whether the current page should be added or removed as tab
  */
-function pageActionTab(save = true){
-    const favourite = getFavouriteButton(save ? starId : slashedStarId);
-    if(!favourite.classList.contains("hidden")) favourite.click();
-    else {
-        const message = save ?
-            "Cannot save:\nThis page has already been saved!" :
-            "Cannot remove:\nCannot remove a page that has not been saved before";
-        showToast(message, true, true);
-    }
+function pageActionTab(save = true) {
+	const favourite = getFavouriteButton(save ? starId : slashedStarId);
+	if (!favourite.classList.contains("hidden")) favourite.click();
+	else {
+		const message = save
+			? "Cannot save:\nThis page has already been saved!"
+			: "Cannot remove:\nCannot remove a page that has not been saved before";
+		showToast(message, true, true);
+	}
 }
 
 // listen from saves from the action / background page
@@ -587,58 +605,58 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 	if (message == null || message.what == null) {
 		return;
 	}
-    sendResponse(null);
-    switch (message.what){
-        case "saved":
-            afterSet();
-            break;
-        case "add":
-            showFileImport();
-            break;
-        case "warning":
-            showToast(message.message, false, true);
-            if (message.action === "make-bold") {
-                makeDuplicatesBold(message.url);
-            }
-            break;
+	sendResponse(null);
+	switch (message.what) {
+		case "saved":
+			afterSet();
+			break;
+		case "add":
+			showFileImport();
+			break;
+		case "warning":
+			showToast(message.message, false, true);
+			if (message.action === "make-bold") {
+				makeDuplicatesBold(message.url);
+			}
+			break;
 		case "open-other-org":
-            showModalOpenOtherOrg(message.tabUrl)
+			showModalOpenOtherOrg(message.tabUrl);
 			break;
 		case "move-first":
-            moveTab(message.tabUrl, message.tabTitle, true, true);
+			moveTab(message.tabUrl, message.tabTitle, true, true);
 			break;
 		case "move-left":
-            moveTab(message.tabUrl, message.tabTitle, true, false);
+			moveTab(message.tabUrl, message.tabTitle, true, false);
 			break;
 		case "move-right":
-            moveTab(message.tabUrl, message.tabTitle, false, false);
+			moveTab(message.tabUrl, message.tabTitle, false, false);
 			break;
 		case "move-last":
-            moveTab(message.tabUrl, message.tabTitle, false, true);
+			moveTab(message.tabUrl, message.tabTitle, false, true);
 			break;
-        case "remove-tab":
-            removeTab(message.tabUrl, message.tabTitle);
-            setStorage();
-            break;
+		case "remove-tab":
+			removeTab(message.tabUrl, message.tabTitle);
+			setStorage();
+			break;
 		case "remove-other-tabs":
-            removeOtherTabs(message.tabUrl, message.tabTitle);
+			removeOtherTabs(message.tabUrl, message.tabTitle);
 			break;
 		case "remove-left-tabs":
-            removeOtherTabs(message.tabUrl, message.tabTitle, true);
+			removeOtherTabs(message.tabUrl, message.tabTitle, true);
 			break;
 		case "remove-right-tabs":
-            removeOtherTabs(message.tabUrl, message.tabTitle, false);
+			removeOtherTabs(message.tabUrl, message.tabTitle, false);
 			break;
 		case "page-save-tab":
-            pageActionTab(true);
+			pageActionTab(true);
 			break;
 		case "page-remove-tab":
-            pageActionTab(false);
+			pageActionTab(false);
 			break;
 
-        default:
-            break;
-    }
+		default:
+			break;
+	}
 });
 
 // listen to possible updates from other modules

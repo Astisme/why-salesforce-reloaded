@@ -105,7 +105,7 @@ function _generateSldsImport() {
 	closeButton.appendChild(closeSpan);
 	modal.appendChild(closeButton);
 
-    closeButton.addEventListener(
+	closeButton.addEventListener(
 		"click",
 		() => container.remove(),
 	);
@@ -196,7 +196,6 @@ function _generateSldsImport() {
 	return container;
 }
 
-
 /**
  * Expands a URL by adding the domain and the Salesforce setup parts.
  * This function undoes what minifyURL did to a URL.
@@ -216,7 +215,7 @@ function _generateSldsImport() {
  */
 function expandURL(url) {
 	return chrome.runtime.sendMessage({
-        message: { what: "expand", url, baseUrl: globalThis.origin },
+		message: { what: "expand", url, baseUrl: globalThis.origin },
 	});
 }
 
@@ -510,8 +509,8 @@ function _generateFavouriteButton() {
 	return button;
 }
 
-function _generateOpenOtherOrgModal(miniURL){
-    document.createElement("a");
-    a.href = miniURL;
-    return a;
+function _generateOpenOtherOrgModal(miniURL) {
+	document.createElement("a");
+	a.href = miniURL;
+	return a;
 }

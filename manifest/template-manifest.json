@@ -13,7 +13,7 @@
 			],
 			"js": [
 				"./dragHandler.js",
-                "./salesforce/generator.js",
+				"./salesforce/generator.js",
 				"./salesforce/content.js",
 				"./salesforce/import.js"
 			],
