@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-window
 "use strict";
-import { handleSwitchColorTheme, initTheme } from "../../themeHandler.js";
+import { handleSwitchColorTheme, initTheme } from "../themeHandler.js";
 
 const html = document.documentElement;
 const sun = document.getElementById("sun");

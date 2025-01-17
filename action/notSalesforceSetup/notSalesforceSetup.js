@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-window
-import { initTheme } from "../../themeHandler.js";
+import { initTheme } from "../themeHandler.js";
 initTheme();
 
 /**
