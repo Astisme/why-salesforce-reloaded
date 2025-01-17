@@ -1,3 +1,5 @@
+// This script is injected in Salesforce context and does not share the context with the rest of the scripts in this direcory.
+
 // Listener for custom events from the content script
 function doLightningNavigation(details) {
 	try {

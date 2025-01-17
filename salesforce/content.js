@@ -2,7 +2,7 @@
 
 let setupTabUl; // This is on Salesforce Setup
 let href = globalThis.location.href;
-let minifiedURL;
+let _minifiedURL;
 let _expandedURL;
 const setupLightning = "/lightning/setup/";
 /**
@@ -13,9 +13,6 @@ const setupLightning = "/lightning/setup/";
  */
 const currentTabs = [];
 
-const buttonId = `${prefix}-button`;
-const starId = `${prefix}-star`;
-const slashedStarId = `${prefix}-slashed-star`;
 let wasOnSavedTab;
 let isCurrentlyOnSavedTab;
 let fromHrefUpdate;
@@ -24,6 +21,38 @@ let fromHrefUpdate;
 	const script = document.createElement("script");
 	script.src = chrome.runtime.getURL("salesforce/lightning-navigation.js");
 	(document.head || document.documentElement).appendChild(script);
+}
+/**
+ * Picks a link target between _blank and _top based on whether the user is click CTRL or the meta key.
+ *
+ * @param {Event} e - the click event
+ * @returns {String} "_blank" | "_top"
+ */
+function getLinkTarget(e) {
+	return (e.ctrlKey || e.metaKey) ? "_blank" : "_top";
+}
+
+/**
+ * Handles the redirection to another Salesforce page without requiring a full reload.
+ *
+ * @param {Event} e - the click event
+ */
+function handleLightningLinkClick(e) {
+	e.preventDefault(); // Prevent the default link behavior (href navigation)
+	const url = e.currentTarget.href;
+	const aTarget = e.currentTarget.target;
+	const target = aTarget || getLinkTarget(e);
+	// open link into new page when requested or if the user is clicking the favourite tab one more time
+	if (target === "_blank" || url === href) {
+		open(url, target);
+	} else {
+		postMessage({
+			what: "lightningNavigation",
+			navigationType: "url",
+			url,
+			fallbackURL: url,
+		}, "*");
+	}
 }
 
 /**
@@ -186,7 +215,7 @@ function isOnSavedTab(isFromHrefUpdate = false, callback) {
 
 	return minifyURL(href)
 		.then((loc) => {
-			minifiedURL = loc;
+			_minifiedURL = loc;
 
 			wasOnSavedTab = isCurrentlyOnSavedTab;
 			isCurrentlyOnSavedTab = currentTabs.some((tabdef) =>
@@ -261,6 +290,7 @@ function delayLoadSetupTabs(count = 0) {
 		setupTabUl.dataset.wheelListenerApplied = true;
 	}
 	// initialize
+    setupDrag();
 	reloadTabs();
 }
 
@@ -436,7 +466,7 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 			afterSet();
 			break;
 		case "add":
-			showFileImport();
+			_showFileImport();
 			break;
 		case "warning":
 			showToast(message.message, false, true);

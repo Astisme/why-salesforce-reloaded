@@ -12,11 +12,11 @@
 				"https://*.lightning.force.com/*"
 			],
 			"js": [
-				"./dragHandler.js",
 				"./salesforce/generator.js",
                 "./salesforce/favourite-manager.js",
-				"./salesforce/content.js",
-				"./salesforce/import.js"
+				"./dragHandler.js",
+				"./salesforce/import.js",
+				"./salesforce/content.js"
 			],
 			"run_at": "document_end"
 		}
