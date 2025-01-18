@@ -31,7 +31,9 @@ let fromHrefUpdate;
  * @returns {String} "_blank" | "_top"
  */
 function getLinkTarget(e, url) {
-	return e.ctrlKey || e.metaKey || !url.includes(setupLightning) ? "_blank" : "_top";
+	return e.ctrlKey || e.metaKey || !url.includes(setupLightning)
+		? "_blank"
+		: "_top";
 }
 
 /**
@@ -346,24 +348,30 @@ function makeDuplicatesBold(miniURL) {
  */
 function removeTab(url, title = null) {
 	currentTabs.length = 0;
-	currentTabs.push(currentTabs.filter((tabdef) =>
-		tabdef.url !== url && (title == null || tabdef.tabTitle !== title)
-	));
-    setStorage();
+	currentTabs.push(
+		currentTabs.filter((tabdef) =>
+			tabdef.url !== url && (title == null || tabdef.tabTitle !== title)
+		),
+	);
+	setStorage();
 }
 /**
  * TODO
  * Shows a modal to ask the user into which org they want to open the given URL.
  */
 function showModalOpenOtherOrg(miniURL, tabTitle) {
-    const { modalDiv, saveButton } = _generateOpenOtherOrgModal(miniURL, tabTitle ?? "Test");
-    modalHanger = modalHanger ?? document.querySelector("div.DESKTOP.uiContainerManager");
-    console.log(miniURL, tabTitle);
+	const { modalDiv, saveButton } = _generateOpenOtherOrgModal(
+		miniURL,
+		tabTitle ?? "Test",
+	);
+	modalHanger = modalHanger ??
+		document.querySelector("div.DESKTOP.uiContainerManager");
+	console.log(miniURL, tabTitle);
 
 	modalHanger.appendChild(modalDiv);
-    saveButton.addEventListener("click", () => {
-        console.log('clicked')
-    });
+	saveButton.addEventListener("click", () => {
+		console.log("clicked");
+	});
 }
 
 /**
@@ -487,12 +495,12 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 			}
 			break;
 		case "open-other-org": {
-            const miniURL = message.linkTabUrl ?? message.pageTabUrl;
-            const tabTitle = message.linkTabTitle;
-            //const expURL = message.linkUrl ?? message.pageUrl
+			const miniURL = message.linkTabUrl ?? message.pageTabUrl;
+			const tabTitle = message.linkTabTitle;
+			//const expURL = message.linkUrl ?? message.pageUrl
 			showModalOpenOtherOrg(miniURL, tabTitle);
 			break;
-        }
+		}
 		case "move-first":
 			moveTab(message.tabUrl, message.tabTitle, true, true);
 			break;

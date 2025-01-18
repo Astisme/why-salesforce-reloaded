@@ -79,8 +79,9 @@ function notify(message, count = 0) {
  * SetupOneHome/home
  */
 function minifyURL(url) {
-	if (url == null || url == "")
+	if (url == null || url == "") {
 		return null;
+	}
 
 	// remove org-specific url
 	if (url.includes(commonMainDomain)) {
@@ -131,8 +132,9 @@ function minifyURL(url) {
  * SetupOneHome/home
  */
 function expandURL(message) {
-    if(message == null || message.url == null || message.baseUrl == null)
-        return null;
+	if (message == null || message.url == null || message.baseUrl == null) {
+		return null;
+	}
 	const { url, baseUrl } = message;
 	if (url == null || url === "" || url.startsWith("https")) {
 		return url;
@@ -268,7 +270,7 @@ browserObj.runtime.onInstalled.addListener(() => {
 			browserObj.contextMenus.create({
 				...item,
 				documentUrlPatterns: [
-					"https://*.my.salesforce-setup.com/lightning/setup/*"
+					"https://*.my.salesforce-setup.com/lightning/setup/*",
 				],
 			})
 		);
@@ -296,7 +298,7 @@ browserObj.contextMenus.onClicked.addListener((info, _) => {
 			message.linkTabUrl = minifyURL(info.linkUrl);
 			message.linkUrl = expandURL(info.linkUrl);
 			message.linkTabTitle = info.linkText;
-            console.log(info.pageUrl,info.linkUrl,info.linkText);
+			console.log(info.pageUrl, info.linkUrl, info.linkText);
 			break;
 		case "page-save-tab":
 		case "page-remove-tab":
