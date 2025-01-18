@@ -4,8 +4,6 @@ const prefix = "again-why-salesforce";
 const toastId = `${prefix}-toast`;
 const modalId = `${prefix}-modal`;
 const modalConfirmId = `${prefix}-modal-confirm`;
-const closeModalId = `${prefix}-closeModal`;
-const otherOrgId = `${prefix}-other-org`;
 
 /**
  * Expands a URL by adding the domain and the Salesforce setup parts.
