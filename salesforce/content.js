@@ -1,6 +1,7 @@
 "use strict";
 
 let setupTabUl; // This is on Salesforce Setup
+let modalHanger; // This is where modals should be inserted in Salesforce Setup
 let href = globalThis.location.href;
 let _minifiedURL;
 let _expandedURL;
@@ -24,12 +25,13 @@ let fromHrefUpdate;
 }
 /**
  * Picks a link target between _blank and _top based on whether the user is click CTRL or the meta key.
+ * If the link goes outside of setup, always returns _blank.
  *
  * @param {Event} e - the click event
  * @returns {String} "_blank" | "_top"
  */
-function getLinkTarget(e) {
-	return (e.ctrlKey || e.metaKey) ? "_blank" : "_top";
+function getLinkTarget(e, url) {
+	return e.ctrlKey || e.metaKey || !url.includes(setupLightning) ? "_blank" : "_top";
 }
 
 /**
@@ -41,7 +43,7 @@ function _handleLightningLinkClick(e) {
 	e.preventDefault(); // Prevent the default link behavior (href navigation)
 	const url = e.currentTarget.href;
 	const aTarget = e.currentTarget.target;
-	const target = aTarget || getLinkTarget(e);
+	const target = aTarget || getLinkTarget(e, url);
 	// open link into new page when requested or if the user is clicking the favourite tab one more time
 	if (target === "_blank" || url === href) {
 		open(url, target);
@@ -164,14 +166,6 @@ function initTabs() {
 	];
 	setStorage(tabs);
 	return tabs;
-}
-
-function removeTab(url, title) {
-	const filteredTabs = currentTabs.filter((tabdef) =>
-		tabdef.url !== url && (title == null || tabdef.tabTitle !== title)
-	);
-	currentTabs.length = 0;
-	currentTabs.push(...filteredTabs);
 }
 
 /**
@@ -299,7 +293,6 @@ function delayLoadSetupTabs(count = 0) {
 function reloadTabs() {
 	while (setupTabUl.childElementCount > 3) { // hidden li + Home + Object Manager
 		setupTabUl.removeChild(setupTabUl.lastChild);
-		currentTabs.pop();
 	}
 	getStorage(init);
 }
@@ -346,11 +339,31 @@ function makeDuplicatesBold(miniURL) {
 }
 
 /**
+ * Removes the tab with the given url and title.
+ *
+ * @param {string} url - the minified URL of the tab to remove
+ * @param {string} title - the label of the tab to remove. if null, all tabs with the given URL will be removed
+ */
+function removeTab(url, title = null) {
+	currentTabs.length = 0;
+	currentTabs.push(currentTabs.filter((tabdef) =>
+		tabdef.url !== url && (title == null || tabdef.tabTitle !== title)
+	));
+    setStorage();
+}
+/**
  * TODO
  * Shows a modal to ask the user into which org they want to open the given URL.
  */
-function showModalOpenOtherOrg(miniURL) {
-	setupTabUl.appendChild(_generateOpenOtherOrgModal(miniURL));
+function showModalOpenOtherOrg(miniURL, tabTitle) {
+    const { modalDiv, saveButton } = _generateOpenOtherOrgModal(miniURL, tabTitle ?? "Test");
+    modalHanger = modalHanger ?? document.querySelector("div.DESKTOP.uiContainerManager");
+    console.log(miniURL, tabTitle);
+
+	modalHanger.appendChild(modalDiv);
+    saveButton.addEventListener("click", () => {
+        console.log('clicked')
+    });
 }
 
 /**
@@ -474,7 +487,10 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 			}
 			break;
 		case "open-other-org":
-			showModalOpenOtherOrg(message.tabUrl);
+            const miniURL = message.linkTabUrl ?? message.pageTabUrl;
+            const tabTitle = message.linkTabTitle;
+            //const expURL = message.linkUrl ?? message.pageUrl
+			showModalOpenOtherOrg(miniURL, tabTitle);
 			break;
 		case "move-first":
 			moveTab(message.tabUrl, message.tabTitle, true, true);
@@ -490,7 +506,6 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 			break;
 		case "remove-tab":
 			removeTab(message.tabUrl, message.tabTitle);
-			setStorage();
 			break;
 		case "remove-other-tabs":
 			removeOtherTabs(message.tabUrl, message.tabTitle);

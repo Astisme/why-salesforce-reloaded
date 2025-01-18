@@ -33,7 +33,8 @@
 		},
 		{
 			"resources": [
-				"assets/svgs/*.svg"
+				"assets/svgs/*.svg",
+                "assets/icons/*.png"
 			],
 			"matches": [
 				"https://*.my.salesforce-setup.com/*",
