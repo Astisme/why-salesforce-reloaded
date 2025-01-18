@@ -445,8 +445,8 @@ function generateSldsModal(title){
     return { modalDiv, article, saveButton };
 }
 
-function _generateOpenOtherOrgModal(miniURL, tabTitle) {
-    const { modalDiv, article, saveButton } = generateSldsModal(tabTitle);
+function _generateOpenOtherOrgModal(_miniURL, tabTitle) {
+    const { modalDiv, _article, saveButton } = generateSldsModal(tabTitle);
 
     
 

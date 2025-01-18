@@ -486,12 +486,13 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 				makeDuplicatesBold(message.url);
 			}
 			break;
-		case "open-other-org":
+		case "open-other-org": {
             const miniURL = message.linkTabUrl ?? message.pageTabUrl;
             const tabTitle = message.linkTabTitle;
             //const expURL = message.linkUrl ?? message.pageUrl
 			showModalOpenOtherOrg(miniURL, tabTitle);
 			break;
+        }
 		case "move-first":
 			moveTab(message.tabUrl, message.tabTitle, true, true);
 			break;
