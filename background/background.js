@@ -211,7 +211,7 @@ const menuItems = [
 	{ id: "move", title: "Move tab", contexts: ["link"] },
 	{
 		id: "move-first",
-		title: "Move first",
+		title: "Make first",
 		contexts: ["link"],
 		parentId: "move",
 	},
@@ -229,7 +229,7 @@ const menuItems = [
 	},
 	{
 		id: "move-last",
-		title: "Move last",
+		title: "Make last",
 		contexts: ["link"],
 		parentId: "move",
 	},

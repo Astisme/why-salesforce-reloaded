@@ -619,6 +619,10 @@ function generateSldsModal(modalTitle) {
 	saveSpan.textContent = "Save";
 	saveButton.appendChild(saveSpan);
 
+  document.addEventListener('keydown', function(event) {
+      event.key === 'Escape' && closeButton.click();
+  });
+
 	return { modalDiv, article, saveButton };
 }
 
