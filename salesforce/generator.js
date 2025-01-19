@@ -210,7 +210,67 @@ function _generateSldsToastMessage(message, isSuccess, isWarning) {
 	return toastContainer;
 }
 
-function generateSldsModal(title) {
+function generateInput(inputLabel, acceptedType, placeHolder){
+}
+
+function generateSection(sectionTitle){
+    const section = document.createElement("records-record-layout-section");
+    section.setAttribute("lwc-692i7qiai51-host", "");
+
+    const divMain = document.createElement("div");
+    divMain.setAttribute("lwc-692i7qiai51", "");
+    divMain.setAttribute(
+        "class",
+        "test-id__section slds-section slds-m-vertical_none has-header slds-is-open slds-p-bottom_medium"
+    );
+
+    const h3 = document.createElement("h3");
+    h3.setAttribute("lwc-692i7qiai51", "");
+    h3.setAttribute(
+        "class",
+        "test-id__section-header-container slds-section__title slds-theme--shade"
+    );
+    h3.setAttribute(
+        "data-target-reveals",
+        "sfdc:RecordField.Case.Status,sfdc:RecordField.Case.Origin,sfdc:RecordField.Case.AssetId,sfdc:RecordField.Case.Incident_Date__c,sfdc:RecordField.Case.SerialNumber__c,sfdc:RecordField.Case.Modello__c,sfdc:RecordField.Case.OS__c,sfdc:RecordField.Case.OS_Description__c,sfdc:RecordField.Case.Date_of_appointment__c,sfdc:RecordField.Case.Application__c,sfdc:RecordField.Case.Priority,sfdc:RecordField.Case.Type,sfdc:RecordField.Case.RecordTypeId,sfdc:RecordField.Case.Problema_Issue__c,sfdc:RecordField.Case.Machine_Firmware__c,sfdc:RecordField.Case.Home_App_Version__c,sfdc:RecordField.Case.Gateway_Firmware__c,sfdc:RecordField.Case.Phone_Model__c"
+    );
+
+    const spanTitle = document.createElement("span");
+    spanTitle.setAttribute("lwc-692i7qiai51", "");
+    spanTitle.setAttribute(
+        "class",
+        "test-id__section-header-title section-header-title slds-p-horizontal--small"
+    );
+    spanTitle.textContent = sectionTitle;
+
+    h3.appendChild(spanTitle);
+    divMain.appendChild(h3);
+
+    const divContent = document.createElement("div");
+    divContent.setAttribute("lwc-692i7qiai51", "");
+    divContent.setAttribute(
+        "class",
+        "test-id__section-content slds-section__content section__content align-with-title"
+    );
+    divContent.setAttribute("id", "sectionContent-216");
+    divContent.setAttribute("aria-hidden", "false");
+
+    const dl = document.createElement("dl");
+    dl.setAttribute("lwc-692i7qiai51", "");
+    dl.setAttribute("class", "slds-form");
+
+    const slotMain = document.createElement("slot");
+    slotMain.setAttribute("lwc-692i7qiai51", "");
+
+    dl.appendChild(slotMain);
+    divContent.appendChild(dl);
+    divMain.appendChild(divContent);
+    section.appendChild(divMain);
+
+    return section;
+}
+
+function generateSldsModal(modalTitle) {
 	const modalDiv = document.createElement("div");
 	modalDiv.classList.add(
 		"DESKTOP",
@@ -246,7 +306,7 @@ function generateSldsModal(title) {
 	dialog.setAttribute("aria-modal", "true");
 	dialog.classList.add("panel", "slds-modal", "slds-fade-in-open");
 	dialog.style.opacity = "1";
-	dialog.setAttribute("aria-label", `Again, Why Salesforce: ${title}`);
+	dialog.setAttribute("aria-label", `Again, Why Salesforce: ${modalTitle}`);
 	modalDiv.appendChild(dialog);
 
 	const modalContainer = document.createElement("div");
@@ -279,12 +339,15 @@ function generateSldsModal(title) {
 	closeIcon.setAttribute("variant", "bare");
 	closeButton.appendChild(closeIcon);
 
-	const closeSvg = document.createElement("svg");
+	const closeSvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
 	closeSvg.setAttribute("focusable", "false");
 	closeSvg.setAttribute("aria-hidden", "true");
 	closeSvg.setAttribute("viewBox", "0 0 520 520");
 	closeSvg.classList.add("slds-button__icon", "slds-button__icon_large");
 	closeIcon.appendChild(closeSvg);
+
+    const closeGroupElement = document.createElementNS("http://www.w3.org/2000/svg","g");
+    closeSvg.appendChild(closeGroupElement);
 
 	const closePath = document.createElementNS(
 		"http://www.w3.org/2000/svg",
@@ -294,7 +357,7 @@ function generateSldsModal(title) {
 		"d",
 		"M310 254l130-131c6-6 6-15 0-21l-20-21c-6-6-15-6-21 0L268 212a10 10 0 01-14 0L123 80c-6-6-15-6-21 0l-21 21c-6 6-6 15 0 21l131 131c4 4 4 10 0 14L80 399c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l131-131a10 10 0 0114 0l131 131c6 6 15 6 21 0l21-21c6-6 6-15 0-21L310 268a10 10 0 010-14z",
 	);
-	closeSvg.appendChild(closePath);
+	closeGroupElement.appendChild(closePath);
 
 	const assistiveText = document.createElement("span");
 	assistiveText.classList.add("slds-assistive-text");
@@ -380,15 +443,9 @@ function generateSldsModal(title) {
 	titleContainer.appendChild(awsIcon);
 
 	const heading = document.createElement("h2");
-	heading.textContent = title;
+	heading.textContent = modalTitle;
 	heading.style.marginLeft = "0.5rem";
 	titleContainer.appendChild(heading);
-	console.log(
-		heading,
-		title,
-		awsIcon,
-		chrome.runtime.getURL("assets/icons/awsf-128.png"),
-	);
 
 	const legend = document.createElement("div");
 	legend.classList.add("required-legend");
@@ -425,6 +482,7 @@ function generateSldsModal(title) {
 	actionsContainerDiv.setAttribute("data-aura-rendered-by", "1149:0");
 	buttonContainerDiv.appendChild(actionsContainerDiv);
 
+    /*
 	const pageErrorDiv = document.createElement("div");
 	pageErrorDiv.classList.add("pageError", "hideEl");
 	pageErrorDiv.setAttribute("data-aura-rendered-by", "1150:0");
@@ -506,7 +564,7 @@ function generateSldsModal(title) {
 		"M514 425L285 55a28 28 0 00-50 0L6 425c-14 23 0 55 25 55h458c25 0 40-32 25-55zm-254-25c-17 0-30-13-30-30s13-30 30-30 30 13 30 30-13 30-30 30zm30-90c0 6-4 10-10 10h-40c-6 0-10-4-10-10V180c0-6 4-10 10-10h40c6 0 10 4 10 10v130z",
 	);
 	gElement.appendChild(pathElement);
-	gElement.appendChild(pathElement.cloneNode());
+    */
 
 	const buttonContainerInnerDiv = document.createElement("div");
 	buttonContainerInnerDiv.classList.add("button-container-inner");
