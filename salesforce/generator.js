@@ -210,57 +210,65 @@ function _generateSldsToastMessage(message, isSuccess, isWarning) {
 	return toastContainer;
 }
 
-function generateInput(inputLabel, acceptedType = "text", requireInput = false, placeHolder = null) {
-  const inputDiv = document.createElement("div");
-  inputDiv.setAttribute("name","input");
+function generateInput(
+	inputLabel,
+	acceptedType = "text",
+	requireInput = false,
+	placeHolder = null,
+) {
+	const inputDiv = document.createElement("div");
+	inputDiv.setAttribute("name", "input");
 
-  const formElement = document.createElement("div");
-  formElement.classList.add("slds-form-element","slds-form-element_stacked");
-  formElement.setAttribute("variant","label-stacked");
-  inputDiv.appendChild(formElement);
+	const formElement = document.createElement("div");
+	formElement.classList.add("slds-form-element", "slds-form-element_stacked");
+	formElement.setAttribute("variant", "label-stacked");
+	inputDiv.appendChild(formElement);
 
-  const exportParts = document.createElement("div");
-  exportParts.setAttribute("exportparts","input-text, input-container, input, required");
-  exportParts.setAttribute("variant","label-stacked");
-  formElement.appendChild(exportParts);
+	const exportParts = document.createElement("div");
+	exportParts.setAttribute(
+		"exportparts",
+		"input-text, input-container, input, required",
+	);
+	exportParts.setAttribute("variant", "label-stacked");
+	formElement.appendChild(exportParts);
 
-  const formElementLabel = document.createElement("div");
-  formElementLabel.classList.add("slds-form-element__label","slds-no-flex");
-  formElementLabel.setAttribute("part","input-text");
-  exportParts.appendChild(formElementLabel);
+	const formElementLabel = document.createElement("div");
+	formElementLabel.classList.add("slds-form-element__label", "slds-no-flex");
+	formElementLabel.setAttribute("part", "input-text");
+	exportParts.appendChild(formElementLabel);
 
-  const label = document.createElement("label");
-  label.classList.add("slds-form-element__label","slds-no-flex");
-  label.setAttribute("for","input-324");
-  formElementLabel.appendChild(label);
+	const label = document.createElement("label");
+	label.classList.add("slds-form-element__label", "slds-no-flex");
+	label.setAttribute("for", "input-324");
+	formElementLabel.appendChild(label);
 
-  const required = document.createElement("abbr");
-  required.classList.add("slds-required");
-  required.setAttribute("title","required");
-  required.setAttribute("part","required");
-  required.textContent = "*";
-  label.appendChild(required);
-  label.append(inputLabel);
+	const required = document.createElement("abbr");
+	required.classList.add("slds-required");
+	required.setAttribute("title", "required");
+	required.setAttribute("part", "required");
+	required.textContent = "*";
+	label.appendChild(required);
+	label.append(inputLabel);
 
-  const inputWrapper = document.createElement("div");
-  inputWrapper.classList.add("slds-form-element__control","slds-grow");
-  inputWrapper.setAttribute("part","input-container");
-  inputWrapper.setAttribute("type", acceptedType);
-  formElementLabel.appendChild(inputWrapper);
+	const inputWrapper = document.createElement("div");
+	inputWrapper.classList.add("slds-form-element__control", "slds-grow");
+	inputWrapper.setAttribute("part", "input-container");
+	inputWrapper.setAttribute("type", acceptedType);
+	formElementLabel.appendChild(inputWrapper);
 
-  const input = document.createElement("input");
-  input.classList.add("slds-input");
-  input.setAttribute("part","input");
-  input.setAttribute("maxlength","255");
+	const input = document.createElement("input");
+	input.classList.add("slds-input");
+	input.setAttribute("part", "input");
+	input.setAttribute("maxlength", "255");
 
-  input.setAttribute("name", inputLabel);
-  input.setAttribute("type", acceptedType);
-  requireInput && input.setAttribute("required", "true");
-  placeHolder && input.setAttribute("placeholder", placeHolder);
+	input.setAttribute("name", inputLabel);
+	input.setAttribute("type", acceptedType);
+	requireInput && input.setAttribute("required", "true");
+	placeHolder && input.setAttribute("placeholder", placeHolder);
 
-  inputWrapper.appendChild(input);
+	inputWrapper.appendChild(input);
 
-  return inputDiv;
+	return inputDiv;
 }
 
 function generateSection(sectionTitle) {
@@ -300,32 +308,39 @@ function generateSection(sectionTitle) {
 	span.textContent = sectionTitle;
 	h3.appendChild(span);
 
-  const progressiveContainer = document.createElement("div");
-  progressiveContainer.classList.add("section-content","slds-size_1-of-1","slds-grid");
-  section.appendChild(progressiveContainer);
+	const progressiveContainer = document.createElement("div");
+	progressiveContainer.classList.add(
+		"section-content",
+		"slds-size_1-of-1",
+		"slds-grid",
+	);
+	section.appendChild(progressiveContainer);
 
+	const columnFlex = document.createElement("div");
+	columnFlex.classList.add("column", "flex-width");
+	columnFlex.setAttribute("slot", "columns");
+	progressiveContainer.appendChild(columnFlex);
 
-  const columnFlex = document.createElement("div");
-  columnFlex.classList.add("column","flex-width");
-  columnFlex.setAttribute("slot","columns");
-  progressiveContainer.appendChild(columnFlex);
+	const columns = document.createElement("div");
+	columns.classList.add(
+		"slds-col",
+		"slds-p-horizontal_small",
+		"slds-p-vertical_x-small",
+	);
+	columnFlex.appendChild(columns);
 
-  const columns = document.createElement("div");
-  columns.classList.add("slds-col","slds-p-horizontal_small","slds-p-vertical_x-small");
-  columnFlex.appendChild(columns);
+	const gridCols = document.createElement("div");
+	gridCols.classList.add("slds-grid", "slds-col", "slds-has-flexi-truncate");
+	gridCols.setAttribute("role", "listitem");
+	columns.appendChild(gridCols);
 
-  const gridCols = document.createElement("div");
-  gridCols.classList.add("slds-grid","slds-col","slds-has-flexi-truncate");
-  gridCols.setAttribute("role","listitem");
-  columns.appendChild(gridCols);
+	const gridStack = document.createElement("div");
+	gridStack.classList.add("slds-grid", "slds-size_1-of-1", "label-stacked");
+	gridCols.appendChild(gridStack);
 
-  const gridStack = document.createElement("div");
-  gridStack.classList.add("slds-grid","slds-size_1-of-1","label-stacked");
-  gridCols.appendChild(gridStack);
-
-  const hanger = document.createElement("div");
-  hanger.classList.add("slds-size_1-of-1","field_textarea");
-  gridStack.appendChild(hanger);
+	const hanger = document.createElement("div");
+	hanger.classList.add("slds-size_1-of-1", "field_textarea");
+	gridStack.appendChild(hanger);
 
 	return { section, hanger };
 }
@@ -699,7 +714,9 @@ function _generateOpenOtherOrgModal(_miniURL, tabTitle) {
 	const { section, hanger } = generateSection("Other Org info");
 	article.appendChild(section);
 
-	hanger.appendChild(generateInput("Org Link", "text", true, "myorg.my.salesforce.com"));
+	hanger.appendChild(
+		generateInput("Org Link", "text", true, "myorg.my.salesforce.com"),
+	);
 
 	return { modalDiv, saveButton };
 }
