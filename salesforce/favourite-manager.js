@@ -9,7 +9,7 @@ const slashedStarId = `${prefix}-slashed-star`;
  *
  * @returns {Element} - The generated element for the favourite button.
  */
-function _generateFavouriteButton() {
+function generateFavouriteButton() {
 	const star = chrome.runtime.getURL("assets/svgs/star.svg");
 	const slashedStar = chrome.runtime.getURL("assets/svgs/slashed-star.svg");
 
@@ -187,7 +187,7 @@ function showFavouriteButton(count = 0) {
 			checkUpdateFavouriteButton();
 			continue;
 		}
-		header.appendChild(_generateFavouriteButton());
+		header.appendChild(generateFavouriteButton());
 		const button = header.querySelector(`#${buttonId}`); // need to repeat this bit of code because I'm inserting it at the previous line
 		toggleFavouriteButton(isCurrentlyOnSavedTab, button); // init correctly
 		button.addEventListener(

@@ -210,64 +210,124 @@ function _generateSldsToastMessage(message, isSuccess, isWarning) {
 	return toastContainer;
 }
 
-function generateInput(inputLabel, acceptedType, placeHolder){
+function generateInput(inputLabel, acceptedType = "text", requireInput = false, placeHolder = null) {
+  const inputDiv = document.createElement("div");
+  inputDiv.setAttribute("name","input");
+
+  const formElement = document.createElement("div");
+  formElement.classList.add("slds-form-element","slds-form-element_stacked");
+  formElement.setAttribute("variant","label-stacked");
+  inputDiv.appendChild(formElement);
+
+  const exportParts = document.createElement("div");
+  exportParts.setAttribute("exportparts","input-text, input-container, input, required");
+  exportParts.setAttribute("variant","label-stacked");
+  formElement.appendChild(exportParts);
+
+  const formElementLabel = document.createElement("div");
+  formElementLabel.classList.add("slds-form-element__label","slds-no-flex");
+  formElementLabel.setAttribute("part","input-text");
+  exportParts.appendChild(formElementLabel);
+
+  const label = document.createElement("label");
+  label.classList.add("slds-form-element__label","slds-no-flex");
+  label.setAttribute("for","input-324");
+  formElementLabel.appendChild(label);
+
+  const required = document.createElement("abbr");
+  required.classList.add("slds-required");
+  required.setAttribute("title","required");
+  required.setAttribute("part","required");
+  required.textContent = "*";
+  label.appendChild(required);
+  label.append(inputLabel);
+
+  const inputWrapper = document.createElement("div");
+  inputWrapper.classList.add("slds-form-element__control","slds-grow");
+  inputWrapper.setAttribute("part","input-container");
+  inputWrapper.setAttribute("type", acceptedType);
+  formElementLabel.appendChild(inputWrapper);
+
+  const input = document.createElement("input");
+  input.classList.add("slds-input");
+  input.setAttribute("part","input");
+  input.setAttribute("maxlength","255");
+
+  input.setAttribute("name", inputLabel);
+  input.setAttribute("type", acceptedType);
+  requireInput && input.setAttribute("required", "true");
+  placeHolder && input.setAttribute("placeholder", placeHolder);
+
+  inputWrapper.appendChild(input);
+
+  return inputDiv;
 }
 
-function generateSection(sectionTitle){
-    const section = document.createElement("records-record-layout-section");
-    section.setAttribute("lwc-692i7qiai51-host", "");
+function generateSection(sectionTitle) {
+	const section = document.createElement("records-record-layout-section");
+	section.setAttribute("lwc-692i7qiai51-host", "");
 
-    const divMain = document.createElement("div");
-    divMain.setAttribute("lwc-692i7qiai51", "");
-    divMain.setAttribute(
-        "class",
-        "test-id__section slds-section slds-m-vertical_none has-header slds-is-open slds-p-bottom_medium"
-    );
+	const newDiv = document.createElement("div");
+	newDiv.setAttribute("lwc-mlenr16lk9", "");
+	newDiv.classList.add("slds-card__body", "slds-card__body_inner");
+	section.appendChild(newDiv);
 
-    const h3 = document.createElement("h3");
-    h3.setAttribute("lwc-692i7qiai51", "");
-    h3.setAttribute(
-        "class",
-        "test-id__section-header-container slds-section__title slds-theme--shade"
-    );
-    h3.setAttribute(
-        "data-target-reveals",
-        "sfdc:RecordField.Case.Status,sfdc:RecordField.Case.Origin,sfdc:RecordField.Case.AssetId,sfdc:RecordField.Case.Incident_Date__c,sfdc:RecordField.Case.SerialNumber__c,sfdc:RecordField.Case.Modello__c,sfdc:RecordField.Case.OS__c,sfdc:RecordField.Case.OS_Description__c,sfdc:RecordField.Case.Date_of_appointment__c,sfdc:RecordField.Case.Application__c,sfdc:RecordField.Case.Priority,sfdc:RecordField.Case.Type,sfdc:RecordField.Case.RecordTypeId,sfdc:RecordField.Case.Problema_Issue__c,sfdc:RecordField.Case.Machine_Firmware__c,sfdc:RecordField.Case.Home_App_Version__c,sfdc:RecordField.Case.Gateway_Firmware__c,sfdc:RecordField.Case.Phone_Model__c"
-    );
+	const innerDiv = document.createElement("div");
+	innerDiv.setAttribute("lwc-mlenr16lk9", "");
+	innerDiv.classList.add(
+		"section-layout-container",
+		"slds-section",
+		"slds-is-open",
+	);
+	newDiv.appendChild(innerDiv);
 
-    const spanTitle = document.createElement("span");
-    spanTitle.setAttribute("lwc-692i7qiai51", "");
-    spanTitle.setAttribute(
-        "class",
-        "test-id__section-header-title section-header-title slds-p-horizontal--small"
-    );
-    spanTitle.textContent = sectionTitle;
+	const h3 = document.createElement("h3");
+	h3.setAttribute("lwc-mlenr16lk9", "");
+	h3.classList.add(
+		"label",
+		"slds-section__title",
+		"slds-truncate",
+		"slds-p-around_x-small",
+		"slds-theme_shade",
+	);
+	h3.setAttribute("data-target-reveals", "");
+	innerDiv.appendChild(h3);
 
-    h3.appendChild(spanTitle);
-    divMain.appendChild(h3);
+	const span = document.createElement("span");
+	span.setAttribute("lwc-mlenr16lk9", "");
+	span.classList.add("slds-truncate");
+	span.setAttribute("title", sectionTitle);
+	span.textContent = sectionTitle;
+	h3.appendChild(span);
 
-    const divContent = document.createElement("div");
-    divContent.setAttribute("lwc-692i7qiai51", "");
-    divContent.setAttribute(
-        "class",
-        "test-id__section-content slds-section__content section__content align-with-title"
-    );
-    divContent.setAttribute("id", "sectionContent-216");
-    divContent.setAttribute("aria-hidden", "false");
+  const progressiveContainer = document.createElement("div");
+  progressiveContainer.classList.add("section-content","slds-size_1-of-1","slds-grid");
+  section.appendChild(progressiveContainer);
 
-    const dl = document.createElement("dl");
-    dl.setAttribute("lwc-692i7qiai51", "");
-    dl.setAttribute("class", "slds-form");
 
-    const slotMain = document.createElement("slot");
-    slotMain.setAttribute("lwc-692i7qiai51", "");
+  const columnFlex = document.createElement("div");
+  columnFlex.classList.add("column","flex-width");
+  columnFlex.setAttribute("slot","columns");
+  progressiveContainer.appendChild(columnFlex);
 
-    dl.appendChild(slotMain);
-    divContent.appendChild(dl);
-    divMain.appendChild(divContent);
-    section.appendChild(divMain);
+  const columns = document.createElement("div");
+  columns.classList.add("slds-col","slds-p-horizontal_small","slds-p-vertical_x-small");
+  columnFlex.appendChild(columns);
 
-    return section;
+  const gridCols = document.createElement("div");
+  gridCols.classList.add("slds-grid","slds-col","slds-has-flexi-truncate");
+  gridCols.setAttribute("role","listitem");
+  columns.appendChild(gridCols);
+
+  const gridStack = document.createElement("div");
+  gridStack.classList.add("slds-grid","slds-size_1-of-1","label-stacked");
+  gridCols.appendChild(gridStack);
+
+  const hanger = document.createElement("div");
+  hanger.classList.add("slds-size_1-of-1","field_textarea");
+  gridStack.appendChild(hanger);
+
+	return { section, hanger };
 }
 
 function generateSldsModal(modalTitle) {
@@ -339,15 +399,21 @@ function generateSldsModal(modalTitle) {
 	closeIcon.setAttribute("variant", "bare");
 	closeButton.appendChild(closeIcon);
 
-	const closeSvg = document.createElementNS("http://www.w3.org/2000/svg","svg");
+	const closeSvg = document.createElementNS(
+		"http://www.w3.org/2000/svg",
+		"svg",
+	);
 	closeSvg.setAttribute("focusable", "false");
 	closeSvg.setAttribute("aria-hidden", "true");
 	closeSvg.setAttribute("viewBox", "0 0 520 520");
 	closeSvg.classList.add("slds-button__icon", "slds-button__icon_large");
 	closeIcon.appendChild(closeSvg);
 
-    const closeGroupElement = document.createElementNS("http://www.w3.org/2000/svg","g");
-    closeSvg.appendChild(closeGroupElement);
+	const closeGroupElement = document.createElementNS(
+		"http://www.w3.org/2000/svg",
+		"g",
+	);
+	closeSvg.appendChild(closeGroupElement);
 
 	const closePath = document.createElementNS(
 		"http://www.w3.org/2000/svg",
@@ -482,7 +548,7 @@ function generateSldsModal(modalTitle) {
 	actionsContainerDiv.setAttribute("data-aura-rendered-by", "1149:0");
 	buttonContainerDiv.appendChild(actionsContainerDiv);
 
-    /*
+	/*
 	const pageErrorDiv = document.createElement("div");
 	pageErrorDiv.classList.add("pageError", "hideEl");
 	pageErrorDiv.setAttribute("data-aura-rendered-by", "1150:0");
@@ -619,15 +685,21 @@ function generateSldsModal(modalTitle) {
 	saveSpan.textContent = "Save";
 	saveButton.appendChild(saveSpan);
 
-  document.addEventListener('keydown', function(event) {
-      event.key === 'Escape' && closeButton.click();
-  });
+	document.addEventListener("keydown", function (event) {
+		event.key === "Escape" && closeButton.click() &&
+			document.removeEventListener("keydown");
+	});
 
 	return { modalDiv, article, saveButton };
 }
 
 function _generateOpenOtherOrgModal(_miniURL, tabTitle) {
-	const { modalDiv, _article, saveButton } = generateSldsModal(tabTitle);
+	const { modalDiv, article, saveButton } = generateSldsModal(tabTitle);
+
+	const { section, hanger } = generateSection("Other Org info");
+	article.appendChild(section);
+
+	hanger.appendChild(generateInput("Org Link", "text", true, "myorg.my.salesforce.com"));
 
 	return { modalDiv, saveButton };
 }
