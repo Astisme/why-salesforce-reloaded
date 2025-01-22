@@ -401,7 +401,7 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
         let newTarget;
 
         if(delta > 2){
-            let newTarget = shrinkTarget(value);
+            newTarget = shrinkTarget(value);
             if(newTarget !== value)
                 target.value = newTarget;
         }
