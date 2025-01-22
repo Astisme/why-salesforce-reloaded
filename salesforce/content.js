@@ -350,6 +350,8 @@ function removeTab(url, title = null) {
 	const filteredTabs = currentTabs.filter((tabdef) =>
 		tabdef.url !== url && (title == null || tabdef.tabTitle !== title)
 	);
+    if(currentTabs.length === filteredTabs.length)
+        return showToast("This tab was not found.", false, true);
 	currentTabs.length = 0;
 	currentTabs.push(
 		...filteredTabs,
@@ -473,7 +475,9 @@ function moveTab(miniURL, tabTitle, moveBefore = true, fullMovement = false) {
 	const index = currentTabs.findIndex((tab) =>
 		tab.url === miniURL && tab.tabTitle === tabTitle
 	);
-	if (index === -1) return;
+	if (index === -1){
+        return showToast("This tab was not found.", false, true);
+    }
 
 	const [tab] = currentTabs.splice(index, 1);
 
@@ -510,6 +514,9 @@ function removeOtherTabs(miniURL, tabTitle, removeBefore = null) {
 			current.url === miniURL
 		).tabTitle;
 	}
+    // check if the clicked tab is not one of the favourited ones
+    if(!currentTabs.some(favTab => favTab.url === miniURL && favTab.tabTitle === tabTitle))
+        return showToast("This is not a saved tab!", false, true);
 	if (removeBefore == null) {
 		return setStorage([{ tabTitle, url: miniURL }]);
 	}
