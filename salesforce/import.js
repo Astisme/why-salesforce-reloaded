@@ -292,7 +292,6 @@ reader.onload = function (e) {
  * The function reads the uploaded file if it is a JSON file and sends the content to the importer function
  */
 function listenToFileUpload() {
-    console.log(dropArea);
 
 	function readFile(file) {
 		if (file.type !== "application/json") {

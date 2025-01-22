@@ -215,7 +215,7 @@ function isOnSavedTab(isFromHrefUpdate = false, callback) {
 			wasOnSavedTab = isCurrentlyOnSavedTab;
 			isCurrentlyOnSavedTab = currentTabs.some((tabdef) =>
 				tabdef.url.includes(loc)
-			);
+            );
 
 			isFromHrefUpdate && callback(isCurrentlyOnSavedTab);
 		});
@@ -347,24 +347,28 @@ function makeDuplicatesBold(miniURL) {
  * @param {string} title - the label of the tab to remove. if null, all tabs with the given URL will be removed
  */
 function removeTab(url, title = null) {
+    const filteredTabs = currentTabs.filter((tabdef) =>
+        tabdef.url !== url && (title == null || tabdef.tabTitle !== title)
+    );
 	currentTabs.length = 0;
 	currentTabs.push(
-		currentTabs.filter((tabdef) =>
-			tabdef.url !== url && (title == null || tabdef.tabTitle !== title)
-		),
+		...filteredTabs
 	);
 	setStorage();
 }
 /**
- * TODO
  * Shows a modal to ask the user into which org they want to open the given URL.
+    *
+    * @param {string} miniURL - the minified URL for which the user has engaged this action.
+    * @param {string} tabTitle - the name of the URL for which the user has engaged this action. If not found, we try to find the name through the saved tabs; otherwise a default text is shown.
  */
 function showModalOpenOtherOrg(miniURL, tabTitle) {
 	const { modalParent, saveButton, closeButton, inputContainer } =
 		_generateOpenOtherOrgModal(
 			miniURL,
 			tabTitle ??
-				currentTabs.find((current) => current.url === miniURL).tabTitle,
+				currentTabs.find((current) => current.url === miniURL).tabTitle ??
+                "Where to?",
 		);
 	modalHanger = modalHanger ??
 		document.querySelector("div.DESKTOP.uiContainerManager");
