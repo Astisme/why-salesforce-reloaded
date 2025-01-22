@@ -375,13 +375,13 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 	const mySalesforceSetupCom = ".my.salesforce-setup.com";
 	const mySalesforceCom = ".my.salesforce.com";
 	function shrinkTarget(url) {
-		console.trace();
-		if (url.startsWith(https)) {
-			url = url.slice(https.length);
-		}
-		if (url.endsWith("/")) {
-			url = url.slice(0, url.length - 1);
-		}
+        try {
+            const parsedUrl = new URL(url.startsWith(https) ? url : `${https}${url}`);
+            url = parsedUrl.host;
+        } catch (error) {
+            return console.error(error); // this may happen if we do not pass a string starting with https
+        }
+
 		if (url.includes(lightningForceCom)) {
 			url = url.slice(0, url.indexOf(lightningForceCom));
 		}
@@ -390,12 +390,6 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 		}
 		if (url.includes(mySalesforceCom)) {
 			url = url.slice(0, url.indexOf(mySalesforceCom));
-		}
-		if (url.includes(setupLightning)) {
-			url = url.slice(0, url.indexOf(setupLightning));
-		}
-		if (url.includes(miniURL)) {
-			url = url.slice(0, url.indexOf(miniURL));
 		}
 		return url;
 	}
@@ -409,7 +403,7 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 
 		if (delta > 2) {
 			newTarget = shrinkTarget(value);
-			if (newTarget !== value) {
+			if (newTarget != null && newTarget !== value) {
 				target.value = newTarget;
 			}
 		}
@@ -423,8 +417,7 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 		if (inputVal == null || inputVal === "") {
 			return;
 		}
-		const newTarget = shrinkTarget(inputVal);
-		console.log(newTarget);
+		const newTarget = shrinkTarget(inputVal) ?? inputVal;
 		if (!newTarget.match(/^([a-zA-Z]*[\.-]*[0-9]*)+$/g)) {
 			return;
 		}
