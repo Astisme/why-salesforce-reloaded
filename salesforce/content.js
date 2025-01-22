@@ -1,20 +1,19 @@
-// deno-lint-ignore-file no-window
 "use strict";
 
 let setupTabUl; // This is on Salesforce Setup
+let modalHanger; // This is where modals should be inserted in Salesforce Setup
+let href = globalThis.location.href;
+let _minifiedURL;
+let _expandedURL;
 const setupLightning = "/lightning/setup/";
-let href = window.location.href;
-const baseUrl = href.slice(0, href.indexOf(setupLightning));
+/**
+ * tabForCurrentTabs = {
+ *      tabTitle: "string", // this is the label for the URL
+ *      url: "string", // this is the URL in its minified version
+ * }
+ */
 const currentTabs = [];
 
-const prefix = "again-why-salesforce";
-const buttonId = `${prefix}-button`;
-const starId = `${prefix}-star`;
-const slashedStarId = `${prefix}-slashed-star`;
-const toastId = `${prefix}-toast`;
-const importId = `${prefix}-import`;
-const closeModalId = `${prefix}-closeModal`;
-const overrideId = `${prefix}-override`;
 let wasOnSavedTab;
 let isCurrentlyOnSavedTab;
 let fromHrefUpdate;
@@ -23,6 +22,41 @@ let fromHrefUpdate;
 	const script = document.createElement("script");
 	script.src = chrome.runtime.getURL("salesforce/lightning-navigation.js");
 	(document.head || document.documentElement).appendChild(script);
+}
+/**
+ * Picks a link target between _blank and _top based on whether the user is click CTRL or the meta key.
+ * If the link goes outside of setup, always returns _blank.
+ *
+ * @param {Event} e - the click event
+ * @returns {String} "_blank" | "_top"
+ */
+function getLinkTarget(e, url) {
+	return e.ctrlKey || e.metaKey || !url.includes(setupLightning)
+		? "_blank"
+		: "_top";
+}
+
+/**
+ * Handles the redirection to another Salesforce page without requiring a full reload.
+ *
+ * @param {Event} e - the click event
+ */
+function _handleLightningLinkClick(e) {
+	e.preventDefault(); // Prevent the default link behavior (href navigation)
+	const url = e.currentTarget.href;
+	const aTarget = e.currentTarget.target;
+	const target = aTarget || getLinkTarget(e, url);
+	// open link into new page when requested or if the user is clicking the favourite tab one more time
+	if (target === "_blank" || url === href) {
+		open(url, target);
+	} else {
+		postMessage({
+			what: "lightningNavigation",
+			navigationType: "url",
+			url,
+			fallbackURL: url,
+		}, "*");
+	}
 }
 
 /**
@@ -58,169 +92,67 @@ function afterSet() {
  * @param {Array} tabs - The array of tabs to save.
  */
 function setStorage(tabs) {
+	tabs = tabs ?? currentTabs;
 	sendMessage({ what: "set", tabs }, afterSet);
 }
 
 /**
- * Cleans up and normalizes the given URL.
+ * Minifies a URL by the domain and removing Salesforce-specific parts.
  *
- * @param {string} url - The URL to clean up.
- * @param {boolean} [nochange=null] - Optional parameter to control URL transformation behavior. If false, the URL returned will contain the entire Salesforce Setup link.
- * @returns {string} - The cleaned-up URL.
- */
-function cleanupUrl(url, nochange = null) {
-	const asis = nochange == null ? url.startsWith("http") : nochange;
-	if (url.startsWith("/lightning") || url.startsWith("/_ui/common")) { // normalized setup pages won't get here
-		return `${baseUrl}${url}`;
-	}
-
-	if (url.startsWith("/")) {
-		url = url.slice(1);
-	}
-	if (url.endsWith("/")) {
-		url = url.slice(0, url.length - 1);
-	}
-	if (url.includes(setupLightning)) {
-		url = url.slice(url.indexOf(setupLightning) + setupLightning.length);
-	}
-
-	return asis ? url : `${baseUrl}${setupLightning}${url}`;
-}
-
-function getLinkTarget(e) {
-	return (e.ctrlKey || e.metaKey) ? "_blank" : "_top";
-}
-/**
- * Handles the redirection to another Salesforce page without requiring a full reload.
+ * @param {string} url - The URL to minify.
+ * @returns {Promise} A promise containing the minified URL.
  *
- * @param {Event} e - the click event
+ * These links would all collapse into "SetupOneHome/home".
+ * https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/
+ * https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home
+ * https://myorgdomain.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/
+ * https://myorgdomain.my.salesforce-setup.com/lightning/setup/SetupOneHome/home
+ * /lightning/setup/SetupOneHome/home/
+ * /lightning/setup/SetupOneHome/home
+ * lightning/setup/SetupOneHome/home/
+ * lightning/setup/SetupOneHome/home
+ * /SetupOneHome/home/
+ * /SetupOneHome/home
+ * SetupOneHome/home/
+ * SetupOneHome/home
  */
-function handleLightningLinkClick(e) {
-	e.preventDefault(); // Prevent the default link behavior (href navigation)
-	const url = e.currentTarget.href;
-	const aTarget = e.currentTarget.target;
-	const target = aTarget || getLinkTarget(e);
-	if (target === "_blank") {
-		open(url, target);
-	} else {
-		postMessage({
-			what: "lightningNavigation",
-			navigationType: "url",
-			url,
-			fallbackURL: url,
-		}, "*");
-	}
+function minifyURL(url) {
+	return chrome.runtime.sendMessage({ message: { what: "minify", url } });
 }
 
 /**
- * Generates the HTML for a tab row.
+ * Calculates the estimated time (in milliseconds) it takes to read a given message.
  *
- * @param {Object} row - The tab data object containing title and URL.
- * @param {string} row.tabTitle - The title of the tab.
- * @param {string} row.url - The URL of the tab.
- * @returns {HTMLElement} - The generated list item element representing the tab.
+ * @param {string} message - The message to calculate the reading time for.
+ * @returns {number} - The estimated reading time in milliseconds.
  */
-function generateRowTemplate(row) {
-	let { tabTitle, url } = row;
-	url = cleanupUrl(url);
-
-	const li = document.createElement("li");
-	li.setAttribute("role", "presentation");
-	li.classList.add(
-		"oneConsoleTabItem",
-		"tabItem",
-		"slds-context-bar__item",
-		"borderRight",
-		"navexConsoleTabItem",
-		prefix,
-	);
-	li.setAttribute("data-aura-class", "navexConsoleTabItem");
-
-	const a = document.createElement("a");
-	a.setAttribute("data-draggable", "true");
-	a.setAttribute("role", "tab");
-	a.setAttribute("tabindex", "-1");
-	a.setAttribute("title", url);
-	a.setAttribute("aria-selected", "false");
-	a.setAttribute("href", url);
-	a.classList.add("tabHeader", "slds-context-bar__label-action");
-	a.style.zIndex = 0;
-	if (url.includes(setupLightning)) {
-		a.addEventListener("click", handleLightningLinkClick);
-	}
-
-	const span = document.createElement("span");
-	span.classList.add("title", "slds-truncate");
-	span.textContent = tabTitle;
-
-	a.appendChild(span);
-	li.appendChild(a);
-
-	// Highlight the tab related to the current page
-	if (href === url) {
-		li.classList.add("slds-is-active");
-	}
-
-	return li;
+function calculateReadingTime(message) {
+	const words = message.split(/\s+/).filter((word) => word.length > 0);
+	const wordsPerMinute = 200; // Average reading speed
+	const readingTimeMinutes = words.length / wordsPerMinute;
+	const readingTimeSeconds = Math.ceil(readingTimeMinutes * 60);
+	return (readingTimeSeconds + 2) * 1000;
 }
-
-/**
- * Generates the HTML for a toast message.
- *
- * @param {string} message - The message to display in the toast.
- * @param {boolean} isSuccess - Indicates whether the message is a success or error.
- * @returns {string} - The generated HTML for the toast message.
- */
-function generateSldsToastMessage(message, isSuccess) {
-	const toastType = isSuccess ? "success" : "error";
-	return `<div id="${toastId}" class="toastContainer slds-notify_container slds-is-relative" data-aura-rendered-by="7381:0">
-                <div role="alertdialog" aria-describedby="toastDescription7382:0" data-key="${toastType}" class="slds-theme--${toastType} slds-notify--toast slds-notify slds-notify--toast forceToastMessage" data-aura-rendered-by="7384:0" data-aura-class="forceToastMessage" aria-label="${toastType}">
-                    <lightning-icon icon-name="utility:${toastType}" class="slds-icon-utility-${toastType} toastIcon slds-m-right--small slds-no-flex slds-align-top slds-icon_container" data-data-rendering-service-uid="1478" data-aura-rendered-by="7386:0">
-                        <span style="--sds-c-icon-color-background: var(--slds-c-icon-color-background, transparent)" part="boundary">
-                            <lightning-primitive-icon size="small" variant="inverse">
-                                <svg class="slds-icon slds-icon_small" focusable="false" data-key="${toastType}" aria-hidden="true" viewBox="0 0 520 520" part="icon">
-                                    <g>
-                                        ${
-		isSuccess
-			? '<path d="M260 20a240 240 0 100 480 240 240 0 100-480zm134 180L241 355c-6 6-16 6-22 0l-84-85c-6-6-6-16 0-22l22-22c6-6 16-6 22 0l44 45a10 10 0 0015 0l112-116c6-6 16-6 22 0l22 22c7 6 7 16 0 23z"></path>'
-			: '<path d="M260 20C128 20 20 128 20 260s108 240 240 240 240-108 240-240S392 20 260 20zM80 260a180 180 0 01284-147L113 364a176 176 0 01-33-104zm180 180c-39 0-75-12-104-33l251-251a180 180 0 01-147 284z" lwc-1te30te6nf1=""></path>'
-	}
-                                    </g>
-                                </svg>
-                            </lightning-primitive-icon>
-                            <span class="slds-assistive-text">${toastType}</span>
-                        </span>
-                    </lightning-icon>
-                    <div class="toastContent slds-notify__content" data-aura-rendered-by="7387:0">
-                        <div class="slds-align-middle slds-hyphenate" data-aura-rendered-by="7388:0">
-                            <!--render facet: 7389:0-->
-                            <div id="toastDescription7382:0" data-aura-rendered-by="7390:0">
-                                <span class="toastMessage slds-text-heading--small forceActionsText" data-aura-rendered-by="7395:0" data-aura-class="forceActionsText">${message}</span>
-                            </div>
-                        </div>
-                    </div>
-                    <!--render facet: 7398:0-->
-                </div>
-            </div>`;
-}
-
 /**
  * Displays a toast message in the UI.
  *
  * @param {string} message - The message to display in the toast.
  * @param {boolean} [isSuccess=true] - Whether the toast message is a success (default is true).
+ * @param {boolean} [isWarning=false] - Whether the toast message is a warning (default is false).
  */
-function showToast(message, isSuccess = true) {
+function showToast(message, isSuccess = true, isWarning = false) {
 	const hanger = document.getElementsByClassName(
 		"oneConsoleTabset navexConsoleTabset",
 	)[0];
-	hanger.insertAdjacentHTML(
-		"beforeend",
-		generateSldsToastMessage(message, isSuccess),
+	const toastElement = _generateSldsToastMessage(
+		message,
+		isSuccess,
+		isWarning,
 	);
+	hanger.appendChild(toastElement);
 	setTimeout(() => {
-		hanger.removeChild(document.getElementById(toastId));
-	}, 4000);
+		hanger.removeChild(document.getElementById(toastElement.id));
+	}, calculateReadingTime(message));
 }
 
 /**
@@ -231,175 +163,11 @@ function showToast(message, isSuccess = true) {
 function initTabs() {
 	const tabs = [
 		{ tabTitle: "⚡", url: "/lightning" },
-		{ tabTitle: "Flows", url: "Flows/home" },
+		{ tabTitle: "Flows", url: "/lightning/app/standard__FlowsApp" },
 		{ tabTitle: "Users", url: "ManageUsers/home" },
 	];
 	setStorage(tabs);
 	return tabs;
-}
-
-/**
- * Generates the element for the favourite button.
- *
- * @returns {Element} - The generated element for the favourite button.
- */
-function generateFavouriteButton() {
-	const star = chrome.runtime.getURL("assets/svgs/star.svg");
-	const slashedStar = chrome.runtime.getURL("assets/svgs/slashed-star.svg");
-
-	const button = document.createElement("button");
-	button.setAttribute("id", buttonId);
-	button.classList.add("slds-button", "slds-button--neutral", "uiButton");
-	button.setAttribute("type", "button");
-	button.setAttribute("aria-live", "off");
-	button.setAttribute("aria-label", "");
-	button.setAttribute("data-aura-rendered-by", "3:829;a");
-	button.setAttribute("data-aura-class", "uiButton");
-
-	const span = document.createElement("span");
-	span.classList.add("label", "bBody");
-	span.setAttribute("dir", "ltr");
-	span.setAttribute("data-aura-rendered-by", "6:829;a");
-
-	function createImageElement(id, src, alt) {
-		const img = document.createElement("img");
-		img.setAttribute("id", id);
-		img.setAttribute("src", src);
-		img.setAttribute("alt", alt);
-		img.setAttribute(
-			"style",
-			"height: 2rem; filter: invert(60%) sepia(100%) saturate(500%) hue-rotate(170deg) brightness(90%);",
-		);
-
-		const span = document.createElement("span");
-		span.textContent = alt;
-		span.classList.add("hidden", id);
-
-		img.addEventListener("error", function () {
-			if (!img.classList.contains("hidden")) {
-				span.classList.remove("hidden");
-			}
-			img.remove();
-		});
-
-		return { img, span };
-	}
-
-	const { img: starImg, span: starSpan } = createImageElement(
-		starId,
-		star,
-		"Save as Tab",
-	);
-
-	const { img: slashedStarImg, span: slashedStarSpan } = createImageElement(
-		slashedStarId,
-		slashedStar,
-		"Remove Tab",
-	);
-	slashedStarSpan.classList.add("hidden");
-
-	const style = document.createElement("style");
-	style.textContent = ".hidden { display: none; }";
-
-	span.appendChild(starImg);
-	span.appendChild(starSpan);
-	span.appendChild(slashedStarImg);
-	span.appendChild(slashedStarSpan);
-	span.appendChild(style);
-	button.appendChild(span);
-
-	return button;
-}
-
-/**
- * Toggles the visibility of the favourite button based on whether the tab is saved.
- *
- * @param {HTMLElement} button - The favourite button element.
- * @param {boolean} isSaved - Optional flag indicating whether the tab is saved.
- */
-function toggleFavouriteButton(button, isSaved) {
-	// will use the class identifier if there was an error with the image (and was removed)
-	const star = button.querySelector(`#${starId}`) ??
-		button.querySelector(`.${starId}`);
-	const slashedStar = button.querySelector(`#${slashedStarId}`) ??
-		button.querySelector(`.${slashedStarId}`);
-	if (isSaved == null) {
-		star.classList.toggle("hidden");
-		slashedStar.classList.toggle("hidden");
-		return;
-	}
-	if (isSaved) {
-		star.classList.add("hidden");
-		slashedStar.classList.remove("hidden");
-	} else {
-		star.classList.remove("hidden");
-		slashedStar.classList.add("hidden");
-	}
-}
-
-/**
- * Adds or removes the current tab from the saved tabs list based on the button's state.
- *
- * @param {HTMLElement} parent - The parent element of the favourite button.
- */
-function actionFavourite(parent) {
-	const url = cleanupUrl(href);
-	if (isCurrentlyOnSavedTab) {
-		const filteredTabs = currentTabs.filter((tabdef) => {
-			return tabdef.url !== url;
-		});
-		currentTabs.length = 0;
-		currentTabs.push(...filteredTabs);
-	} else {
-		const tabTitle = parent.querySelector(".breadcrumbDetail").innerText;
-		currentTabs.push({ tabTitle, url });
-	}
-	toggleFavouriteButton(parent.querySelector(`#${buttonId}`));
-	setStorage(currentTabs);
-}
-
-/**
- * Displays the favourite button in the UI if applicable.
- *
- * @param {number} [count=0] - The number of retry attempts to find headers.
- */
-function showFavouriteButton(count = 0) {
-	if (count > 5) {
-		console.error("Again, Why Salesforce - failed to find headers.");
-		return setTimeout(showFavouriteButton(), 5000);
-	}
-
-	// Do not add favourite button on Home and Object Manager
-	const standardTabs = ["SetupOneHome/home", "ObjectManager/home"];
-	if (standardTabs.includes(cleanupUrl(href))) {
-		return;
-	}
-
-	// there's possibly 2 headers: one for Setup home and one for Object Manager
-	const headers = Array.from(
-		document.querySelectorAll("div.overflow.uiBlock > div.bRight"),
-	);
-	if (headers == null || headers.length < 1) {
-		return setTimeout(() => showFavouriteButton(count + 1), 500);
-	}
-
-	// ensure we have clean data
-	if (wasOnSavedTab == null && isCurrentlyOnSavedTab == null) {
-		isOnSavedTab();
-	}
-
-	for (const header of headers) {
-		if (header.querySelector(`#${buttonId}`) != null) { // already inserted my button
-			continue;
-		}
-		header.appendChild(generateFavouriteButton());
-		const button = header.querySelector(`#${buttonId}`);
-		toggleFavouriteButton(button, isCurrentlyOnSavedTab); // init correctly
-		button.addEventListener(
-			"click",
-			() => actionFavourite(header.parentNode),
-		);
-	}
 }
 
 /**
@@ -415,9 +183,14 @@ function init(items) {
 		? initTabs()
 		: items[items.key];
 
-	rowObj.forEach((row) => setupTabUl.appendChild(generateRowTemplate(row)));
 	currentTabs.length = 0;
-	currentTabs.push(...rowObj);
+	if (rowObj.length !== 0) {
+		rowObj.forEach((row) =>
+			_generateRowTemplate(row)
+				.then((r) => setupTabUl.appendChild(r))
+		);
+		currentTabs.push(...rowObj);
+	}
 	isOnSavedTab();
 	showFavouriteButton();
 }
@@ -428,31 +201,44 @@ function init(items) {
  * @param {boolean} [isFromHrefUpdate=false] - A flag to determine if the check is due to a URL update.
  * @returns {boolean} - True if the current tab is a saved tab, otherwise false.
  */
-function isOnSavedTab(isFromHrefUpdate = false) {
+function isOnSavedTab(isFromHrefUpdate = false, callback) {
 	if (fromHrefUpdate && !isFromHrefUpdate) {
 		fromHrefUpdate = false;
 		return;
 	}
 	fromHrefUpdate = isFromHrefUpdate;
-	const loc = cleanupUrl(href);
-	wasOnSavedTab = isCurrentlyOnSavedTab;
-	isCurrentlyOnSavedTab = currentTabs.some((tabdef) =>
-		tabdef.url.includes(loc)
-	);
-	return isCurrentlyOnSavedTab;
+
+	return minifyURL(href)
+		.then((loc) => {
+			_minifiedURL = loc;
+
+			wasOnSavedTab = isCurrentlyOnSavedTab;
+			isCurrentlyOnSavedTab = currentTabs.some((tabdef) =>
+				tabdef.url.includes(loc)
+			);
+
+			isFromHrefUpdate && callback(isCurrentlyOnSavedTab);
+		});
 }
 
+/**
+ * If the user has moved to or from a saved tab, they'll be reloaded to update the highlighted one.
+ * otherwise, the favourite button is shown
+ */
+function afterHrefUpdate(isCurrentlyOnSavedTab) {
+	if (isCurrentlyOnSavedTab || wasOnSavedTab) reloadTabs();
+	else showFavouriteButton();
+}
 /**
  * Handles the update of the current URL, reloading tabs if necessary.
  */
 function onHrefUpdate() {
-	const newRef = window.location.href;
+	const newRef = globalThis.location.href;
 	if (newRef === href) {
 		return;
 	}
 	href = newRef;
-	if (isOnSavedTab(true) || wasOnSavedTab) reloadTabs();
-	else showFavouriteButton();
+	isOnSavedTab(true, afterHrefUpdate);
 }
 
 /**
@@ -499,7 +285,8 @@ function delayLoadSetupTabs(count = 0) {
 		setupTabUl.dataset.wheelListenerApplied = true;
 	}
 	// initialize
-	getStorage(init);
+	setupDrag();
+	reloadTabs();
 }
 
 /**
@@ -508,119 +295,328 @@ function delayLoadSetupTabs(count = 0) {
 function reloadTabs() {
 	while (setupTabUl.childElementCount > 3) { // hidden li + Home + Object Manager
 		setupTabUl.removeChild(setupTabUl.lastChild);
-		currentTabs.pop();
 	}
 	getStorage(init);
-}
-
-/**
- * Generates the HTML structure for the import modal.
- *
- * @returns {string} - The HTML string for the import modal.
- */
-function generateSldsImport() {
-	return `<div id="${importId}" style="width: 100%;display: flex;align-items: center;justify-content: center;position: fixed;left: 0;">
-                <!-- focus on div -->
-                <!-- z-index of tabs on setupTabUl is == 1 so we have to move up over them -->
-                <div style="position: absolute; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.5); z-index: 2;top:0;left:0;pointer-events: all;"></div>
-                <!-- main content div -->
-                <div style="position: absolute;background-color: lightgoldenrodyellow;top: 2rem;width: 18rem;height: 8rem;display: flex;align-items: center;justify-content: center;text-align: center;border: 1px solid lightskyblue;border-radius: 1rem;flex-direction: column;box-shadow: 1px 2px 3px black;z-index: 3;">
-                    <!-- X button -->
-                    <button 
-                        id="${closeModalId}"
-                        style="position: absolute;top: 0rem;right: 0rem;width: 1.5rem;height: 1.5rem;background: lightskyblue;border: 1px solid black;color: black;font-size: 1.2rem;cursor: pointer;border-radius: 50%;display: flex;align-items: center;justify-content: center; line-height: 1;">
-                        <span style="transform: translateY(-2px) translateX(1px);">
-                            &times;
-                        </span>
-                    </button>
-                    <h4 style="font-weight: revert;font-size: initial;margin-bottom: 0.6rem;">Again, Why Salesforce: Import</h4>
-                    <input accept=".json" class="slds-file-selector__input slds-assistive-text" type="file" id="input-file-166" multiple="" name="fileInput" part="input" aria-labelledby="form-label-166 file-selector-label-166">
-                    <label class="slds-file-selector__body" id="file-selector-label-166" data-file-selector-label="" for="input-file-166" aria-hidden="true">
-                        <span class="slds-file-selector__button slds-button slds-button_neutral" part="button">
-                            <lightning-primitive-icon variant="bare">
-                                <svg class="slds-button__icon slds-button__icon_left" focusable="false" data-key="upload" aria-hidden="true" viewBox="0 0 520 520" part="icon">
-                                    <g>
-                                        <path d="M485 310h-30c-8 0-15 8-15 15v100c0 8-7 15-15 15H95c-8 0-15-7-15-15V325c0-7-7-15-15-15H35c-8 0-15 8-15 15v135a40 40 0 0040 40h400a40 40 0 0040-40V325c0-7-7-15-15-15zM270 24c-6-6-15-6-21 0L114 159c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l56-56c6-6 18-2 18 7v212c0 8 6 15 14 15h30c8 0 16-8 16-15V153c0-9 10-13 17-7l56 56c6 6 15 6 21 0l21-21c6-6 6-15 0-21z"></path>
-                                    </g>
-                                </svg>
-                            </lightning-primitive-icon>Upload Files
-                        </span>
-                        <span class="slds-file-selector__text slds-medium-show">Or drop files</span>
-                    </label>
-                    <label>
-                        <input id=${overrideId} type="checkbox" name="override-tabs" value="false">
-                        Override saved tabs
-                    </label>
-                </div>
-            </div>`;
-}
-
-let overridePick;
-/**
- * Displays the import modal for uploading tab data.
- */
-function showFileImport() {
-	setupTabUl.insertAdjacentHTML("beforeend", generateSldsImport());
-	document.getElementById(closeModalId).addEventListener(
-		"click",
-		() => document.getElementById(importId).remove(),
-	);
-	overridePick = false;
-	document.getElementById(overrideId).addEventListener(
-		"click",
-		() => overridePick = !overridePick,
-	);
-}
-
-/**
- * Handles the imported tab data and updates the storage with the newly imported tabs.
- *
- * @param {Object} message - The message containing the imported tab data.
- * @param {Array<Object>} message.imported - The array of imported tab data.
- */
-function importer(message) {
-	const importedArray = message.imported;
-	if (overridePick) {
-		currentTabs.length = 0;
-	}
-	currentTabs.push(...importedArray);
-	// remove file import
-	setupTabUl.removeChild(setupTabUl.querySelector(`#${importId}`));
-	setStorage(currentTabs);
 }
 
 /**
  * Reorders the tabs based on their new order in the DOM and saves the updated list to storage.
  */
 function reorderTabs() {
-	// get the list of tabs
-	const tabs = [];
-	Array.from(setupTabUl.children).slice(3).forEach((tab) => {
-		const tabTitle = tab.querySelector("a > span").innerText;
-		const url = cleanupUrl(tab.querySelector("a").href, true);
-		if (tabTitle && url) {
-			tabs.push({ tabTitle, url });
-		}
-	});
-	setStorage(tabs);
+	// Get the list of tabs
+	const tabPromises = Array.from(setupTabUl.children)
+		.slice(3)
+		.map(async (tab) => {
+			const tabTitle = tab.querySelector("a > span").innerText;
+			const href = tab.querySelector("a").href;
+			const url = await minifyURL(href);
+
+			if (tabTitle && url) {
+				return { tabTitle, url };
+			}
+			return null; // Return null for invalid tabs
+		});
+
+	Promise.all(tabPromises)
+		.then((tabs) => setStorage(tabs.filter((tab) => tab != null)))
+		.catch((err) => console.error("Error processing tabs:", err));
 }
 
-// listen from saves from the action page
+/**
+ * Find tabs with the given URL and change their background-color
+ */
+function makeDuplicatesBold(miniURL) {
+	const duplicatetabs = setupTabUl.querySelectorAll(`a[title="${miniURL}"]`);
+	if (duplicatetabs == null) {
+		return;
+	}
+	duplicatetabs.forEach((a) => a.classList.add("slds-theme--warning"));
+	setTimeout(
+		() =>
+			duplicatetabs.forEach((a) =>
+				a.classList.remove("slds-theme--warning")
+			),
+		4000,
+	);
+}
+
+/**
+ * Removes the tab with the given url and title.
+ *
+ * @param {string} url - the minified URL of the tab to remove
+ * @param {string} title - the label of the tab to remove. if null, all tabs with the given URL will be removed
+ */
+function removeTab(url, title = null) {
+	const filteredTabs = currentTabs.filter((tabdef) =>
+		tabdef.url !== url && (title == null || tabdef.tabTitle !== title)
+	);
+	if (currentTabs.length === filteredTabs.length) {
+		return showToast("This tab was not found.", false, true);
+	}
+	currentTabs.length = 0;
+	currentTabs.push(
+		...filteredTabs,
+	);
+	setStorage();
+}
+/**
+ * Shows a modal to ask the user into which org they want to open the given URL.
+ *
+ * @param {string} miniURL - the minified URL for which the user has engaged this action.
+ * @param {string} tabTitle - the name of the URL for which the user has engaged this action. If not found, we try to find the name through the saved tabs; otherwise a default text is shown.
+ */
+function showModalOpenOtherOrg(miniURL, tabTitle) {
+	const { modalParent, saveButton, closeButton, inputContainer } =
+		_generateOpenOtherOrgModal(
+			miniURL,
+			tabTitle ??
+				currentTabs.find((current) => current.url === miniURL)
+					.tabTitle ??
+				"Where to?",
+		);
+	modalHanger = modalHanger ??
+		document.querySelector("div.DESKTOP.uiContainerManager");
+	modalHanger.appendChild(modalParent);
+
+	const https = "https://";
+	const lightningForceCom = ".lightning.force.com";
+	const mySalesforceSetupCom = ".my.salesforce-setup.com";
+	const mySalesforceCom = ".my.salesforce.com";
+	function shrinkTarget(url) {
+		let host;
+		try {
+			const parsedUrl = new URL(
+				url.startsWith(https) ? url : `${https}${url}`,
+			);
+			host = parsedUrl.host;
+		} catch (error) {
+			return console.error(error); // this may happen if we do not pass a string starting with https
+		}
+
+		if (host.endsWith(lightningForceCom)) {
+			host = host.slice(0, host.indexOf(lightningForceCom));
+		}
+		if (host.endsWith(mySalesforceSetupCom)) {
+			host = host.slice(0, host.indexOf(mySalesforceSetupCom));
+		}
+		if (host.endsWith(mySalesforceCom)) {
+			host = host.slice(0, host.indexOf(mySalesforceCom));
+		}
+		return host;
+	}
+
+	let lastInput = "";
+	inputContainer.addEventListener("input", (e) => {
+		const target = e.target;
+		const value = target.value;
+		const delta = value.length - lastInput.length;
+		let newTarget;
+
+		if (delta > 2) {
+			newTarget = shrinkTarget(value);
+			if (newTarget != null && newTarget !== value) {
+				target.value = newTarget;
+			}
+		}
+
+		lastInput = newTarget ?? value;
+	});
+
+	saveButton.addEventListener("click", () => {
+		const inputVal = inputContainer.value;
+		if (inputVal == null || inputVal === "") {
+			return;
+		}
+
+		const newTarget = shrinkTarget(inputVal) ?? inputVal;
+		if (!newTarget.match(/^[a-zA-Z0-9]+(--[a-zA-Z0-9]+\.sandbox)?$/g)) {
+			return;
+		}
+
+		const url = new URL(
+			`${https}${newTarget}${lightningForceCom}${setupLightning}${miniURL}`,
+		);
+		if (confirm(`Are you sure you want to open\n${url}?`)) {
+			closeButton.click();
+			open(url, "_blank");
+		}
+	});
+}
+
+/**
+ * Moves a tab to the specified spot and then reloads.
+ *
+ * @param {string} miniURL - the minified URL of the tab to keep
+ * @param {string} tabTitle - the title of the tab to keep
+ * @param {boolean} [moveBefore=true] - whether the tab should be moved one space before in the array
+ * @param {boolean} [fullMovement=false] - whether the tab should be moved at the begin or end of the array instead of moving it only one space
+ *
+ * @example
+ * for this example, we'll collapse miniURL and tabTitle into a single string and simply look at tabs as strings.
+ * tabs = ["a", "b", "c", "d", "e"]
+ *
+ * moveTab("c") || moveTab("c",true) || moveTab("c",true,false)
+ * ==> tabs = ["a", "c", "b", "d", "e"]
+ *
+ * moveTab("c",false) || moveTab("c",false,false)
+ * ==> tabs = ["a", "b", "d", "c", "e"]
+ *
+ * moveTab("c",true,true)
+ * ==> tabs = ["c", "a", "b", "d", "e"]
+ *
+ * moveTab("c",false,true)
+ * ==> tabs = ["a", "b", "d", "e", "c"]
+ */
+function moveTab(miniURL, tabTitle, moveBefore = true, fullMovement = false) {
+	if (tabTitle == null) {
+		tabTitle = currentTabs.find((current) =>
+			current.url === miniURL
+		).tabTitle;
+	}
+	const index = currentTabs.findIndex((tab) =>
+		tab.url === miniURL && tab.tabTitle === tabTitle
+	);
+	if (index === -1) {
+		return showToast("This tab was not found.", false, true);
+	}
+
+	const [tab] = currentTabs.splice(index, 1);
+
+	if (fullMovement) {
+		moveBefore ? currentTabs.unshift(tab) : currentTabs.push(tab);
+	} else {
+		const newIndex = moveBefore
+			? Math.max(0, index - 1)
+			: Math.min(currentTabs.length, index + 1);
+		currentTabs.splice(newIndex, 0, tab);
+	}
+
+	setStorage();
+}
+
+/**
+ * Removes the other saved tabs and then reloads.
+ *
+ * @param {string} miniURL - the minified URL of the tab to keep
+ * @param {string} tabTitle - the title of the tab to keep
+ * @param {boolean || null} [removeBefore=null] - special value to change the behaviour of the function. When not passed, the specified tab will be the only one kept. When true, only the tabs before it will be removed. When false, only the tabs after it will be removed.
+ *
+ * @example
+ * for this example, we'll collapse miniURL and tabTitle into a single string and simply look at tabs as strings.
+ * tabs = ["a", "b", "c"]
+ *
+ * removeOtherTabs("b") || removeOtherTabs("b",null) ==> tabs = ["b"]
+ * removeOtherTabs("b",true) ==> tabs = ["b", "c"]
+ * removeOtherTabs("b",false) ==> tabs = ["a", "b"]
+ */
+function removeOtherTabs(miniURL, tabTitle, removeBefore = null) {
+	if (tabTitle == null) {
+		tabTitle = currentTabs.find((current) =>
+			current.url === miniURL
+		).tabTitle;
+	}
+	// check if the clicked tab is not one of the favourited ones
+	if (
+		!currentTabs.some((favTab) =>
+			favTab.url === miniURL && favTab.tabTitle === tabTitle
+		)
+	) {
+		return showToast("This is not a saved tab!", false, true);
+	}
+	if (removeBefore == null) {
+		return setStorage([{ tabTitle, url: miniURL }]);
+	}
+	const index = currentTabs.findIndex((tab) =>
+		tab.url === miniURL && tab.tabTitle === tabTitle
+	);
+	if (index === -1) return;
+
+	setStorage(
+		removeBefore
+			? currentTabs.slice(index)
+			: currentTabs.slice(0, index + 1),
+	);
+}
+
+/**
+ * Performs the specified action for the current page, adding or removing from the tab list.
+ *
+ * @param {boolean} [save=true] - whether the current page should be added or removed as tab
+ */
+function pageActionTab(save = true) {
+	const favourite = getFavouriteButton(save ? starId : slashedStarId);
+	if (!favourite.classList.contains("hidden")) favourite.click();
+	else {
+		const message = save
+			? "Cannot save:\nThis page has already been saved!"
+			: "Cannot remove:\nCannot remove a page that has not been saved before";
+		showToast(message, true, true);
+	}
+}
+
+// listen from saves from the action / background page
 chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 	if (message == null || message.what == null) {
 		return;
 	}
-	console.log(message);
-	if (message.what === "saved") {
-		sendResponse(null);
-		afterSet();
-	} else if (message.what === "add") {
-		sendResponse(null);
-		showFileImport();
+	sendResponse(null);
+	switch (message.what) {
+		case "saved":
+			afterSet();
+			break;
+		case "warning":
+			showToast(message.message, false, true);
+			if (message.action === "make-bold") {
+				makeDuplicatesBold(message.url);
+			}
+			break;
+		case "open-other-org": {
+			const miniURL = message.linkTabUrl ?? message.pageTabUrl;
+			const tabTitle = message.linkTabTitle;
+			//const expURL = message.linkUrl ?? message.pageUrl
+			showModalOpenOtherOrg(miniURL, tabTitle);
+			break;
+		}
+		case "move-first":
+			moveTab(message.tabUrl, message.tabTitle, true, true);
+			break;
+		case "move-left":
+			moveTab(message.tabUrl, message.tabTitle, true, false);
+			break;
+		case "move-right":
+			moveTab(message.tabUrl, message.tabTitle, false, false);
+			break;
+		case "move-last":
+			moveTab(message.tabUrl, message.tabTitle, false, true);
+			break;
+		case "remove-tab":
+			removeTab(message.tabUrl, message.tabTitle);
+			break;
+		case "remove-other-tabs":
+			removeOtherTabs(message.tabUrl, message.tabTitle);
+			break;
+		case "remove-left-tabs":
+			removeOtherTabs(message.tabUrl, message.tabTitle, true);
+			break;
+		case "remove-right-tabs":
+			removeOtherTabs(message.tabUrl, message.tabTitle, false);
+			break;
+		case "empty-tabs":
+			setStorage([]);
+			break;
+		case "page-save-tab":
+			pageActionTab(true);
+			break;
+		case "page-remove-tab":
+			pageActionTab(false);
+			break;
+
+		default:
+			break;
 	}
 });
 
-// listen to possible updates from tableDragHandler
+// listen to possible updates from other modules
 addEventListener("message", (e) => {
 	if (e.source != window) {
 		return;
@@ -628,10 +624,6 @@ addEventListener("message", (e) => {
 	const what = e.data.what;
 	if (what === "order") {
 		reorderTabs();
-	} else if (what === "import") {
-		importer(e.data);
-	} else if (what === "error") {
-		showToast(e.data.message, false);
 	}
 	//else if(what === "saved")
 });

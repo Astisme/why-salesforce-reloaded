@@ -1,5 +1,5 @@
 "use strict";
-import { initTheme } from "../../themeHandler.js";
+import { initTheme } from "../themeHandler.js";
 initTheme();
 
 const html = document.documentElement;

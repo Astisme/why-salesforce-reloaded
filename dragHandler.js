@@ -76,13 +76,13 @@ function createListeners() {
 	container.addEventListener("drop", handleDrop, false); // when element is dropped
 }
 
-function setup() {
+function setupDrag() {
 	table = document.getElementById("sortable-table");
 	ul = document.getElementsByClassName("tabBarItems slds-grid")[0];
-	container = table || ul;
+	container = table ?? ul;
 	closestTag = table != null ? "tr" : "li";
 	if (container != null) createListeners();
-	else setTimeout(() => setup(), 500);
+	else setTimeout(() => setupDrag(), 500);
 }
 
-setup();
+setupDrag();

@@ -1,5 +1,5 @@
 // deno-lint-ignore-file no-window
-import { initTheme } from "../../themeHandler.js";
+import { initTheme } from "../themeHandler.js";
 initTheme();
 
 /**
@@ -65,3 +65,45 @@ if (strongFirst) {
 	div.appendChild(otherText);
 	div.appendChild(strongEl);
 }
+
+let currentTab;
+/**
+ * Creates a new tab with the given URL next to the current tab and it associates the new tab with the current tab (this ensures the same container is used).
+ *
+ * @param {string} url - the URL to be opened
+ */
+function createTab(url) {
+	chrome.tabs.create({
+		url: url,
+		index: currentTab.index + 1,
+		openerTabId: currentTab.id,
+	});
+}
+
+/**
+ * Finds the carrently active tab and if the callback was provided, it is then called.
+ *
+ * @param {function} callback - the function to call when the current tab is found.
+ * @param {string} url - the url to pass to the callback function
+ */
+function getCurrentTab(callback, url) {
+	chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+		currentTab = tabs[0];
+		if (callback != null) {
+			callback(url);
+		}
+	});
+}
+getCurrentTab();
+
+// close the popup when the user clicks on the redirection link
+document.querySelectorAll("a").forEach((a) => {
+	a.addEventListener("click", (e) => {
+		e.preventDefault();
+		currentTab == null
+			? getCurrentTab(createTab, a.href)
+			: createTab(a.href);
+		//open(a.href, "_blank");
+		setTimeout(() => close(), 200);
+	});
+});

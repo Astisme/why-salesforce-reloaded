@@ -1,6 +1,6 @@
 // deno-lint-ignore-file no-window
 "use strict";
-import { handleSwitchColorTheme, initTheme } from "../../themeHandler.js";
+import { handleSwitchColorTheme, initTheme } from "../themeHandler.js";
 
 const html = document.documentElement;
 const sun = document.getElementById("sun");
@@ -53,7 +53,6 @@ function switchTheme() {
 const tabTemplate = document.getElementById("tr_template");
 const tabAppendElement = document.getElementById("tabs");
 
-const setupLightning = "/lightning/setup/";
 let knownTabs = [];
 let loggers = [];
 
@@ -108,37 +107,27 @@ function setStorage(tabs, check = true) {
 }
 
 /**
- * Cleans up a URL by removing Salesforce-specific parts.
+ * Minifies a URL by the domain and removing Salesforce-specific parts.
  *
- * @param {string} url - The URL to clean.
- * @returns {string} The cleaned URL.
+ * @param {string} url - The URL to minify.
+ * @returns {Promise} A promise containing the minified URL.
+ *
+ * These links would all collapse into "SetupOneHome/home".
+ * https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/
+ * https://myorgdomain.sandbox.my.salesforce-setup.com/lightning/setup/SetupOneHome/home
+ * https://myorgdomain.my.salesforce-setup.com/lightning/setup/SetupOneHome/home/
+ * https://myorgdomain.my.salesforce-setup.com/lightning/setup/SetupOneHome/home
+ * /lightning/setup/SetupOneHome/home/
+ * /lightning/setup/SetupOneHome/home
+ * lightning/setup/SetupOneHome/home/
+ * lightning/setup/SetupOneHome/home
+ * /SetupOneHome/home/
+ * /SetupOneHome/home
+ * SetupOneHome/home/
+ * SetupOneHome/home
  */
-function cleanupUrl(url) {
-	if (url == null || url == "") {
-		return "";
-	}
-	// remove org-specific url
-	const home =
-		"https:\/\/.*\.my\.salesforce-setup\.com\/lightning\/setup\/.*";
-	if (url.match(home)) {
-		url = url.slice(url.indexOf(setupLightning));
-	}
-
-	if (url.includes(setupLightning)) {
-		url = url.slice(url.indexOf(setupLightning) + setupLightning.length); // remove setup subdirectory
-	} // do not remove anything if the page is not from setup
-	else if (url.includes("/lightning") || url.includes("/_ui/common")) {
-		return url;
-	}
-
-	if (url.startsWith("/")) {
-		url = url.slice(1);
-	}
-	if (url.endsWith("/")) {
-		url = url.slice(0, url.length - 1);
-	}
-
-	return url;
+function minifyURL(url) {
+	return chrome.runtime.sendMessage({ message: { what: "minify", url } });
 }
 
 /**
@@ -151,26 +140,46 @@ function deleteTab() {
 }
 
 /**
+ * Enables or disables the elements of the last td available in the popup.
+ *
+ * @param {boolean} [enable=true] - if enabling or disabling the elements in the last td
+ */
+function updateTabAttributes(enable = true) {
+	const deleteButton = tabAppendElement.querySelector(
+		"tr:last-child button.delete",
+	);
+	const tr = tabAppendElement.querySelector("tr:last-child");
+	const svg = tr.querySelector("svg");
+
+	if (enable) {
+		deleteButton.removeAttribute("disabled");
+		tr.setAttribute("draggable", "true");
+	} else {
+		deleteButton.setAttribute("disabled", "true");
+		tr.removeAttribute("draggable");
+	}
+	tr.dataset.draggable = enable;
+	svg.dataset.draggable = enable;
+}
+/**
  * Adds a new empty tab at the bottom of the popup and enables the previously last child's delete button.
  */
 function addTab() {
 	if (tabAppendElement.childElementCount >= 1) { // if list is empty, there's nothing to disable
-		const deleteButton = tabAppendElement.querySelector(
-			"td:last-child button.delete",
-		);
-		deleteButton.disabled = false;
+		updateTabAttributes();
 	}
 	// add a new empty element
 	tabAppendElement.append(createElement());
 }
-
 /**
- * Checks if a tab's title and URL are valid and adds a new tab if both are non-empty.
- *
- * @param {Object} inputObj - The tab input object containing title and URL.
+ * Removes the last empty tab at the bottom of the popup and disables the newly last child's delete button.
  */
-function checkAddTab(inputObj) {
-	inputObj.title && inputObj.url && addTab();
+function removeTab() {
+	if (tabAppendElement.childElementCount >= 2) { // if list is empty, there's nothing to disable
+		tabAppendElement.removeChild(tabAppendElement.lastChild);
+		loggers.pop();
+		updateTabAttributes(false);
+	}
 }
 
 let focusedIndex = 0;
@@ -186,14 +195,59 @@ function inputTitleUrlListener(type) {
 	const value = element.value;
 	const inputObj = currentObj.last_input;
 	const last_input = inputObj[type] || "";
-	const delta = last_input.length - value.length;
+	const delta = value.length - last_input.length;
 
-	if ((delta < -2 || delta > 2) && type === "url") {
-		element.value = cleanupUrl(value);
+	// check if the user copied the url
+	if (delta > 2 && type === "url") {
+		minifyURL(value)
+			.then((v) => {
+				element.value = v;
+				// check eventual duplicates
+				if (knownTabs.some((tab) => tab.url === v)) {
+					// show warning in salesforce
+					sendMessage({
+						what: "warning",
+						message: "A tab with this URL has already been saved!",
+						action: "make-bold",
+						url: v,
+					});
+
+					// highlight all duplicated rows and scroll to the first one
+					const trs = Array.from(
+						tabAppendElement.querySelectorAll("tr input.url"),
+					)
+						.filter((input) => input.value === v)
+						.map((input) => input.closest("tr"));
+
+					trs.forEach((tr) => tr.classList.add("duplicate"));
+					trs[0].scrollIntoView({
+						behavior: "smooth",
+						block: "center",
+					});
+
+					setTimeout(
+						() =>
+							trs.forEach((tr) =>
+								tr.classList.remove("duplicate")
+							),
+						4000,
+					);
+				}
+			});
 	}
 
 	inputObj[type] = value;
-	focusedIndex == (loggers.length - 1) && checkAddTab(inputObj); // if the user is on the last td
+	// if the user is on the last td, add a new tab if both fields are non-empty.
+	if (focusedIndex === (loggers.length - 1)) {
+		if (inputObj.title && inputObj.url) {
+			addTab();
+		}
+	} // if the user is on the previous-to-last td, remove the last tab if either one of the fields are empty
+	else if (focusedIndex === (loggers.length - 2)) {
+		if (!inputObj.title || !inputObj.url) {
+			removeTab();
+		}
+	}
 }
 
 /**
@@ -202,7 +256,7 @@ function inputTitleUrlListener(type) {
  * @param {Event} e - The focus event.
  */
 function focusListener(e) {
-	focusedIndex = e.target.dataset.element_index;
+	focusedIndex = parseInt(e.target.dataset.element_index);
 	saveTabs(false);
 }
 
@@ -213,10 +267,8 @@ function focusListener(e) {
  */
 function createElement() {
 	const element = tabTemplate.content.firstElementChild.cloneNode(true);
-	element.dataset.draggable = "false";
 	const deleteButton = element.querySelector("button.delete");
 	deleteButton.addEventListener("click", deleteTab);
-	deleteButton.disabled = true;
 
 	function setInfoForDrag(element, listener) {
 		element.addEventListener("input", listener);
@@ -243,19 +295,19 @@ function loadTabs(items) {
 	}
 
 	const rowObjs = items[items.key];
-	const elements = [];
 	for (const tab of rowObjs) {
 		const element = createElement();
 		element.querySelector(".tabTitle").value = tab.tabTitle;
 		element.querySelector(".url").value = tab.url;
-		element.querySelector(".delete").disabled = false;
+		element.querySelector(".delete").removeAttribute("disabled");
 		const logger = loggers.pop();
 		logger.last_input.title = tab.tabTitle;
 		logger.last_input.url = tab.url;
+
 		loggers.push(logger);
-		elements.push(element);
+		tabAppendElement.append(element);
+		updateTabAttributes();
 	}
-	tabAppendElement.append(...elements);
 	tabAppendElement.append(createElement()); // always leave a blank at the bottom
 	knownTabs = rowObjs;
 }
@@ -278,17 +330,34 @@ function reloadRows(items) {
  *
  * @returns {Array} An array of tab objects containing title and URL.
  */
-function findTabs() {
-	const tabs = [];
+async function findTabs(callback, doReload) {
 	const tabElements = document.getElementsByClassName("tab");
-	Array.from(tabElements).forEach((tab) => {
-		const tabTitle = tab.querySelector(".tabTitle").value;
-		const url = cleanupUrl(tab.querySelector(".url").value);
-		if (tabTitle && url) {
-			tabs.push({ tabTitle, url });
-		}
-	});
-	return tabs;
+	// Get the list of tabs
+	const tabPromises = Array.from(tabElements)
+		.map(async (tab) => {
+			const tabTitle = tab.querySelector(".tabTitle").value;
+			const href = tab.querySelector(".url").value;
+
+			// Await the minified URL
+			const url = await minifyURL(href);
+
+			if (tabTitle && url) {
+				return { tabTitle, url };
+			}
+			return null; // Return null for invalid tabs
+		});
+
+	let availableTabs;
+	try {
+		// Wait for all promises to resolve and filter out null values
+		const resolvedTabs = await Promise.all(tabPromises);
+		availableTabs = resolvedTabs.filter((tab) => tab !== null);
+	} catch (err) {
+		console.error("Error processing tabs:", err);
+		availableTabs = [];
+	}
+
+	callback(doReload, availableTabs);
 }
 
 /**
@@ -298,7 +367,10 @@ function findTabs() {
  * @param {Array} tabs - The tabs to save.
  */
 function saveTabs(doReload = true, tabs) {
-	tabs = tabs ?? findTabs();
+	tabs = tabs ?? findTabs(saveTabs, doReload);
+	if (tabs == null || !Array.isArray(tabs)) {
+		return;
+	}
 	setStorage(tabs, true);
 	doReload && reloadRows({ tabs, key: "tabs" });
 }

@@ -16,14 +16,13 @@ html {
 		"Segoe UI Emoji",
 		"Segoe UI Symbol";
 	line-height: 1.5;
-	color: var(--color);
-	background-color: var(--background-color);
 }
 
 body {
 	padding: 0 !important;
 	margin: 0;
 	font-size: 0.8125rem;
+	background-color: var(--background-color);
 }
 
 header {
@@ -51,10 +50,6 @@ a {
 	&:hover {
 		text-decoration: none;
 	}
-}
-
-input {
-	color: var(--color);
 }
 
 .button,

@@ -8,7 +8,7 @@
 		<link rel="stylesheet" href="../variables.css" />
 		<link rel="stylesheet" href="./popup.css" />
 		<link rel="stylesheet" href="../basic.css" />
-		<script src="../../themeHandler.js" type="module"></script>
+		<script src="../themeHandler.js" type="module"></script>
 		<script src="./popup.js" type="module"></script>
 		<script src="../../dragHandler.js" type="module"></script>
 	</head>
@@ -17,7 +17,7 @@
 		<div id="top">
 			<header>
 				<iframe src="../logo/logo.html" type="text/html"></iframe>
-				<div>
+				<div id="actions">
 					<div id="theme-selector">
 						<svg
 							id="sun"
@@ -66,14 +66,14 @@
 						</svg>
 					</div>
 					<button id="export" class="success" title="Export all tabs">
-						Export
+						<span>Export</span>
 					</button>
 					<button
 						id="import"
 						class="highlight"
 						title="Import tabs from json file"
 					>
-						Import
+						<span>Import</span>
 					</button>
 					<img
 						id="delete-all"
@@ -87,18 +87,18 @@
 				<thead>
 					<tr>
 						<th scope="col">
-							<div><!-- used for the svg --></div>
+							<span><!-- used for the svg --></span>
 						</th>
 						<th scope="col">
-							<div>Tab Label</div>
+							<span>Tab Label</span>
 						</th>
 						<th scope="col">
-							<div>Tab Url</div>
+							<span>Tab Url</span>
 						</th>
 						<th scope="col" style="width: 3.25rem">
-							<div class="slds-assistive-text">
+							<span class="slds-assistive-text">
 								Actions
-							</div>
+							</span>
 						</th>
 					</tr>
 				</thead>
@@ -107,10 +107,10 @@
 		</div>
 
 		<template id="tr_template">
-			<tr class="tab" draggable="true">
+			<tr class="tab" draggable="false" data-draggable="false">
 				<td scope="row">
 					<svg
-						data-draggable="true"
+						data-draggable="false"
 						viewBox="0 0 72 72"
 						xmlns="http://www.w3.org/2000/svg"
 					>
@@ -171,7 +171,9 @@
 					</div>
 				</td>
 				<td>
-					<button class="delete error">Delete</button>
+					<button class="delete error" disabled>
+						<span>Delete</span>
+					</button>
 				</td>
 			</tr>
 		</template>

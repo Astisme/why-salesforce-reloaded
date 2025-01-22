@@ -17,8 +17,10 @@ html {
 	--darkred: #951414;
 	--lightblue: #49c2d4;
 	--darklightblue: #2794a5;
+	--dirtyyellow: #dd7a01;
+	--darkyellow: #b76501;
 	--transition-duration: 500ms;
-	--transition-timitng-function: ease-in-out;
+	--transition-timing-function: ease-in-out;
 }
 
 html, /* default to light theme */
@@ -39,6 +41,7 @@ html[data-theme="light"] {
 	--button-background-color: var(--darkgray);
 	--button-background-color-hover: var(--midgray);
 	--theme-fill: var(--lightblue);
+	--warning: var(--dirtyyellow);
 }
 
 html[data-theme="dark"] {
@@ -58,4 +61,5 @@ html[data-theme="dark"] {
 	--button-background-color: var(--darkergray);
 	--button-background-color-hover: var(--darkgray);
 	--theme-fill: var(--darklightblue);
+	--warning: var(--darkyellow);
 }
