@@ -294,7 +294,7 @@ browserObj.runtime.onInstalled.addListener(() => {
 });
 
 // TODO update uninstall url
-browserObj.runtime.setUninstallURL("https://www.google.com/", () => {
+browserObj.runtime.setUninstallURL("https://www.duckduckgo.com/", () => {
 	browserObj.contextMenus.removeAll();
 });
 
