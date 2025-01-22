@@ -259,22 +259,31 @@ const menuItems = [
 		contexts: ["link"],
 		parentId: "remove",
 	},
+	{
+		id: "empty-tabs",
+		title: "Remove ALL tabs",
+		contexts: ["link"],
+		parentId: "remove",
+	},
 
 	{ id: "page-save-tab", title: "Save as tab", contexts: ["page"] },
 	{ id: "page-remove-tab", title: "Remove tab", contexts: ["page"] },
 ];
 
+function createMenuItems(){
+    menuItems.forEach((item) =>
+        browserObj.contextMenus.create({
+            ...item,
+            documentUrlPatterns: [
+                "https://*.my.salesforce-setup.com/lightning/setup/*",
+            ],
+        })
+    );
+}
+createMenuItems();
+
 browserObj.runtime.onInstalled.addListener(() => {
-	browserObj.contextMenus.removeAll(() => {
-		menuItems.forEach((item) =>
-			browserObj.contextMenus.create({
-				...item,
-				documentUrlPatterns: [
-					"https://*.my.salesforce-setup.com/lightning/setup/*",
-				],
-			})
-		);
-	});
+	browserObj.contextMenus.removeAll(() => createMenuItems());
 
 	/* TODO add tutorial on install and link to current changes on update
     if (details.reason == "install") {

@@ -586,6 +586,9 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 		case "remove-right-tabs":
 			removeOtherTabs(message.tabUrl, message.tabTitle, false);
 			break;
+		case "empty-tabs":
+            setStorage([]);
+			break;
 		case "page-save-tab":
 			pageActionTab(true);
 			break;
