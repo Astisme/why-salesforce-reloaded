@@ -385,13 +385,13 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 			return console.error(error); // this may happen if we do not pass a string starting with https
 		}
 
-		if (host.includes(lightningForceCom)) {
+		if (host.endsWith(lightningForceCom)) {
 			host = host.slice(0, host.indexOf(lightningForceCom));
 		}
-		if (host.includes(mySalesforceSetupCom)) {
+		if (host.endsWith(mySalesforceSetupCom)) {
 			host = host.slice(0, host.indexOf(mySalesforceSetupCom));
 		}
-		if (host.includes(mySalesforceCom)) {
+		if (host.endsWith(mySalesforceCom)) {
 			host = host.slice(0, host.indexOf(mySalesforceCom));
 		}
 		return host;
