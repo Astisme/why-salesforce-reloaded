@@ -375,25 +375,26 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 	const mySalesforceSetupCom = ".my.salesforce-setup.com";
 	const mySalesforceCom = ".my.salesforce.com";
 	function shrinkTarget(url) {
+        let host;
 		try {
 			const parsedUrl = new URL(
 				url.startsWith(https) ? url : `${https}${url}`,
 			);
-			url = parsedUrl.host;
+			host = parsedUrl.host;
 		} catch (error) {
 			return console.error(error); // this may happen if we do not pass a string starting with https
 		}
 
-		if (url.includes(lightningForceCom)) {
-			url = url.slice(0, url.indexOf(lightningForceCom));
+		if (host.includes(lightningForceCom)) {
+			host = host.slice(0, host.indexOf(lightningForceCom));
 		}
-		if (url.includes(mySalesforceSetupCom)) {
-			url = url.slice(0, url.indexOf(mySalesforceSetupCom));
+		if (host.includes(mySalesforceSetupCom)) {
+			host = host.slice(0, host.indexOf(mySalesforceSetupCom));
 		}
-		if (url.includes(mySalesforceCom)) {
-			url = url.slice(0, url.indexOf(mySalesforceCom));
+		if (host.includes(mySalesforceCom)) {
+			host = host.slice(0, host.indexOf(mySalesforceCom));
 		}
-		return url;
+		return host;
 	}
 
 	let lastInput = "";
@@ -420,7 +421,7 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 			return;
 		}
 		const newTarget = shrinkTarget(inputVal) ?? inputVal;
-		if (!newTarget.match(/^([a-zA-Z]*[\.-]*[0-9]*)+$/g)) {
+		if (!newTarget.match(/^[a-zA-Z0-9]+(--[a-zA-Z0-9]+\.sandbox)?$/g)) {
 			return;
 		}
 
