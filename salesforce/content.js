@@ -375,7 +375,7 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 	const mySalesforceSetupCom = ".my.salesforce-setup.com";
 	const mySalesforceCom = ".my.salesforce.com";
 	function shrinkTarget(url) {
-        let host;
+		let host;
 		try {
 			const parsedUrl = new URL(
 				url.startsWith(https) ? url : `${https}${url}`,
