@@ -5,6 +5,14 @@ const toastId = `${prefix}-toast`;
 const modalId = `${prefix}-modal`;
 const modalConfirmId = `${prefix}-modal-confirm`;
 
+function getRng_n_digits(digits = 1){
+    if(digits <= 1)
+        return null;
+    const tenToTheDigits = Math.pow(10, digits-1);
+    return Math.floor(Math.random() * 9 * tenToTheDigits) +
+		tenToTheDigits;
+}
+
 /**
  * Expands a URL by adding the domain and the Salesforce setup parts.
  * This function undoes what minifyURL did to a URL.
@@ -98,8 +106,7 @@ function _generateSldsToastMessage(message, isSuccess, isWarning) {
 		: (isWarning ? "warning" : "error");
 
 	const toastContainer = document.createElement("div");
-	const randomNumber10digits = Math.floor(Math.random() * 9_000_000_000) +
-		1_000_000_000;
+	const randomNumber10digits = getRng_n_digits(10);
 	toastContainer.id = `${toastId}-${randomNumber10digits}`;
 	toastContainer.classList.add(
 		"toastContainer",
@@ -210,19 +217,24 @@ function _generateSldsToastMessage(message, isSuccess, isWarning) {
 	return toastContainer;
 }
 
-function generateInput(
-	inputLabel,
-	acceptedType = "text",
-	requireInput = false,
-	placeHolder = null,
-) {
-	const inputDiv = document.createElement("div");
-	inputDiv.setAttribute("name", "input");
+function generateInput({
+	label,
+	type = "text",
+	required = false,
+	placeholder = null,
+    prepend = null,
+    append = null,
+    style = null,
+}) {
+    const inputId = `${prefix}-${getRng_n_digits(10)}`;
+
+	const inputParent = document.createElement("div");
+	inputParent.setAttribute("name", "input");
 
 	const formElement = document.createElement("div");
 	formElement.classList.add("slds-form-element", "slds-form-element_stacked");
 	formElement.setAttribute("variant", "label-stacked");
-	inputDiv.appendChild(formElement);
+	inputParent.appendChild(formElement);
 
 	const exportParts = document.createElement("div");
 	exportParts.setAttribute(
@@ -235,40 +247,55 @@ function generateInput(
 	const formElementLabel = document.createElement("div");
 	formElementLabel.classList.add("slds-form-element__label", "slds-no-flex");
 	formElementLabel.setAttribute("part", "input-text");
+    formElementLabel.style.display = "unset"; // makes the elements inside have full width
 	exportParts.appendChild(formElementLabel);
 
-	const label = document.createElement("label");
-	label.classList.add("slds-form-element__label", "slds-no-flex");
-	label.setAttribute("for", "input-324");
-	formElementLabel.appendChild(label);
+	const labelElement = document.createElement("label");
+	labelElement.classList.add("slds-form-element__label", "slds-no-flex");
+	labelElement.setAttribute("for", inputId);
+	formElementLabel.appendChild(labelElement);
 
-	const required = document.createElement("abbr");
-	required.classList.add("slds-required");
-	required.setAttribute("title", "required");
-	required.setAttribute("part", "required");
-	required.textContent = "*";
-	label.appendChild(required);
-	label.append(inputLabel);
+    if(required){
+        const requiredElement = document.createElement("abbr");
+        requiredElement.classList.add("slds-required");
+        requiredElement.setAttribute("title", "required");
+        requiredElement.setAttribute("part", "required");
+        requiredElement.textContent = "*";
+        labelElement.appendChild(requiredElement);
+    }
+	labelElement.append(label);
 
 	const inputWrapper = document.createElement("div");
 	inputWrapper.classList.add("slds-form-element__control", "slds-grow");
 	inputWrapper.setAttribute("part", "input-container");
-	inputWrapper.setAttribute("type", acceptedType);
+	inputWrapper.setAttribute("type", type);
 	formElementLabel.appendChild(inputWrapper);
 
-	const input = document.createElement("input");
-	input.classList.add("slds-input");
-	input.setAttribute("part", "input");
-	input.setAttribute("maxlength", "255");
+    function createInputElement({ id = null, label = null, type, placeholder, required = false, enabled = true, style = null }){
+        const input = document.createElement("input");
+        input.classList.add("slds-input");
+        input.setAttribute("part", "input");
+        input.setAttribute("maxlength", "255");
 
-	input.setAttribute("name", inputLabel);
-	input.setAttribute("type", acceptedType);
-	requireInput && input.setAttribute("required", "true");
-	placeHolder && input.setAttribute("placeholder", placeHolder);
+        id && (input.id = id);
+        label && input.setAttribute("name", label);
+        type && input.setAttribute("type", type);
+        placeholder && input.setAttribute("placeholder", placeholder);
+        required && input.setAttribute("required", true);
+        enabled == false && input.setAttribute("disabled", true);
+        style && (input.style = style);
 
-	inputWrapper.appendChild(input);
+        return input;
+    }
 
-	return inputDiv;
+    if(prepend != null)
+        inputWrapper.appendChild(createInputElement(prepend));
+    const inputContainer = createInputElement({id: inputId, label, type, placeholder, required, style });
+    inputWrapper.appendChild(inputContainer);
+    if(append != null)
+        inputWrapper.appendChild(createInputElement(append));
+
+	return { inputParent, inputContainer };
 }
 
 function generateSection(sectionTitle) {
@@ -316,10 +343,10 @@ function generateSection(sectionTitle) {
 	);
 	section.appendChild(progressiveContainer);
 
-	const columnFlex = document.createElement("div");
-	columnFlex.classList.add("column", "flex-width");
-	columnFlex.setAttribute("slot", "columns");
-	progressiveContainer.appendChild(columnFlex);
+	const borderSpacer = document.createElement("div");
+	borderSpacer.classList.add("column", "flex-width");
+	borderSpacer.setAttribute("slot", "columns");
+	progressiveContainer.appendChild(borderSpacer);
 
 	const columns = document.createElement("div");
 	columns.classList.add(
@@ -327,7 +354,7 @@ function generateSection(sectionTitle) {
 		"slds-p-horizontal_small",
 		"slds-p-vertical_x-small",
 	);
-	columnFlex.appendChild(columns);
+	borderSpacer.appendChild(columns);
 
 	const gridCols = document.createElement("div");
 	gridCols.classList.add("slds-grid", "slds-col", "slds-has-flexi-truncate");
@@ -342,12 +369,17 @@ function generateSection(sectionTitle) {
 	hanger.classList.add("slds-size_1-of-1", "field_textarea");
 	gridStack.appendChild(hanger);
 
-	return { section, hanger };
+    const divParent = document.createElement("div");
+    progressiveContainer.appendChild(divParent);
+
+    progressiveContainer.appendChild(borderSpacer.cloneNode(true));
+
+	return { section, divParent };
 }
 
 function generateSldsModal(modalTitle) {
-	const modalDiv = document.createElement("div");
-	modalDiv.classList.add(
+	const modalParent = document.createElement("div");
+	modalParent.classList.add(
 		"DESKTOP",
 		"uiModal--medium",
 		"uiModal--recordActionWrapper",
@@ -356,13 +388,13 @@ function generateSldsModal(modalTitle) {
 		"open",
 		"active",
 	);
-	modalDiv.setAttribute(
+	modalParent.setAttribute(
 		"data-aura-class",
 		"uiModal--medium uiModal--recordActionWrapper uiModal forceModal",
 	);
-	modalDiv.setAttribute("aria-hidden", "false");
-	modalDiv.style.display = "block";
-	modalDiv.style.zIndex = "9001";
+	modalParent.setAttribute("aria-hidden", "false");
+	modalParent.style.display = "block";
+	modalParent.style.zIndex = "9001";
 
 	const backdropDiv = document.createElement("div");
 	backdropDiv.setAttribute("tabindex", "-1");
@@ -373,7 +405,7 @@ function generateSldsModal(modalTitle) {
 		"slds-backdrop_open",
 	);
 	backdropDiv.style.opacity = "0.8";
-	modalDiv.appendChild(backdropDiv);
+	modalParent.appendChild(backdropDiv);
 
 	const dialog = document.createElement("div");
 	dialog.setAttribute("role", "dialog");
@@ -382,7 +414,8 @@ function generateSldsModal(modalTitle) {
 	dialog.classList.add("panel", "slds-modal", "slds-fade-in-open");
 	dialog.style.opacity = "1";
 	dialog.setAttribute("aria-label", `Again, Why Salesforce: ${modalTitle}`);
-	modalDiv.appendChild(dialog);
+    //dialog.addEventListener("wheel", e => e.preventDefault());
+	modalParent.appendChild(dialog);
 
 	const modalContainer = document.createElement("div");
 	modalContainer.classList.add("modal-container", "slds-modal__container");
@@ -408,7 +441,7 @@ function generateSldsModal(modalTitle) {
 		"slds-button_icon-bare",
 	);
 	modalHeader.appendChild(closeButton);
-	closeButton.addEventListener("click", () => modalDiv.remove());
+	closeButton.addEventListener("click", () => modalParent.remove());
 
 	const closeIcon = document.createElement("lightning-primitive-icon");
 	closeIcon.setAttribute("variant", "bare");
@@ -705,18 +738,38 @@ function generateSldsModal(modalTitle) {
 			document.removeEventListener("keydown");
 	});
 
-	return { modalDiv, article, saveButton };
+	return { modalParent, article, saveButton, closeButton };
 }
 
-function _generateOpenOtherOrgModal(_miniURL, tabTitle) {
-	const { modalDiv, article, saveButton } = generateSldsModal(tabTitle);
+function _generateOpenOtherOrgModal(miniURL, tabTitle) {
+	const { modalParent, article, saveButton, closeButton } = generateSldsModal(tabTitle);
 
-	const { section, hanger } = generateSection("Other Org info");
+	const { section, divParent } = generateSection("Other Org info");
+    divParent.style.width = "100%"; // makes the elements inside have full width
 	article.appendChild(section);
 
-	hanger.appendChild(
-		generateInput("Org Link", "text", true, "myorg.my.salesforce.com"),
-	);
+    const orgLinkInputConf = {
+        label: "Org Link",
+        type: "text",
+        required: true,
+        placeholder: "other-org",
+        style: "width: 50%",
+        prepend: {
+            type: "text",
+            placeholder: "https://",
+            enabled: false,
+            style: "width: 9%",
+        },
+        append: {
+            type: "text",
+            placeholder: `.lightning.force.com${setupLightning}${miniURL}`,
+            enabled: false,
+            style: "width: 41%",
+        }
+    };
 
-	return { modalDiv, saveButton };
+    const { inputParent, inputContainer } = generateInput(orgLinkInputConf);
+	divParent.appendChild(inputParent);
+
+	return { modalParent, saveButton, closeButton, inputContainer };
 }
