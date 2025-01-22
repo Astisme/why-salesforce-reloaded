@@ -292,7 +292,6 @@ reader.onload = function (e) {
  * The function reads the uploaded file if it is a JSON file and sends the content to the importer function
  */
 function listenToFileUpload() {
-
 	function readFile(file) {
 		if (file.type !== "application/json") {
 			showToast(
@@ -336,7 +335,7 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 	}
 	if (message.what == "add") {
 		sendResponse(null);
-        showFileImport();
+		showFileImport();
 		listenToFileUpload();
 	}
 });
