@@ -416,19 +416,21 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 
 	saveButton.addEventListener("click", () => {
 		const inputVal = inputContainer.value;
-		console.log(inputVal);
 		if (inputVal == null || inputVal === "") {
 			return;
 		}
+
 		const newTarget = shrinkTarget(inputVal) ?? inputVal;
 		if (!newTarget.match(/^[a-zA-Z0-9]+(--[a-zA-Z0-9]+\.sandbox)?$/g)) {
 			return;
 		}
 
-		closeButton.click();
 		const url =
-			`${https}${newTarget}${lightningForceCom}${setupLightning}${miniURL}`;
-		open(url, "_blank");
+			new URL(`${https}${newTarget}${lightningForceCom}${setupLightning}${miniURL}`);
+        if(confirm(`Are you sure you want to open\n${url}?`)){
+            closeButton.click();
+            open(url, "_blank");
+        }
 	});
 }
 
@@ -542,9 +544,6 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 	switch (message.what) {
 		case "saved":
 			afterSet();
-			break;
-		case "add":
-			_showFileImport();
 			break;
 		case "warning":
 			showToast(message.message, false, true);

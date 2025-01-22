@@ -6,6 +6,8 @@ const importId = `${prefix}-import`;
 const importFileId = `${importId}-file`;
 const overrideId = `${prefix}-override`;
 const duplicateId = `${prefix}-duplicate`;
+const closeModalId = `${prefix}-modal-close`;
+let dropArea;
 
 const reader = new FileReader();
 
@@ -14,7 +16,7 @@ const reader = new FileReader();
  *
  * @returns {HTMLElement} - The HTMLElement used to import data.
  */
-function _generateSldsImport() {
+function generateSldsImport() {
 	const style = document.createElement("style");
 	style.textContent = `
         #${importId} {
@@ -87,17 +89,17 @@ function _generateSldsImport() {
         }
     `;
 
-	const container = document.createElement("div");
-	container.id = importId;
-	container.appendChild(style);
+	dropArea = document.createElement("div");
+	dropArea.id = importId;
+	dropArea.appendChild(style);
 
 	const overlay = document.createElement("div");
 	overlay.classList.add("overlay");
-	container.appendChild(overlay);
+	dropArea.appendChild(overlay);
 
 	const modal = document.createElement("div");
 	modal.classList.add("modal");
-	container.appendChild(modal);
+	dropArea.appendChild(modal);
 
 	const closeButton = document.createElement("button");
 	closeButton.id = closeModalId;
@@ -108,7 +110,7 @@ function _generateSldsImport() {
 
 	closeButton.addEventListener(
 		"click",
-		() => container.remove(),
+		() => dropArea.remove(),
 	);
 
 	const header = document.createElement("h4");
@@ -194,18 +196,18 @@ function _generateSldsImport() {
 	duplicateCheckboxLabel.append("Skip duplicate tabs.");
 	modal.appendChild(duplicateCheckboxLabel);
 
-	return container;
+	return dropArea;
 }
 
 /**
  * Displays the import modal for uploading tab data.
  */
-function _showFileImport() {
+function showFileImport() {
 	if (setupTabUl.querySelector(`#${importId}`) != null) {
 		return;
 	}
 
-	setupTabUl.appendChild(_generateSldsImport());
+	setupTabUl.appendChild(generateSldsImport());
 }
 /**
  * Handles the imported tab data and updates the storage with the newly imported tabs.
@@ -247,7 +249,7 @@ function importer(message) {
 
 	currentTabs.push(...importedArray);
 	// remove file import
-	setupTabUl.removeChild(setupTabUl.querySelector(`#${importId}`));
+	setupTabUl.removeChild(dropArea);
 	setStorage();
 }
 
@@ -290,7 +292,7 @@ reader.onload = function (e) {
  * The function reads the uploaded file if it is a JSON file and sends the content to the importer function
  */
 function listenToFileUpload() {
-	const dropArea = document.getElementById(importId);
+    console.log(dropArea);
 
 	function readFile(file) {
 		if (file.type !== "application/json") {
@@ -335,6 +337,7 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 	}
 	if (message.what == "add") {
 		sendResponse(null);
+        showFileImport();
 		listenToFileUpload();
 	}
 });
