@@ -5,11 +5,12 @@ const toastId = `${prefix}-toast`;
 const modalId = `${prefix}-modal`;
 const modalConfirmId = `${prefix}-modal-confirm`;
 
-function getRng_n_digits(digits = 1){
-    if(digits <= 1)
-        return null;
-    const tenToTheDigits = Math.pow(10, digits-1);
-    return Math.floor(Math.random() * 9 * tenToTheDigits) +
+function getRng_n_digits(digits = 1) {
+	if (digits <= 1) {
+		return null;
+	}
+	const tenToTheDigits = Math.pow(10, digits - 1);
+	return Math.floor(Math.random() * 9 * tenToTheDigits) +
 		tenToTheDigits;
 }
 
@@ -222,11 +223,11 @@ function generateInput({
 	type = "text",
 	required = false,
 	placeholder = null,
-    prepend = null,
-    append = null,
-    style = null,
+	prepend = null,
+	append = null,
+	style = null,
 }) {
-    const inputId = `${prefix}-${getRng_n_digits(10)}`;
+	const inputId = `${prefix}-${getRng_n_digits(10)}`;
 
 	const inputParent = document.createElement("div");
 	inputParent.setAttribute("name", "input");
@@ -247,7 +248,7 @@ function generateInput({
 	const formElementLabel = document.createElement("div");
 	formElementLabel.classList.add("slds-form-element__label", "slds-no-flex");
 	formElementLabel.setAttribute("part", "input-text");
-    formElementLabel.style.display = "unset"; // makes the elements inside have full width
+	formElementLabel.style.display = "unset"; // makes the elements inside have full width
 	exportParts.appendChild(formElementLabel);
 
 	const labelElement = document.createElement("label");
@@ -255,14 +256,14 @@ function generateInput({
 	labelElement.setAttribute("for", inputId);
 	formElementLabel.appendChild(labelElement);
 
-    if(required){
-        const requiredElement = document.createElement("abbr");
-        requiredElement.classList.add("slds-required");
-        requiredElement.setAttribute("title", "required");
-        requiredElement.setAttribute("part", "required");
-        requiredElement.textContent = "*";
-        labelElement.appendChild(requiredElement);
-    }
+	if (required) {
+		const requiredElement = document.createElement("abbr");
+		requiredElement.classList.add("slds-required");
+		requiredElement.setAttribute("title", "required");
+		requiredElement.setAttribute("part", "required");
+		requiredElement.textContent = "*";
+		labelElement.appendChild(requiredElement);
+	}
 	labelElement.append(label);
 
 	const inputWrapper = document.createElement("div");
@@ -271,29 +272,48 @@ function generateInput({
 	inputWrapper.setAttribute("type", type);
 	formElementLabel.appendChild(inputWrapper);
 
-    function createInputElement({ id = null, label = null, type, placeholder, required = false, enabled = true, style = null }){
-        const input = document.createElement("input");
-        input.classList.add("slds-input");
-        input.setAttribute("part", "input");
-        input.setAttribute("maxlength", "255");
+	function createInputElement(
+		{
+			id = null,
+			label = null,
+			type,
+			placeholder,
+			required = false,
+			enabled = true,
+			style = null,
+		},
+	) {
+		const input = document.createElement("input");
+		input.classList.add("slds-input");
+		input.setAttribute("part", "input");
+		input.setAttribute("maxlength", "255");
 
-        id && (input.id = id);
-        label && input.setAttribute("name", label);
-        type && input.setAttribute("type", type);
-        placeholder && input.setAttribute("placeholder", placeholder);
-        required && input.setAttribute("required", true);
-        enabled == false && input.setAttribute("disabled", true);
-        style && (input.style = style);
+		id && (input.id = id);
+		label && input.setAttribute("name", label);
+		type && input.setAttribute("type", type);
+		placeholder && input.setAttribute("placeholder", placeholder);
+		required && input.setAttribute("required", true);
+		enabled == false && input.setAttribute("disabled", true);
+		style && (input.style = style);
 
-        return input;
-    }
+		return input;
+	}
 
-    if(prepend != null)
-        inputWrapper.appendChild(createInputElement(prepend));
-    const inputContainer = createInputElement({id: inputId, label, type, placeholder, required, style });
-    inputWrapper.appendChild(inputContainer);
-    if(append != null)
-        inputWrapper.appendChild(createInputElement(append));
+	if (prepend != null) {
+		inputWrapper.appendChild(createInputElement(prepend));
+	}
+	const inputContainer = createInputElement({
+		id: inputId,
+		label,
+		type,
+		placeholder,
+		required,
+		style,
+	});
+	inputWrapper.appendChild(inputContainer);
+	if (append != null) {
+		inputWrapper.appendChild(createInputElement(append));
+	}
 
 	return { inputParent, inputContainer };
 }
@@ -369,10 +389,10 @@ function generateSection(sectionTitle) {
 	hanger.classList.add("slds-size_1-of-1", "field_textarea");
 	gridStack.appendChild(hanger);
 
-    const divParent = document.createElement("div");
-    progressiveContainer.appendChild(divParent);
+	const divParent = document.createElement("div");
+	progressiveContainer.appendChild(divParent);
 
-    progressiveContainer.appendChild(borderSpacer.cloneNode(true));
+	progressiveContainer.appendChild(borderSpacer.cloneNode(true));
 
 	return { section, divParent };
 }
@@ -414,7 +434,7 @@ function generateSldsModal(modalTitle) {
 	dialog.classList.add("panel", "slds-modal", "slds-fade-in-open");
 	dialog.style.opacity = "1";
 	dialog.setAttribute("aria-label", `Again, Why Salesforce: ${modalTitle}`);
-    //dialog.addEventListener("wheel", e => e.preventDefault());
+	//dialog.addEventListener("wheel", e => e.preventDefault());
 	modalParent.appendChild(dialog);
 
 	const modalContainer = document.createElement("div");
@@ -742,33 +762,35 @@ function generateSldsModal(modalTitle) {
 }
 
 function _generateOpenOtherOrgModal(miniURL, tabTitle) {
-	const { modalParent, article, saveButton, closeButton } = generateSldsModal(tabTitle);
+	const { modalParent, article, saveButton, closeButton } = generateSldsModal(
+		tabTitle,
+	);
 
 	const { section, divParent } = generateSection("Other Org info");
-    divParent.style.width = "100%"; // makes the elements inside have full width
+	divParent.style.width = "100%"; // makes the elements inside have full width
 	article.appendChild(section);
 
-    const orgLinkInputConf = {
-        label: "Org Link",
-        type: "text",
-        required: true,
-        placeholder: "other-org",
-        style: "width: 50%",
-        prepend: {
-            type: "text",
-            placeholder: "https://",
-            enabled: false,
-            style: "width: 9%",
-        },
-        append: {
-            type: "text",
-            placeholder: `.lightning.force.com${setupLightning}${miniURL}`,
-            enabled: false,
-            style: "width: 41%",
-        }
-    };
+	const orgLinkInputConf = {
+		label: "Org Link",
+		type: "text",
+		required: true,
+		placeholder: "other-org",
+		style: "width: 50%",
+		prepend: {
+			type: "text",
+			placeholder: "https://",
+			enabled: false,
+			style: "width: 9%",
+		},
+		append: {
+			type: "text",
+			placeholder: `.lightning.force.com${setupLightning}${miniURL}`,
+			enabled: false,
+			style: "width: 41%",
+		},
+	};
 
-    const { inputParent, inputContainer } = generateInput(orgLinkInputConf);
+	const { inputParent, inputContainer } = generateInput(orgLinkInputConf);
 	divParent.appendChild(inputParent);
 
 	return { modalParent, saveButton, closeButton, inputContainer };

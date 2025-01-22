@@ -360,67 +360,78 @@ function removeTab(url, title = null) {
  * Shows a modal to ask the user into which org they want to open the given URL.
  */
 function showModalOpenOtherOrg(miniURL, tabTitle) {
-	const { modalParent, saveButton, closeButton, inputContainer } = _generateOpenOtherOrgModal(
-		miniURL,
-		tabTitle ?? currentTabs.find((current) =>
-			current.url === miniURL
-		).tabTitle,
-	);
+	const { modalParent, saveButton, closeButton, inputContainer } =
+		_generateOpenOtherOrgModal(
+			miniURL,
+			tabTitle ??
+				currentTabs.find((current) => current.url === miniURL).tabTitle,
+		);
 	modalHanger = modalHanger ??
 		document.querySelector("div.DESKTOP.uiContainerManager");
 	modalHanger.appendChild(modalParent);
 
-    const https = "https://";
-    const lightningForceCom = ".lightning.force.com";
-    const mySalesforceSetupCom = ".my.salesforce-setup.com";
-    const mySalesforceCom = ".my.salesforce.com";
-    function shrinkTarget(url){
-        console.trace();
-        if(url.startsWith(https))
-            url = url.slice(https.length);
-        if(url.endsWith("/"))
-            url = url.slice(0, url.length - 1);
-        if(url.includes(lightningForceCom))
-            url = url.slice(0, url.indexOf(lightningForceCom));
-        if(url.includes(mySalesforceSetupCom))
-            url = url.slice(0, url.indexOf(mySalesforceSetupCom));
-        if(url.includes(mySalesforceCom))
-            url = url.slice(0, url.indexOf(mySalesforceCom));
-        if(url.includes(setupLightning))
-            url = url.slice(0, url.indexOf(setupLightning));
-        if(url.includes(miniURL))
-            url = url.slice(0, url.indexOf(miniURL));
-        return url;
-    }
+	const https = "https://";
+	const lightningForceCom = ".lightning.force.com";
+	const mySalesforceSetupCom = ".my.salesforce-setup.com";
+	const mySalesforceCom = ".my.salesforce.com";
+	function shrinkTarget(url) {
+		console.trace();
+		if (url.startsWith(https)) {
+			url = url.slice(https.length);
+		}
+		if (url.endsWith("/")) {
+			url = url.slice(0, url.length - 1);
+		}
+		if (url.includes(lightningForceCom)) {
+			url = url.slice(0, url.indexOf(lightningForceCom));
+		}
+		if (url.includes(mySalesforceSetupCom)) {
+			url = url.slice(0, url.indexOf(mySalesforceSetupCom));
+		}
+		if (url.includes(mySalesforceCom)) {
+			url = url.slice(0, url.indexOf(mySalesforceCom));
+		}
+		if (url.includes(setupLightning)) {
+			url = url.slice(0, url.indexOf(setupLightning));
+		}
+		if (url.includes(miniURL)) {
+			url = url.slice(0, url.indexOf(miniURL));
+		}
+		return url;
+	}
 
-    let lastInput = "";
-    inputContainer.addEventListener("input", e => {
-        const target = e.target;
-        const value = target.value;
-        const delta = value.length - lastInput.length;
-        let newTarget;
+	let lastInput = "";
+	inputContainer.addEventListener("input", (e) => {
+		const target = e.target;
+		const value = target.value;
+		const delta = value.length - lastInput.length;
+		let newTarget;
 
-        if(delta > 2){
-            newTarget = shrinkTarget(value);
-            if(newTarget !== value)
-                target.value = newTarget;
-        }
+		if (delta > 2) {
+			newTarget = shrinkTarget(value);
+			if (newTarget !== value) {
+				target.value = newTarget;
+			}
+		}
 
-        lastInput = newTarget ?? value;
-    });
+		lastInput = newTarget ?? value;
+	});
 
 	saveButton.addEventListener("click", () => {
-        const inputVal = inputContainer.value; 
-        console.log(inputVal)
-        if(inputVal == null || inputVal === "")
-            return;
-        const newTarget = shrinkTarget(inputVal);
-        console.log(newTarget);
-        if(!newTarget.match(/^([a-zA-Z]*[\.-]*[0-9]*)+$/g))
-            return;
-            
-        closeButton.click();
-        const url = `${https}${newTarget}${lightningForceCom}${setupLightning}${miniURL}`;
+		const inputVal = inputContainer.value;
+		console.log(inputVal);
+		if (inputVal == null || inputVal === "") {
+			return;
+		}
+		const newTarget = shrinkTarget(inputVal);
+		console.log(newTarget);
+		if (!newTarget.match(/^([a-zA-Z]*[\.-]*[0-9]*)+$/g)) {
+			return;
+		}
+
+		closeButton.click();
+		const url =
+			`${https}${newTarget}${lightningForceCom}${setupLightning}${miniURL}`;
 		open(url, "_blank");
 	});
 }
