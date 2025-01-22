@@ -375,12 +375,14 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 	const mySalesforceSetupCom = ".my.salesforce-setup.com";
 	const mySalesforceCom = ".my.salesforce.com";
 	function shrinkTarget(url) {
-        try {
-            const parsedUrl = new URL(url.startsWith(https) ? url : `${https}${url}`);
-            url = parsedUrl.host;
-        } catch (error) {
-            return console.error(error); // this may happen if we do not pass a string starting with https
-        }
+		try {
+			const parsedUrl = new URL(
+				url.startsWith(https) ? url : `${https}${url}`,
+			);
+			url = parsedUrl.host;
+		} catch (error) {
+			return console.error(error); // this may happen if we do not pass a string starting with https
+		}
 
 		if (url.includes(lightningForceCom)) {
 			url = url.slice(0, url.indexOf(lightningForceCom));
