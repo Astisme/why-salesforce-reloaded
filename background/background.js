@@ -277,6 +277,7 @@ function createMenuItems() {
 				...item,
 				documentUrlPatterns: [
 					"https://*.my.salesforce-setup.com/lightning/setup/*",
+					"https://*.lightning.force.com/lightning/setup/*",
 				],
 			})
 		);

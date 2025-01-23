@@ -429,7 +429,7 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 		}
 
 		const newTarget = shrinkTarget(inputVal) ?? inputVal;
-		if (!newTarget.match(/^[a-zA-Z0-9]+(--[a-zA-Z0-9]+\.sandbox)?$/g)) {
+		if (!newTarget.match(/^[a-zA-Z0-9\-]+(--[a-zA-Z0-9]+\.sandbox)?(\.develop)?$/g)) {
 			return;
 		}
 
