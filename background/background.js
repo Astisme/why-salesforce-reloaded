@@ -272,15 +272,15 @@ const menuItems = [
 
 function createMenuItems() {
 	browserObj.contextMenus.removeAll(() => {
-        menuItems.forEach((item) =>
-            browserObj.contextMenus.create({
-                ...item,
-                documentUrlPatterns: [
-                    "https://*.my.salesforce-setup.com/lightning/setup/*",
-                ],
-            })
-        );
-    });
+		menuItems.forEach((item) =>
+			browserObj.contextMenus.create({
+				...item,
+				documentUrlPatterns: [
+					"https://*.my.salesforce-setup.com/lightning/setup/*",
+				],
+			})
+		);
+	});
 }
 
 browserObj.runtime.onInstalled.addListener(() => {
@@ -295,7 +295,7 @@ browserObj.runtime.onInstalled.addListener(() => {
 });
 
 browserObj.runtime.onStartup.addListener(() => {
-    createMenuItems();
+	createMenuItems();
 });
 
 // TODO update uninstall url

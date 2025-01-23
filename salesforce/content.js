@@ -434,7 +434,9 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 		}
 
 		const url = new URL(
-			`${https}${newTarget}${lightningForceCom}${!miniURL.startsWith("/") ? setupLightning : ""}${miniURL}`,
+			`${https}${newTarget}${lightningForceCom}${
+				!miniURL.startsWith("/") ? setupLightning : ""
+			}${miniURL}`,
 		);
 		if (confirm(`Are you sure you want to open\n${url}?`)) {
 			closeButton.click();
