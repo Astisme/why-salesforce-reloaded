@@ -273,17 +273,21 @@ const menuItems = [
 function createMenuItems() {
 	browserObj.contextMenus.removeAll(() => {
 		menuItems.forEach((item) => {
-            const currentItem = item;
-            currentItem.documentUrlPatterns = [
-                `https://*.my.salesforce-setup.com/*`,
-                `https://*.lightning.force.com/*`,
-            ];
-            if(!item.contexts.includes("frame"))
-                currentItem.documentUrlPatterns = currentItem.documentUrlPatterns.map((item) => 
-                    `${item.substring(0,item.length-2)}${setupLightning}*`
-                )
+			const currentItem = item;
+			currentItem.documentUrlPatterns = [
+				`https://*.my.salesforce-setup.com/*`,
+				`https://*.lightning.force.com/*`,
+			];
+			if (!item.contexts.includes("frame")) {
+				currentItem.documentUrlPatterns = currentItem
+					.documentUrlPatterns.map((item) =>
+						`${
+							item.substring(0, item.length - 2)
+						}${setupLightning}*`
+					);
+			}
 			browserObj.contextMenus.create(currentItem);
-        });
+		});
 	});
 }
 
