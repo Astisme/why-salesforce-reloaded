@@ -784,7 +784,7 @@ function _generateOpenOtherOrgModal(miniURL, tabTitle) {
 		},
 		append: {
 			type: "text",
-			placeholder: `.lightning.force.com${setupLightning}${miniURL}`,
+			placeholder: `.lightning.force.com${!miniURL.startsWith("/") ? setupLightning : ""}${miniURL}`,
 			enabled: false,
 			style: "width: 41%",
 		},
