@@ -299,10 +299,15 @@ browserObj.runtime.onStartup.addListener(() => {
 	createMenuItems();
 });
 
+// create persistent menuItems
+createMenuItems();
+
+/*
 // TODO update uninstall url
 browserObj.runtime.setUninstallURL("https://www.duckduckgo.com/", () => {
 	browserObj.contextMenus.removeAll();
 });
+*/
 
 browserObj.contextMenus.onClicked.addListener((info, _) => {
 	const message = { what: info.menuItemId };
