@@ -271,19 +271,20 @@ const menuItems = [
 ];
 
 function createMenuItems() {
-	menuItems.forEach((item) =>
-		browserObj.contextMenus.create({
-			...item,
-			documentUrlPatterns: [
-				"https://*.my.salesforce-setup.com/lightning/setup/*",
-			],
-		})
-	);
+	browserObj.contextMenus.removeAll(() => {
+        menuItems.forEach((item) =>
+            browserObj.contextMenus.create({
+                ...item,
+                documentUrlPatterns: [
+                    "https://*.my.salesforce-setup.com/lightning/setup/*",
+                ],
+            })
+        );
+    });
 }
-createMenuItems();
 
 browserObj.runtime.onInstalled.addListener(() => {
-	browserObj.contextMenus.removeAll(() => createMenuItems());
+	createMenuItems();
 
 	/* TODO add tutorial on install and link to current changes on update
     if (details.reason == "install") {
@@ -291,6 +292,10 @@ browserObj.runtime.onInstalled.addListener(() => {
     else if (details.reason == "update") {
     }
     */
+});
+
+browserObj.runtime.onStartup.addListener(() => {
+    createMenuItems();
 });
 
 // TODO update uninstall url
