@@ -551,7 +551,7 @@ function removeOtherTabs(miniURL, tabTitle, removeBefore = null) {
  * @param {boolean} [save=true] - whether the current page should be added or removed as tab
  */
 function pageActionTab(save = true) {
-	const favourite = getFavouriteButton(save ? starId : slashedStarId);
+	const favourite = getFavouriteImage(save ? starId : slashedStarId);
 	if (!favourite.classList.contains("hidden")) favourite.click();
 	else {
 		const message = save

@@ -205,7 +205,7 @@ const menuItems = [
 	{
 		id: "open-other-org",
 		title: "Open in another Org",
-		contexts: ["link", "page"],
+		contexts: ["link", "page", "frame"],
 	},
 
 	{ id: "move", title: "Move tab", contexts: ["link"] },
@@ -266,21 +266,24 @@ const menuItems = [
 		parentId: "remove",
 	},
 
-	{ id: "page-save-tab", title: "Save as tab", contexts: ["page"] },
-	{ id: "page-remove-tab", title: "Remove tab", contexts: ["page"] },
+	{ id: "page-save-tab", title: "Save as tab", contexts: ["page", "frame"] },
+	{ id: "page-remove-tab", title: "Remove tab", contexts: ["page", "frame"] },
 ];
 
 function createMenuItems() {
 	browserObj.contextMenus.removeAll(() => {
-		menuItems.forEach((item) =>
-			browserObj.contextMenus.create({
-				...item,
-				documentUrlPatterns: [
-					"https://*.my.salesforce-setup.com/lightning/setup/*",
-					"https://*.lightning.force.com/lightning/setup/*",
-				],
-			})
-		);
+		menuItems.forEach((item) => {
+            const currentItem = item;
+            currentItem.documentUrlPatterns = [
+                `https://*.my.salesforce-setup.com/*`,
+                `https://*.lightning.force.com/*`,
+            ];
+            if(!item.contexts.includes("frame"))
+                currentItem.documentUrlPatterns = currentItem.documentUrlPatterns.map((item) => 
+                    `${item.substring(0,item.length-2)}${setupLightning}*`
+                )
+			browserObj.contextMenus.create(currentItem);
+        });
 	});
 }
 

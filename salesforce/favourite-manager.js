@@ -10,26 +10,28 @@ const slashedStarId = `${prefix}-slashed-star`;
  * @returns {Element} - The generated element for the favourite button.
  */
 function generateFavouriteButton() {
-	const star = chrome.runtime.getURL("assets/svgs/star.svg");
-	const slashedStar = chrome.runtime.getURL("assets/svgs/slashed-star.svg");
-
 	const button = document.createElement("button");
-	button.setAttribute("id", buttonId);
+	button.id = buttonId;
 	button.classList.add("slds-button", "slds-button--neutral", "uiButton");
 	button.setAttribute("type", "button");
 	button.setAttribute("aria-live", "off");
 	button.setAttribute("aria-label", "");
 	button.setAttribute("data-aura-rendered-by", "3:829;a");
 	button.setAttribute("data-aura-class", "uiButton");
+    button.addEventListener(
+        "click",
+        () => actionFavourite(document.querySelector("div.overflow.uiBlock")),
+    );
 
 	const span = document.createElement("span");
 	span.classList.add("label", "bBody");
 	span.setAttribute("dir", "ltr");
 	span.setAttribute("data-aura-rendered-by", "6:829;a");
+	button.appendChild(span);
 
 	function createImageElement(id, src, alt) {
 		const img = document.createElement("img");
-		img.setAttribute("id", id);
+		img.id = id;
 		img.setAttribute("src", src);
 		img.setAttribute("alt", alt);
 		img.setAttribute(
@@ -51,42 +53,42 @@ function generateFavouriteButton() {
 		return { img, span };
 	}
 
+	const star = chrome.runtime.getURL("assets/svgs/star.svg");
 	const { img: starImg, span: starSpan } = createImageElement(
 		starId,
 		star,
 		"Save as Tab",
 	);
+	span.appendChild(starImg);
+	span.appendChild(starSpan);
 
+	const slashedStar = chrome.runtime.getURL("assets/svgs/slashed-star.svg");
 	const { img: slashedStarImg, span: slashedStarSpan } = createImageElement(
 		slashedStarId,
 		slashedStar,
 		"Remove Tab",
 	);
 	slashedStarSpan.classList.add("hidden");
+    span.appendChild(slashedStarImg);
+    span.appendChild(slashedStarSpan);
 
 	const style = document.createElement("style");
 	style.textContent = ".hidden { display: none; }";
-
-	span.appendChild(starImg);
-	span.appendChild(starSpan);
-	span.appendChild(slashedStarImg);
-	span.appendChild(slashedStarSpan);
 	span.appendChild(style);
-	button.appendChild(span);
 
 	return button;
 }
 /**
- * Retrieves the favourite button with the specified Id from the page.
+ * Retrieves the favourite image with the specified Id from the page.
  *
  * @param {string} favouriteId - the Id of the favourite button to find.
  * @param {HTMLElement} [button=null] - the HTMLElement of the button which is parent of the favouriteId.
  */
-function getFavouriteButton(favouriteId, button = null) {
+function getFavouriteImage(favouriteId, button = null) {
 	return button?.querySelector(`#${favouriteId}`) ??
 		button?.querySelector(`.${favouriteId}`) ??
 		document.getElementById(favouriteId) ??
-		document.querySelector(`.${favouriteId}`);
+		document.querySelector(`#${buttonId} .${favouriteId}`);
 }
 /**
  * Toggles the visibility of the favourite button based on whether the tab is saved.
@@ -96,8 +98,8 @@ function getFavouriteButton(favouriteId, button = null) {
  */
 function toggleFavouriteButton(isSaved, button) {
 	// will use the class identifier if there was an error with the image (and was removed)
-	const star = getFavouriteButton(starId, button);
-	const slashedStar = getFavouriteButton(slashedStarId, button);
+	const star = getFavouriteImage(starId, button);
+	const slashedStar = getFavouriteImage(slashedStarId, button);
 
 	if (isSaved == null) {
 		star.classList.toggle("hidden");
@@ -113,6 +115,18 @@ function toggleFavouriteButton(isSaved, button) {
 		slashedStar.classList.add("hidden");
 	}
 }
+
+/**
+ * Adds the tab with the given URL and finds its title from the page
+ *
+ * @param {string} url - the minified URL of the tab to add
+ * @param {HTMLElement} parent - the parent node of the favourite button
+ */
+function addTab(url, parent){
+    const tabTitle = parent.querySelector(".breadcrumbDetail").innerText;
+    currentTabs.push({ tabTitle, url });
+    setStorage();
+}
 /**
  * Adds or removes the current tab from the saved tabs list based on the button's state.
  *
@@ -126,13 +140,10 @@ function actionFavourite(parent) {
 			if (isCurrentlyOnSavedTab) {
 				removeTab(url);
 			} else {
-				const tabTitle =
-					parent.querySelector(".breadcrumbDetail").innerText;
-				currentTabs.push({ tabTitle, url });
+                addTab(url, parent);
 			}
 
 			toggleFavouriteButton();
-			setStorage();
 		});
 }
 
@@ -187,12 +198,8 @@ function showFavouriteButton(count = 0) {
 			checkUpdateFavouriteButton();
 			continue;
 		}
-		header.appendChild(generateFavouriteButton());
-		const button = header.querySelector(`#${buttonId}`); // need to repeat this bit of code because I'm inserting it at the previous line
+        const button = generateFavouriteButton();
+		header.appendChild(button);
 		toggleFavouriteButton(isCurrentlyOnSavedTab, button); // init correctly
-		button.addEventListener(
-			"click",
-			() => actionFavourite(header.parentNode),
-		);
 	}
 }
