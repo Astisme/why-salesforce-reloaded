@@ -429,8 +429,12 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 		}
 
 		const newTarget = shrinkTarget(inputVal) ?? inputVal;
-		if (!newTarget.match(/^[a-zA-Z0-9\-]+(--[a-zA-Z0-9]+\.sandbox)?(\.develop)?$/g)) {
-            showToast("Please insert a valid Org!", false);
+		if (
+			!newTarget.match(
+				/^[a-zA-Z0-9\-]+(--[a-zA-Z0-9]+\.sandbox)?(\.develop)?$/g,
+			)
+		) {
+			showToast("Please insert a valid Org!", false);
 			return;
 		}
 
