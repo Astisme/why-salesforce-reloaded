@@ -271,66 +271,69 @@ const menuItems = [
 ];
 
 const framePatterns = [
-`https://*.my.salesforce-setup.com/*`,
-`https://*.lightning.force.com/*`,
-`https://*.my.salesforce.com/*`,
+	`https://*.my.salesforce-setup.com/*`,
+	`https://*.lightning.force.com/*`,
+	`https://*.my.salesforce.com/*`,
 ];
 // add `/setup/lightning/` to the framePatterns
-const contextMenuPatterns = framePatterns.map((item) => 
-    `${item.substring(0,item.length-2)}${setupLightning}*`
+const contextMenuPatterns = framePatterns.map((item) =>
+	`${item.substring(0, item.length - 2)}${setupLightning}*`
 );
-const contextMenuPatternsRegex = contextMenuPatterns.map((item) => 
-    item.replace(/\*/g, ".*").replace(/\//g, "\/")
+const contextMenuPatternsRegex = contextMenuPatterns.map((item) =>
+	item.replace(/\*/g, ".*").replace(/\//g, "\/")
 );
 // add the documentUrlPatterns to each element of menuItems
 menuItems.forEach((item) => {
-    const currentItem = item;
-    currentItem.documentUrlPatterns = item.contexts.includes("frame") ? framePatterns : contextMenuPatterns;
+	const currentItem = item;
+	currentItem.documentUrlPatterns = item.contexts.includes("frame")
+		? framePatterns
+		: contextMenuPatterns;
 });
 
 let areMenuItemsVisible = false;
 
 /**
  * Creates context menu items dynamically based on the provided menu definitions.
- * 
+ *
  * - Updates `documentUrlPatterns` for each menu item:
  *   - Uses `framePatterns` if the item context includes "frame".
  *   - Uses `contextMenuPatterns` otherwise.
  * - Iterates through `menuItems` and creates each item using `browserObj.contextMenus.create`.
  */
 function createMenuItems() {
-    if(areMenuItemsVisible) return;
-    areMenuItemsVisible = true;
-    menuItems.forEach((item) => {
-        browserObj.contextMenus.create(item);
-    });
+	if (areMenuItemsVisible) return;
+	areMenuItemsVisible = true;
+	menuItems.forEach((item) => {
+		browserObj.contextMenus.create(item);
+	});
 }
 
 /**
  * Removes all existing context menu items.
  */
-function removeMenuItems(callback){
-    if(!areMenuItemsVisible && callback == null) return;
-    areMenuItemsVisible = false;
+function removeMenuItems(callback) {
+	if (!areMenuItemsVisible && callback == null) return;
+	areMenuItemsVisible = false;
 	browserObj.contextMenus.removeAll(callback);
 }
 
 /**
  * Checks the current active tab's URL and conditionally adds or removes context menus.
- * 
+ *
  * - Queries the currently active tab in the current browser window.
  * - If the tab exists and its URL matches any regex in `contextMenuPatternsRegex`, calls `createMenuItems`.
  * - If no match is found, calls `removeMenuItems` to clean up context menus.
  */
-function checkAddRemoveContextMenus(){
-    browserObj.tabs.query( { active: true, currentWindow: true }, (tabs) => {
-        if(tabs && tabs[0]){
-            const url = tabs[0].url;
-            if(url == null) return;
-            if(contextMenuPatternsRegex.some(cmp => url.match(cmp))) removeMenuItems(createMenuItems);
-            else removeMenuItems();
-        }
-    });
+function checkAddRemoveContextMenus() {
+	browserObj.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+		if (tabs && tabs[0]) {
+			const url = tabs[0].url;
+			if (url == null) return;
+			if (contextMenuPatternsRegex.some((cmp) => url.match(cmp))) {
+				removeMenuItems(createMenuItems);
+			} else removeMenuItems();
+		}
+	});
 }
 
 // when the extension is installed / updated
@@ -356,14 +359,16 @@ browserObj.runtime.setUninstallURL("https://www.duckduckgo.com/", () => {
 browserObj.tabs.onHighlighted.addListener((_) => checkAddRemoveContextMenus());
 
 // when window changes
-browserObj.windows.onFocusChanged.addListener((_) => checkAddRemoveContextMenus());
+browserObj.windows.onFocusChanged.addListener((_) =>
+	checkAddRemoveContextMenus()
+);
 
 // create persistent menuItems
 checkAddRemoveContextMenus();
 
 /**
  * Listener for context menu item clicks, processes actions based on the clicked menu item.
- * 
+ *
  * - Listens to `browserObj.contextMenus.onClicked` events.
  * - Creates a `message` object with details based on the menu item ID.
  *   - Common fields: `what` (menuItemId), `tabUrl`, `url`, and `tabTitle` (if applicable).
