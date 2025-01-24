@@ -18,10 +18,10 @@ function generateFavouriteButton() {
 	button.setAttribute("aria-label", "");
 	button.setAttribute("data-aura-rendered-by", "3:829;a");
 	button.setAttribute("data-aura-class", "uiButton");
-    button.addEventListener(
-        "click",
-        () => actionFavourite(document.querySelector("div.overflow.uiBlock")),
-    );
+	button.addEventListener(
+		"click",
+		() => actionFavourite(document.querySelector("div.overflow.uiBlock")),
+	);
 
 	const span = document.createElement("span");
 	span.classList.add("label", "bBody");
@@ -69,8 +69,8 @@ function generateFavouriteButton() {
 		"Remove Tab",
 	);
 	slashedStarSpan.classList.add("hidden");
-    span.appendChild(slashedStarImg);
-    span.appendChild(slashedStarSpan);
+	span.appendChild(slashedStarImg);
+	span.appendChild(slashedStarSpan);
 
 	const style = document.createElement("style");
 	style.textContent = ".hidden { display: none; }";
@@ -122,10 +122,10 @@ function toggleFavouriteButton(isSaved, button) {
  * @param {string} url - the minified URL of the tab to add
  * @param {HTMLElement} parent - the parent node of the favourite button
  */
-function addTab(url, parent){
-    const tabTitle = parent.querySelector(".breadcrumbDetail").innerText;
-    currentTabs.push({ tabTitle, url });
-    setStorage();
+function addTab(url, parent) {
+	const tabTitle = parent.querySelector(".breadcrumbDetail").innerText;
+	currentTabs.push({ tabTitle, url });
+	setStorage();
 }
 /**
  * Adds or removes the current tab from the saved tabs list based on the button's state.
@@ -140,7 +140,7 @@ function actionFavourite(parent) {
 			if (isCurrentlyOnSavedTab) {
 				removeTab(url);
 			} else {
-                addTab(url, parent);
+				addTab(url, parent);
 			}
 
 			toggleFavouriteButton();
@@ -198,7 +198,7 @@ function showFavouriteButton(count = 0) {
 			checkUpdateFavouriteButton();
 			continue;
 		}
-        const button = generateFavouriteButton();
+		const button = generateFavouriteButton();
 		header.appendChild(button);
 		toggleFavouriteButton(isCurrentlyOnSavedTab, button); // init correctly
 	}
