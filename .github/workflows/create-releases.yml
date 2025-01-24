@@ -5,7 +5,8 @@ on:
     tags:
       - "chrome-v*.*.*"
       - "firefox-v*.*.*"
-      - "safari-v*.*.*"
+      - "edge-v*.*.*"
+      #- "safari-v*.*.*"
 
 permissions:
     contents: write

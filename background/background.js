@@ -280,12 +280,16 @@ const contextMenuPatterns = framePatterns.map((item) =>
 	`${item.substring(0, item.length - 2)}${setupLightning}*`
 );
 const contextMenuPatternsRegex = contextMenuPatterns.map((item) =>
-	item.replace(/\*/g, ".*")
+	item.replaceAll("\*", ".*")
 );
-// add the documentUrlPatterns to each element of menuItems
+
+/**
+ * - Updates `documentUrlPatterns` for each menu item:
+ *   - Uses `framePatterns` if the item context includes "frame".
+ *   - Uses `contextMenuPatterns` otherwise.
+ */
 menuItems.forEach((item) => {
-	const currentItem = item;
-	currentItem.documentUrlPatterns = item.contexts.includes("frame")
+	item.documentUrlPatterns = item.contexts.includes("frame")
 		? framePatterns
 		: contextMenuPatterns;
 });
@@ -295,9 +299,6 @@ let areMenuItemsVisible = false;
 /**
  * Creates context menu items dynamically based on the provided menu definitions.
  *
- * - Updates `documentUrlPatterns` for each menu item:
- *   - Uses `framePatterns` if the item context includes "frame".
- *   - Uses `contextMenuPatterns` otherwise.
  * - Iterates through `menuItems` and creates each item using `browserObj.contextMenus.create`.
  */
 function createMenuItems() {
@@ -328,6 +329,7 @@ function checkAddRemoveContextMenus() {
 	browserObj.tabs.query({ active: true, currentWindow: true }, (tabs) => {
 		if (tabs && tabs[0]) {
 			const url = tabs[0].url;
+            console.log(url)
 			if (url == null) return;
 			if (contextMenuPatternsRegex.some((cmp) => url.match(cmp))) {
 				removeMenuItems(createMenuItems);

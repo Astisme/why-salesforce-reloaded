@@ -5,6 +5,17 @@ const toastId = `${prefix}-toast`;
 const modalId = `${prefix}-modal`;
 const modalConfirmId = `${prefix}-modal-confirm`;
 
+/**
+ * Generates a random number with the specified number of digits.
+ * 
+ * @param {number} digits - The number of digits for the random number. Must be greater than 1.
+ * @returns {number|null} A random number with the specified number of digits, or `null` if `digits <= 1`.
+ * 
+ * - If `digits <= 1`, returns `null`.
+ * - Calculates the lower bound as 10^(digits - 1) (e.g., 10 for 2 digits, 100 for 3 digits).
+ * - Multiplies a random value (0 to 1) by the range (9 * 10^(digits - 1)) and adds the lower bound.
+ * - Ensures the result is a whole number with the correct number of digits.
+ */
 function getRng_n_digits(digits = 1) {
 	if (digits <= 1) {
 		return null;
@@ -218,6 +229,28 @@ function _generateSldsToastMessage(message, isSuccess, isWarning) {
 	return toastContainer;
 }
 
+/**
+ * Generates a customizable input element wrapped in a Salesforce-styled form structure.
+ *
+ * @param {Object} config - Configuration object for the input.
+ * @param {string} config.label - The label text for the input.
+ * @param {string} [config.type="text"] - The type of the input element (e.g., "text", "password").
+ * @param {boolean} [config.required=false] - Indicates if the input is required.
+ * @param {string|null} [config.placeholder=null] - Placeholder text for the input.
+ * @param {Object|null} [config.prepend=null] - Configuration for an input element to prepend.
+ * @param {Object|null} [config.append=null] - Configuration for an input element to append.
+ * @param {string|null} [config.style=null] - Additional inline styles for the main input element.
+ * 
+ * @returns {Object} - An object containing:
+ *   - `inputParent`: The parent `div` containing the entire input structure.
+ *   - `inputContainer`: The main input element.
+ *
+ * - Dynamically generates a unique `id` for the input using `getRng_n_digits(10)`.
+ * - Wraps the input in a Salesforce-styled stacked form element.
+ * - Supports additional inputs before (`prepend`) or after (`append`) the main input.
+ * - Applies optional attributes like `placeholder`, `required`, and `style`.
+ * - Maintains Salesforce Lightning Design System (SLDS) styling conventions.
+ */
 function generateInput({
 	label,
 	type = "text",
@@ -227,7 +260,6 @@ function generateInput({
 	append = null,
 	style = null,
 }) {
-	const inputId = `${prefix}-${getRng_n_digits(10)}`;
 
 	const inputParent = document.createElement("div");
 	inputParent.setAttribute("name", "input");
@@ -251,6 +283,7 @@ function generateInput({
 	formElementLabel.style.display = "unset"; // makes the elements inside have full width
 	exportParts.appendChild(formElementLabel);
 
+	const inputId = `${prefix}-${getRng_n_digits(10)}`;
 	const labelElement = document.createElement("label");
 	labelElement.classList.add("slds-form-element__label", "slds-no-flex");
 	labelElement.setAttribute("for", inputId);
@@ -318,6 +351,20 @@ function generateInput({
 	return { inputParent, inputContainer };
 }
 
+/**
+ * Generates a customizable Salesforce-styled section with a title and a layout structure.
+ * 
+ * @param {string} sectionTitle - The title of the section to be displayed.
+ * 
+ * @returns {Object} - An object containing:
+ *   - `section`: The root `records-record-layout-section` element that wraps the section.
+ *   - `divParent`: A container div element for additional content inside the section.
+ * 
+ * - Creates a `records-record-layout-section` component with a nested layout adhering to Salesforce's design standards.
+ * - Includes a section title styled with SLDS (Salesforce Lightning Design System).
+ * - Builds a nested grid layout inside the section for content organization.
+ * - Adds empty slots (`divParent` and cloned `borderSpacer`) for future customization or dynamic content injection.
+ */
 function generateSection(sectionTitle) {
 	const section = document.createElement("records-record-layout-section");
 	section.setAttribute("lwc-692i7qiai51-host", "");
@@ -397,6 +444,16 @@ function generateSection(sectionTitle) {
 	return { section, divParent };
 }
 
+/**
+ * Generates a Salesforce Lightning Design System (SLDS)-styled modal dialog.
+ *
+ * @param {string} modalTitle - The title of the modal.
+ * @returns {Object} An object containing key elements of the modal:
+ * - modalParent: The main modal container element.
+ * - article: The content area within the modal.
+ * - saveButton: The save button element for user actions.
+ * - closeButton: The close button element for closing the modal.
+ */
 function generateSldsModal(modalTitle) {
 	const modalParent = document.createElement("div");
 	modalParent.classList.add(
@@ -761,6 +818,17 @@ function generateSldsModal(modalTitle) {
 	return { modalParent, article, saveButton, closeButton };
 }
 
+/**
+ * Generates and opens a modal dialog for entering another Salesforce Org's information.
+ *
+ * @param {string} miniURL - A partial URL for the target org.
+ * @param {string} tabTitle - The title of the modal tab.
+ * @returns {Object} An object containing key elements of the modal:
+ * - modalParent: The main modal container element.
+ * - saveButton: The save button element for user actions.
+ * - closeButton: The close button element for closing the modal.
+ * - inputContainer: The container element for the org link input field.
+ */
 function _generateOpenOtherOrgModal(miniURL, tabTitle) {
 	const { modalParent, article, saveButton, closeButton } = generateSldsModal(
 		tabTitle,
@@ -775,25 +843,21 @@ function _generateOpenOtherOrgModal(miniURL, tabTitle) {
 		type: "text",
 		required: true,
 		placeholder: "other-org",
-		style: "width: 50%",
-		prepend: {
-			type: "text",
-			placeholder: "https://",
-			enabled: false,
-			style: "width: 9%",
-		},
-		append: {
-			type: "text",
-			placeholder: `.lightning.force.com${
-				!miniURL.startsWith("/") ? setupLightning : ""
-			}${miniURL}`,
-			enabled: false,
-			style: "width: 41%",
-		},
 	};
 
 	const { inputParent, inputContainer } = generateInput(orgLinkInputConf);
+    const https = document.createElement("span");
+    https.append("https://");
+    divParent.appendChild(https);
 	divParent.appendChild(inputParent);
+    const linkEnd = document.createElement("span");
+    linkEnd.append(`.lightning.force.com${
+        !miniURL.startsWith("/") ? setupLightning : ""
+    }${miniURL}`)
+    divParent.appendChild(linkEnd);
+
+    divParent.style.display =  "flex";
+    divParent.style.alignItems = "center";
 
 	return { modalParent, saveButton, closeButton, inputContainer };
 }
