@@ -81,9 +81,9 @@ function getStorage(callback) {
 /**
  * Reloads the saved tabs and shows a success toast message when storage is set.
  */
-function afterSet() {
+function afterSet(what = null) {
 	reloadTabs();
-	showToast(`"Again, Why Salesforce" tabs saved.`);
+	what == null && showToast(`"Again, Why Salesforce" tabs saved.`);
 }
 
 /**
@@ -191,8 +191,8 @@ function init(items) {
 		);
 		currentTabs.push(...rowObj);
 	}
-	isOnSavedTab();
-	showFavouriteButton();
+    isOnSavedTab();
+    showFavouriteButton();
 }
 
 /**
@@ -422,7 +422,8 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 		lastInput = newTarget ?? value;
 	});
 
-	saveButton.addEventListener("click", () => {
+	saveButton.addEventListener("click", e => {
+        e.preventDefault();
 		const inputVal = inputContainer.value;
 		if (inputVal == null || inputVal === "") {
 			return;
@@ -569,7 +570,8 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 	sendResponse(null);
 	switch (message.what) {
 		case "saved":
-			afterSet();
+		case "focused":
+			afterSet(message.what);
 			break;
 		case "warning":
 			showToast(message.message, false, true);

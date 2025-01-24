@@ -578,7 +578,7 @@ function generateSldsModal(modalTitle) {
 	viewModeDiv.setAttribute("data-aura-class", "lafPageHost");
 	modalBody.appendChild(viewModeDiv);
 
-	const actionWrapperDiv = document.createElement("div");
+	const actionWrapperDiv = document.createElement("form");
 	actionWrapperDiv.classList.add(
 		"isModal",
 		"inlinePanel",
@@ -796,24 +796,38 @@ function generateSldsModal(modalTitle) {
 		"forceActionButton",
 	);
 	saveButton.setAttribute("aria-live", "off");
-	saveButton.setAttribute("type", "button");
+	saveButton.setAttribute("type", "submit");
 	saveButton.setAttribute("title", "Save");
 	saveButton.setAttribute("aria-label", "");
 	saveButton.setAttribute("data-aura-rendered-by", "1380:0");
 	saveButton.setAttribute("data-aura-class", "uiButton forceActionButton");
 	buttonContainerInnerDiv.appendChild(saveButton);
 
+    saveButton.addEventListener
+
 	const saveSpan = document.createElement("span");
 	saveSpan.classList.add("label", "bBody");
 	saveSpan.setAttribute("dir", "ltr");
 	saveSpan.setAttribute("data-aura-rendered-by", "1383:0");
-	saveSpan.textContent = "Save";
+	saveSpan.textContent = "Continue";
 	saveButton.appendChild(saveSpan);
 
-	document.addEventListener("keydown", function (event) {
-		event.key === "Escape" && closeButton.click() &&
-			document.removeEventListener("keydown");
-	});
+    // listen for key presses
+    function keyDownListener(event) {
+        switch (event.key) {
+            case "Escape":
+                closeButton.click();
+                break;
+            case "Enter":
+                saveButton.click();
+                break;
+            default:
+                console.log(event.key)
+                return;
+        }
+        document.removeEventListener("keydown", keyDownListener);
+    }
+	document.addEventListener("keydown", keyDownListener);
 
 	return { modalParent, article, saveButton, closeButton };
 }
