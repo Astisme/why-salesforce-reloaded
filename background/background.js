@@ -280,7 +280,7 @@ const contextMenuPatterns = framePatterns.map((item) =>
 	`${item.substring(0, item.length - 2)}${setupLightning}*`
 );
 const contextMenuPatternsRegex = contextMenuPatterns.map((item) =>
-	item.replace(/\*/g, ".*").replace(/\//g, "\/")
+	item.replace(/\*/g, ".*")
 );
 // add the documentUrlPatterns to each element of menuItems
 menuItems.forEach((item) => {
