@@ -327,11 +327,14 @@ function checkAddRemoveContextMenus() {
 	browserObj.tabs.query({ active: true, currentWindow: true }, (tabs) => {
 		if (tabs && tabs[0]) {
 			const url = tabs[0].url;
-            console.log(url, contextMenuPatternsRegex.some((cmp) => url.match(cmp)))
+			console.log(
+				url,
+				contextMenuPatternsRegex.some((cmp) => url.match(cmp)),
+			);
 			if (url == null) return;
 			if (contextMenuPatternsRegex.some((cmp) => url.match(cmp))) {
 				removeMenuItems(createMenuItems);
-                notify({what:"focused"});
+				notify({ what: "focused" });
 			} else removeMenuItems();
 		}
 	});
@@ -358,12 +361,12 @@ browserObj.runtime.setUninstallURL("https://www.duckduckgo.com/", () => {
 
 // when the tab changes
 browserObj.tabs.onHighlighted.addListener((_) => {
-    checkAddRemoveContextMenus();
+	checkAddRemoveContextMenus();
 });
 
 // when window changes
-browserObj.windows.onFocusChanged.addListener((_) =>{
-    checkAddRemoveContextMenus();
+browserObj.windows.onFocusChanged.addListener((_) => {
+	checkAddRemoveContextMenus();
 });
 
 // create persistent menuItems

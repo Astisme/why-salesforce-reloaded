@@ -191,8 +191,8 @@ function init(items) {
 		);
 		currentTabs.push(...rowObj);
 	}
-    isOnSavedTab();
-    showFavouriteButton();
+	isOnSavedTab();
+	showFavouriteButton();
 }
 
 /**
@@ -422,8 +422,8 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 		lastInput = newTarget ?? value;
 	});
 
-	saveButton.addEventListener("click", e => {
-        e.preventDefault();
+	saveButton.addEventListener("click", (e) => {
+		e.preventDefault();
 		const inputVal = inputContainer.value;
 		if (inputVal == null || inputVal === "") {
 			return;

@@ -7,10 +7,10 @@ const modalConfirmId = `${prefix}-modal-confirm`;
 
 /**
  * Generates a random number with the specified number of digits.
- * 
+ *
  * @param {number} digits - The number of digits for the random number. Must be greater than 1.
  * @returns {number|null} A random number with the specified number of digits, or `null` if `digits <= 1`.
- * 
+ *
  * - If `digits <= 1`, returns `null`.
  * - Calculates the lower bound as 10^(digits - 1) (e.g., 10 for 2 digits, 100 for 3 digits).
  * - Multiplies a random value (0 to 1) by the range (9 * 10^(digits - 1)) and adds the lower bound.
@@ -240,7 +240,7 @@ function _generateSldsToastMessage(message, isSuccess, isWarning) {
  * @param {Object|null} [config.prepend=null] - Configuration for an input element to prepend.
  * @param {Object|null} [config.append=null] - Configuration for an input element to append.
  * @param {string|null} [config.style=null] - Additional inline styles for the main input element.
- * 
+ *
  * @returns {Object} - An object containing:
  *   - `inputParent`: The parent `div` containing the entire input structure.
  *   - `inputContainer`: The main input element.
@@ -260,7 +260,6 @@ function generateInput({
 	append = null,
 	style = null,
 }) {
-
 	const inputParent = document.createElement("div");
 	inputParent.setAttribute("name", "input");
 
@@ -353,13 +352,13 @@ function generateInput({
 
 /**
  * Generates a customizable Salesforce-styled section with a title and a layout structure.
- * 
+ *
  * @param {string} sectionTitle - The title of the section to be displayed.
- * 
+ *
  * @returns {Object} - An object containing:
  *   - `section`: The root `records-record-layout-section` element that wraps the section.
  *   - `divParent`: A container div element for additional content inside the section.
- * 
+ *
  * - Creates a `records-record-layout-section` component with a nested layout adhering to Salesforce's design standards.
  * - Includes a section title styled with SLDS (Salesforce Lightning Design System).
  * - Builds a nested grid layout inside the section for content organization.
@@ -803,7 +802,7 @@ function generateSldsModal(modalTitle) {
 	saveButton.setAttribute("data-aura-class", "uiButton forceActionButton");
 	buttonContainerInnerDiv.appendChild(saveButton);
 
-    saveButton.addEventListener
+	saveButton.addEventListener;
 
 	const saveSpan = document.createElement("span");
 	saveSpan.classList.add("label", "bBody");
@@ -812,21 +811,21 @@ function generateSldsModal(modalTitle) {
 	saveSpan.textContent = "Continue";
 	saveButton.appendChild(saveSpan);
 
-    // listen for key presses
-    function keyDownListener(event) {
-        switch (event.key) {
-            case "Escape":
-                closeButton.click();
-                break;
-            case "Enter":
-                saveButton.click();
-                break;
-            default:
-                console.log(event.key)
-                return;
-        }
-        document.removeEventListener("keydown", keyDownListener);
-    }
+	// listen for key presses
+	function keyDownListener(event) {
+		switch (event.key) {
+			case "Escape":
+				closeButton.click();
+				break;
+			case "Enter":
+				saveButton.click();
+				break;
+			default:
+				console.log(event.key);
+				return;
+		}
+		document.removeEventListener("keydown", keyDownListener);
+	}
 	document.addEventListener("keydown", keyDownListener);
 
 	return { modalParent, article, saveButton, closeButton };
@@ -860,18 +859,20 @@ function _generateOpenOtherOrgModal(miniURL, tabTitle) {
 	};
 
 	const { inputParent, inputContainer } = generateInput(orgLinkInputConf);
-    const https = document.createElement("span");
-    https.append("https://");
-    divParent.appendChild(https);
+	const https = document.createElement("span");
+	https.append("https://");
+	divParent.appendChild(https);
 	divParent.appendChild(inputParent);
-    const linkEnd = document.createElement("span");
-    linkEnd.append(`.lightning.force.com${
-        !miniURL.startsWith("/") ? setupLightning : ""
-    }${miniURL}`)
-    divParent.appendChild(linkEnd);
+	const linkEnd = document.createElement("span");
+	linkEnd.append(
+		`.lightning.force.com${
+			!miniURL.startsWith("/") ? setupLightning : ""
+		}${miniURL}`,
+	);
+	divParent.appendChild(linkEnd);
 
-    divParent.style.display =  "flex";
-    divParent.style.alignItems = "center";
+	divParent.style.display = "flex";
+	divParent.style.alignItems = "center";
 
 	return { modalParent, saveButton, closeButton, inputContainer };
 }
