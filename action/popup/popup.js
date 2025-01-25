@@ -299,7 +299,8 @@ function loadTabs(items) {
 		const element = createElement();
 		element.querySelector(".tabTitle").value = tab.tabTitle;
 		element.querySelector(".url").value = tab.url;
-		element.querySelector(".only-org").checked = tab.org != null && href.includes(tab.org);
+		element.querySelector(".only-org").checked = tab.org != null &&
+			href.includes(tab.org);
 		element.querySelector(".delete").removeAttribute("disabled");
 		const logger = loggers.pop();
 		logger.last_input.title = tab.tabTitle;
@@ -344,11 +345,12 @@ async function findTabs(callback, doReload) {
 			const url = await minifyURL(href);
 
 			if (tabTitle && url) {
-                const tabVal = { tabTitle, url };
-                if(!onlyOrg)
-                    return tabVal;
-                tabVal.org = await shrinkTarget(href);
-                return tabVal;
+				const tabVal = { tabTitle, url };
+				if (!onlyOrg) {
+					return tabVal;
+				}
+				tabVal.org = await shrinkTarget(href);
+				return tabVal;
 			}
 			return null; // Return null for invalid tabs
 		});

@@ -111,30 +111,29 @@ tbody#tabs {
 				stroke: var(--color);
 			}
 
-			& > div:not(:has( > .only-org)) {
+			& > div:not(:has(> .only-org)) {
 				clear: left;
 				transition: transform 0.3s var(--transition-timing-function);
 				transform: translateX(0); /* Initially no translation */
 
-                &:hover {
-                    transform: translateX(10px);
-                }
+				&:hover {
+					transform: translateX(10px);
+				}
 			}
 
-            & > div {
-                padding-top: 0.2rem;
+			& > div {
+				padding-top: 0.2rem;
 
-                & > .only-org {
-                    width: 1.5rem;
-                    cursor: pointer;
-                }
-            }
-
+				& > .only-org {
+					width: 1.5rem;
+					cursor: pointer;
+				}
+			}
 		}
 
-        & > td:last-child {
-            padding-left: 0;
-        }
+		& > td:last-child {
+			padding-left: 0;
+		}
 	}
 
 	& > tr.tab:first-child > td {
