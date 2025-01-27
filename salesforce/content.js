@@ -121,6 +121,15 @@ function minifyURL(url) {
 }
 
 /**
+ * Extracts the Org name out of the url passed as input.
+ *
+ * @param {string} url - The URL from which the Org name has to be extracted
+ */
+function extractOrgName(url = location.href){
+	return chrome.runtime.sendMessage({ message: { what: "extract-org", url } });
+}
+
+/**
  * Calculates the estimated time (in milliseconds) it takes to read a given message.
  *
  * @param {string} message - The message to calculate the reading time for.
@@ -208,7 +217,7 @@ function isOnSavedTab(isFromHrefUpdate = false, callback) {
 	}
 	fromHrefUpdate = isFromHrefUpdate;
 
-	return minifyURL(href)
+	minifyURL(href)
 		.then((loc) => {
 			_minifiedURL = loc;
 
@@ -380,30 +389,6 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 
 	const https = "https://";
 	const lightningForceCom = ".lightning.force.com";
-	const mySalesforceSetupCom = ".my.salesforce-setup.com";
-	const mySalesforceCom = ".my.salesforce.com";
-	function shrinkTarget(url) {
-		let host;
-		try {
-			const parsedUrl = new URL(
-				url.startsWith(https) ? url : `${https}${url}`,
-			);
-			host = parsedUrl.host;
-		} catch (error) {
-			return console.error(error); // this may happen if we do not pass a string starting with https
-		}
-
-		if (host.endsWith(lightningForceCom)) {
-			host = host.slice(0, host.indexOf(lightningForceCom));
-		}
-		if (host.endsWith(mySalesforceSetupCom)) {
-			host = host.slice(0, host.indexOf(mySalesforceSetupCom));
-		}
-		if (host.endsWith(mySalesforceCom)) {
-			host = host.slice(0, host.indexOf(mySalesforceCom));
-		}
-		return host;
-	}
 
 	let lastInput = "";
 	inputContainer.addEventListener("input", (e) => {
@@ -413,13 +398,18 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 		let newTarget;
 
 		if (delta > 2) {
-			newTarget = shrinkTarget(value);
-			if (newTarget != null && newTarget !== value) {
-				target.value = newTarget;
-			}
+			extractOrgName(value)
+                .then(newT => {
+                    newTarget = newT;
+                    if (newTarget != null && newTarget !== value) {
+                        target.value = newTarget;
+                    }
+
+                    lastInput = newTarget;
+                });
 		}
 
-		lastInput = newTarget ?? value;
+		lastInput = value;
 	});
 
 	saveButton.addEventListener("click", (e) => {
@@ -429,25 +419,29 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 			return;
 		}
 
-		const newTarget = shrinkTarget(inputVal) ?? inputVal;
-		if (
-			!newTarget.match(
-				/^[a-zA-Z0-9\-]+(--[a-zA-Z0-9]+\.sandbox)?(\.develop)?$/g,
-			)
-		) {
-			showToast("Please insert a valid Org!", false);
-			return;
-		}
+        let alreadyExtracted = false;
+        extractOrgName(inputVal).then(newTarget => {
+            if(alreadyExtracted) return;
+            alreadyExtracted = true;
+            if (
+                !newTarget.match(
+                    /^[a-zA-Z0-9\-]+(--[a-zA-Z0-9]+\.sandbox)?(\.develop)?$/g,
+                )
+            ) {
+                showToast("Please insert a valid Org!", false);
+                return;
+            }
 
-		const url = new URL(
-			`${https}${newTarget}${lightningForceCom}${
-				!miniURL.startsWith("/") ? setupLightning : ""
-			}${miniURL}`,
-		);
-		if (confirm(`Are you sure you want to open\n${url}?`)) {
-			closeButton.click();
-			open(url, "_blank");
-		}
+            const url = new URL(
+                `${https}${newTarget}${lightningForceCom}${
+                    !miniURL.startsWith("/") ? setupLightning : ""
+                }${miniURL}`,
+            );
+            if (confirm(`Are you sure you want to open\n${url}?`)) {
+                closeButton.click();
+                open(url, "_blank");
+            }
+        })
 	});
 }
 

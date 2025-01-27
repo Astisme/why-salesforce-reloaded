@@ -131,6 +131,15 @@ function minifyURL(url) {
 }
 
 /**
+ * Extracts the Org name out of the url passed as input.
+ *
+ * @param {string} url - The URL from which the Org name has to be extracted
+ */
+function extractOrgName(url = location.href){
+	return chrome.runtime.sendMessage({ message: { what: "extract-org", url } });
+}
+
+/**
  * Removes the closest tab element from the popup and saves the updated tabs.
  * This function is called by the delete button at the end of each tab.
  */
@@ -280,6 +289,10 @@ function createElement() {
 	const url = element.querySelector(".url");
 	setInfoForDrag(url, () => inputTitleUrlListener("url"));
 
+    element.querySelector(".only-org").addEventListener("click", () => {
+        saveTabs(false);
+    });
+
 	loggers.push({ title, url, last_input: {} }); // set last_input as an empty object
 	return element;
 }
@@ -300,7 +313,7 @@ function loadTabs(items) {
 		element.querySelector(".tabTitle").value = tab.tabTitle;
 		element.querySelector(".url").value = tab.url;
 		element.querySelector(".only-org").checked = tab.org != null &&
-			href.includes(tab.org);
+			location.href.includes(tab.org);
 		element.querySelector(".delete").removeAttribute("disabled");
 		const logger = loggers.pop();
 		logger.last_input.title = tab.tabTitle;
@@ -349,7 +362,7 @@ async function findTabs(callback, doReload) {
 				if (!onlyOrg) {
 					return tabVal;
 				}
-				tabVal.org = await shrinkTarget(href);
+				tabVal.org = await extractOrgName();
 				return tabVal;
 			}
 			return null; // Return null for invalid tabs

@@ -821,7 +821,6 @@ function generateSldsModal(modalTitle) {
 				saveButton.click();
 				break;
 			default:
-				console.log(event.key);
 				return;
 		}
 		document.removeEventListener("keydown", keyDownListener);

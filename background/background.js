@@ -113,6 +113,42 @@ function minifyURL(url) {
 }
 
 /**
+ * Extracts the Org name from the url passed as input.
+ *
+ * @param {string} url - The URL from which the Org name has to be extracted.
+ * @returns string | undefined - The Org name OR nothing if an error occurs
+ */
+function extractOrgName(url) {
+    const https = "https://";
+    let host;
+    //try {
+        const parsedUrl = new URL(
+            url.startsWith(https) ? url : `${https}${url}`,
+        );
+        host = parsedUrl.host;
+    /*} catch (error) {
+        return console.error(error); // this may happen if we do not pass a string starting with https
+    }*/
+
+    const lightningForceCom = ".lightning.force.com";
+    if (host.endsWith(lightningForceCom)) {
+        host = host.slice(0, host.indexOf(lightningForceCom));
+    }
+
+    const mySalesforceSetupCom = ".my.salesforce-setup.com";
+    if (host.endsWith(mySalesforceSetupCom)) {
+        host = host.slice(0, host.indexOf(mySalesforceSetupCom));
+    }
+
+    const mySalesforceCom = ".my.salesforce.com";
+    if (host.endsWith(mySalesforceCom)) {
+        host = host.slice(0, host.indexOf(mySalesforceCom));
+    }
+
+    return host;
+}
+
+/**
  * Expands a URL by adding the domain and the Salesforce setup parts.
  * This function undoes what minifyURL did to a URL.
  *
@@ -140,6 +176,12 @@ function expandURL(message) {
 	const isSetupLink = !url.startsWith("/") && url.length > 0;
 	return `${baseUrl}${isSetupLink ? setupLightning : ""}${url}`;
 }
+
+function containsSalesforceId(url) {
+    const salesforceIdPattern = /(?:^|\/|=)([a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})(?:$|\/|\?|&)/; 
+    return salesforceIdPattern.test(decodeURIComponent(url));
+}
+
 
 /**
  * Listens for incoming messages and processes requests to get, set, or notify about storage changes.
@@ -176,6 +218,9 @@ browserObj.runtime.onMessage.addListener((request, _, sendResponse) => {
 			return false; // we won't call sendResponse
 		case "minify":
 			sendResponse(minifyURL(message.url));
+			return false; // we won't call sendResponse
+		case "extract-org":
+			sendResponse(extractOrgName(message.url));
 			return false; // we won't call sendResponse
 		case "expand":
 			sendResponse(expandURL(message));
@@ -327,10 +372,6 @@ function checkAddRemoveContextMenus() {
 	browserObj.tabs.query({ active: true, currentWindow: true }, (tabs) => {
 		if (tabs && tabs[0]) {
 			const url = tabs[0].url;
-			console.log(
-				url,
-				contextMenuPatternsRegex.some((cmp) => url.match(cmp)),
-			);
 			if (url == null) return;
 			if (contextMenuPatternsRegex.some((cmp) => url.match(cmp))) {
 				removeMenuItems(createMenuItems);
