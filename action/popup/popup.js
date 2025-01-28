@@ -29,7 +29,7 @@ chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
 			}`,
 		);
 	} else {
-		getStorage(loadTabs);
+		pop_getStorage(loadTabs);
 	}
 });
 
@@ -62,8 +62,8 @@ let loggers = [];
  * @param {Object} message - The message to send.
  * @param {function} callback - The callback to execute after sending the message.
  */
-function sendMessage(message, callback) {
-	chrome.runtime.sendMessage({ message, url: location.href }, callback);
+function pop_sendMessage(message, callback) {
+	return chrome.runtime.sendMessage({ message, url: location.href }, callback);
 }
 
 /**
@@ -71,15 +71,15 @@ function sendMessage(message, callback) {
  *
  * @param {function} callback - The callback to invoke with the retrieved data.
  */
-function getStorage(callback) {
-	sendMessage({ what: "get" }, callback);
+function pop_getStorage(callback) {
+	pop_sendMessage({ what: "get" }, callback);
 }
 
 /**
  * Sends a message indicating that data has been saved successfully.
  */
-function afterSet() {
-	sendMessage({ what: "saved" });
+function pop_afterSet() {
+	pop_sendMessage({ what: "saved" });
 }
 
 /**
@@ -99,9 +99,9 @@ function arraysAreEqual(arr1, arr2) {
  * @param {Array} tabs - The tabs to save.
  * @param {boolean} check - Whether to check for changes before saving.
  */
-function setStorage(tabs, check = true) {
+function pop_setStorage(tabs, check = true) {
 	if ((check && !arraysAreEqual(tabs, knownTabs)) || !check) {
-		sendMessage({ what: "set", tabs }, afterSet);
+		pop_sendMessage({ what: "set", tabs }, pop_afterSet);
 	}
 	knownTabs = tabs;
 }
@@ -126,8 +126,8 @@ function setStorage(tabs, check = true) {
  * SetupOneHome/home/
  * SetupOneHome/home
  */
-function minifyURL(url) {
-	return chrome.runtime.sendMessage({ message: { what: "minify", url } });
+function pop_minifyURL(url) {
+    return pop_sendMessage({ what: "minify", url });
 }
 
 /**
@@ -135,8 +135,8 @@ function minifyURL(url) {
  *
  * @param {string} url - The URL from which the Org name has to be extracted
  */
-function extractOrgName(url = location.href){
-	return chrome.runtime.sendMessage({ message: { what: "extract-org", url } });
+function pop_extractOrgName(url = location.href){
+	return pop_sendMessage({ what: "extract-org", url });
 }
 
 /**
@@ -208,13 +208,13 @@ function inputTitleUrlListener(type) {
 
 	// check if the user copied the url
 	if (delta > 2 && type === "url") {
-		minifyURL(value)
+		pop_minifyURL(value)
 			.then((v) => {
 				element.value = v;
 				// check eventual duplicates
 				if (knownTabs.some((tab) => tab.url === v)) {
 					// show warning in salesforce
-					sendMessage({
+					pop_sendMessage({
 						what: "warning",
 						message: "A tab with this URL has already been saved!",
 						action: "make-bold",
@@ -355,14 +355,14 @@ async function findTabs(callback, doReload) {
 			const onlyOrg = tab.querySelector(".only-org").checked;
 
 			// Await the minified URL
-			const url = await minifyURL(href);
+			const url = await pop_minifyURL(href);
 
 			if (tabTitle && url) {
 				const tabVal = { tabTitle, url };
 				if (!onlyOrg) {
 					return tabVal;
 				}
-				tabVal.org = await extractOrgName();
+				tabVal.org = await pop_extractOrgName();
 				return tabVal;
 			}
 			return null; // Return null for invalid tabs
@@ -392,7 +392,7 @@ function saveTabs(doReload = true, tabs) {
 	if (tabs == null || !Array.isArray(tabs)) {
 		return;
 	}
-	setStorage(tabs, true);
+	pop_setStorage(tabs, true);
 	doReload && reloadRows({ tabs, key: "tabs" });
 }
 
@@ -400,9 +400,7 @@ function saveTabs(doReload = true, tabs) {
  * Handles the import functionality by sending a message that will be used as signal to create an import modal in the Salesforce page.
  */
 function importHandler() {
-	const message = { what: "add" };
-	chrome.runtime.sendMessage({ message, url: location.href });
-	close();
+	pop_sendMessage({ what: "add" }, close);
 }
 
 /**

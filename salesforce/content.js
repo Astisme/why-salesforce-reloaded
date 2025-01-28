@@ -65,8 +65,8 @@ function _handleLightningLinkClick(e) {
  * @param {Object} message - The message object to send.
  * @param {Function} callback - The callback function to execute after sending the message.
  */
-function sendMessage(message, callback) {
-	chrome.runtime.sendMessage({ message, url: location.href }, callback);
+function sf_sendMessage(message, callback) {
+	return chrome.runtime.sendMessage({ message, url: location.href }, callback);
 }
 
 /**
@@ -74,14 +74,14 @@ function sendMessage(message, callback) {
  *
  * @param {Function} callback - The callback function to handle the retrieved data.
  */
-function getStorage(callback) {
-	sendMessage({ what: "get" }, callback);
+function sf_getStorage(callback) {
+	sf_sendMessage({ what: "get" }, callback);
 }
 
 /**
  * Reloads the saved tabs and shows a success toast message when storage is set.
  */
-function afterSet(what = null) {
+function sf_afterSet(what = null) {
 	reloadTabs();
 	what == null && showToast(`"Again, Why Salesforce" tabs saved.`);
 }
@@ -91,9 +91,9 @@ function afterSet(what = null) {
  *
  * @param {Array} tabs - The array of tabs to save.
  */
-function setStorage(tabs) {
+function sf_setStorage(tabs) {
 	tabs = tabs ?? currentTabs;
-	sendMessage({ what: "set", tabs }, afterSet);
+	sf_sendMessage({ what: "set", tabs }, sf_afterSet);
 }
 
 /**
@@ -116,8 +116,8 @@ function setStorage(tabs) {
  * SetupOneHome/home/
  * SetupOneHome/home
  */
-function minifyURL(url) {
-	return chrome.runtime.sendMessage({ message: { what: "minify", url } });
+function sf_minifyURL(url) {
+    return sf_sendMessage({ what: "minify", url });
 }
 
 /**
@@ -125,8 +125,8 @@ function minifyURL(url) {
  *
  * @param {string} url - The URL from which the Org name has to be extracted
  */
-function extractOrgName(url = location.href){
-	return chrome.runtime.sendMessage({ message: { what: "extract-org", url } });
+function sf_extractOrgName(url = location.href){
+    return sf_sendMessage({ what: "extract-org", url });
 }
 
 /**
@@ -175,7 +175,7 @@ function initTabs() {
 		{ tabTitle: "Flows", url: "/lightning/app/standard__FlowsApp" },
 		{ tabTitle: "Users", url: "ManageUsers/home" },
 	];
-	setStorage(tabs);
+	sf_setStorage(tabs);
 	return tabs;
 }
 
@@ -217,7 +217,7 @@ function isOnSavedTab(isFromHrefUpdate = false, callback) {
 	}
 	fromHrefUpdate = isFromHrefUpdate;
 
-	minifyURL(href)
+	sf_minifyURL(href)
 		.then((loc) => {
 			_minifiedURL = loc;
 
@@ -305,7 +305,7 @@ function reloadTabs() {
 	while (setupTabUl.childElementCount > 3) { // hidden li + Home + Object Manager
 		setupTabUl.removeChild(setupTabUl.lastChild);
 	}
-	getStorage(init);
+	sf_getStorage(init);
 }
 
 /**
@@ -318,7 +318,7 @@ function reorderTabs() {
 		.map(async (tab) => {
 			const tabTitle = tab.querySelector("a > span").innerText;
 			const href = tab.querySelector("a").href;
-			const url = await minifyURL(href);
+			const url = await sf_minifyURL(href);
 
 			if (tabTitle && url) {
 				return { tabTitle, url };
@@ -327,7 +327,7 @@ function reorderTabs() {
 		});
 
 	Promise.all(tabPromises)
-		.then((tabs) => setStorage(tabs.filter((tab) => tab != null)))
+		.then((tabs) => sf_setStorage(tabs.filter((tab) => tab != null)))
 		.catch((err) => console.error("Error processing tabs:", err));
 }
 
@@ -366,7 +366,7 @@ function removeTab(url, title = null) {
 	currentTabs.push(
 		...filteredTabs,
 	);
-	setStorage();
+	sf_setStorage();
 }
 /**
  * Shows a modal to ask the user into which org they want to open the given URL.
@@ -398,7 +398,7 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 		let newTarget;
 
 		if (delta > 2) {
-			extractOrgName(value)
+			sf_extractOrgName(value)
                 .then(newT => {
                     newTarget = newT;
                     if (newTarget != null && newTarget !== value) {
@@ -420,7 +420,7 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 		}
 
         let alreadyExtracted = false;
-        extractOrgName(inputVal).then(newTarget => {
+        sf_extractOrgName(inputVal).then(newTarget => {
             if(alreadyExtracted) return;
             alreadyExtracted = true;
             if (
@@ -493,7 +493,7 @@ function moveTab(miniURL, tabTitle, moveBefore = true, fullMovement = false) {
 		currentTabs.splice(newIndex, 0, tab);
 	}
 
-	setStorage();
+	sf_setStorage();
 }
 
 /**
@@ -526,14 +526,14 @@ function removeOtherTabs(miniURL, tabTitle, removeBefore = null) {
 		return showToast("This is not a saved tab!", false, true);
 	}
 	if (removeBefore == null) {
-		return setStorage([{ tabTitle, url: miniURL }]);
+		return sf_setStorage([{ tabTitle, url: miniURL }]);
 	}
 	const index = currentTabs.findIndex((tab) =>
 		tab.url === miniURL && tab.tabTitle === tabTitle
 	);
 	if (index === -1) return;
 
-	setStorage(
+	sf_setStorage(
 		removeBefore
 			? currentTabs.slice(index)
 			: currentTabs.slice(0, index + 1),
@@ -565,7 +565,7 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 	switch (message.what) {
 		case "saved":
 		case "focused":
-			afterSet(message.what);
+			sf_afterSet(message.what);
 			break;
 		case "warning":
 			showToast(message.message, false, true);
@@ -605,7 +605,7 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 			removeOtherTabs(message.tabUrl, message.tabTitle, false);
 			break;
 		case "empty-tabs":
-			setStorage([]);
+			sf_setStorage([]);
 			break;
 		case "page-save-tab":
 			pageActionTab(true);
