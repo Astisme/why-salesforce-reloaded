@@ -24,41 +24,6 @@ let fromHrefUpdate;
 	script.src = chrome.runtime.getURL("salesforce/lightning-navigation.js");
 	(document.head || document.documentElement).appendChild(script);
 }
-/**
- * Picks a link target between _blank and _top based on whether the user is click CTRL or the meta key.
- * If the link goes outside of setup, always returns _blank.
- *
- * @param {Event} e - the click event
- * @returns {String} "_blank" | "_top"
- */
-function getLinkTarget(e, url) {
-	return e.ctrlKey || e.metaKey || !url.includes(setupLightning)
-		? "_blank"
-		: "_top";
-}
-
-/**
- * Handles the redirection to another Salesforce page without requiring a full reload.
- *
- * @param {Event} e - the click event
- */
-function _handleLightningLinkClick(e) {
-	e.preventDefault(); // Prevent the default link behavior (href navigation)
-	const url = e.currentTarget.href;
-	const aTarget = e.currentTarget.target;
-	const target = aTarget || getLinkTarget(e, url);
-	// open link into new page when requested or if the user is clicking the favourite tab one more time
-	if (target === "_blank" || url === href) {
-		open(url, target);
-	} else {
-		postMessage({
-			what: "lightningNavigation",
-			navigationType: "url",
-			url,
-			fallbackURL: url,
-		}, "*");
-	}
-}
 
 /**
  * Sends a message to the background script with the current URL.
