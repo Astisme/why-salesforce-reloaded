@@ -117,6 +117,15 @@ function toggleFavouriteButton(isSaved, button) {
 }
 
 /**
+ * Checks if the url passed as input contains a Salesforce Id.
+ *
+ * @param {string} url - The URL to be checked.
+ */
+function sf_containsSalesforceId(url = location.href) {
+	return sf_sendMessage({ what: "contains-sf-id", url });
+}
+
+/**
  * Adds the tab with the given URL and finds its title from the page
  *
  * @param {string} url - the minified URL of the tab to add
@@ -124,20 +133,21 @@ function toggleFavouriteButton(isSaved, button) {
  */
 function addTab(url, parent) {
 	const tabTitle = parent.querySelector(".breadcrumbDetail").innerText;
-    const tab = { tabTitle, url };
-    const addThisTab = (tab) => {
-        sf_overwriteCurrentTabs([tab], false);
-    }
-    sf_containsSalesforceId()
-    .then(response => {
-        if(response)
-            sf_extractOrgName()
-            .then(orgName => {
-                addThisTab({...tab, org: orgName});
-            });
-        else
-            addThisTab(tab);
-    });
+	const tab = { tabTitle, url };
+	const addThisTab = (tab) => {
+		sf_overwriteCurrentTabs([tab], false);
+	};
+	sf_containsSalesforceId()
+		.then((response) => {
+			if (response) {
+				sf_extractOrgName()
+					.then((orgName) => {
+						addThisTab({ ...tab, org: orgName });
+					});
+			} else {
+				addThisTab(tab);
+			}
+		});
 }
 /**
  * Adds or removes the current tab from the saved tabs list based on the button's state.

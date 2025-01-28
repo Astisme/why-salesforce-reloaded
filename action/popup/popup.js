@@ -70,7 +70,10 @@ function switchTheme() {
  * @param {function} callback - The callback to execute after sending the message.
  */
 function pop_sendMessage(message, callback) {
-	return chrome.runtime.sendMessage({ message, url: location.href }, callback);
+	return chrome.runtime.sendMessage(
+		{ message, url: location.href },
+		callback,
+	);
 }
 
 /**
@@ -101,21 +104,23 @@ function arraysAreEqual(arr1, arr2) {
 }
 
 /**
- * Overrides the `pop_currentTabs` array with new tabs, with an optional 
+ * Overrides the `pop_currentTabs` array with new tabs, with an optional
  * option to remove non-org-specific or all existing tabs.
- * 
+ *
  * @param {Array<Object>} newTabs - An array of new tab objects to be added to `pop_currentTabs`.
  * @param {boolean} [removeOrgSpecificTabs=false] - If `true`, clears all tabs in `pop_currentTabs` before adding `newTabs`. If `false`, only non-org-specific tabs (tabs with `org == null`) are removed, retaining org-specific tabs.
  */
-function pop_overrideCurrentTabs(newTabs, removeOrgSpecificTabs = false){
-    if(removeOrgSpecificTabs)
-        pop_currentTabs.length = 0;
-    else {
-        const orgSpecificTabs = pop_currentTabs.filter(tab => tab.org != null);
-        pop_currentTabs.length = 0;
-        pop_currentTabs.push(...orgSpecificTabs);
-    }
-    pop_currentTabs.push(...newTabs);
+function pop_overrideCurrentTabs(newTabs, removeOrgSpecificTabs = false) {
+	if (removeOrgSpecificTabs) {
+		pop_currentTabs.length = 0;
+	} else {
+		const orgSpecificTabs = pop_currentTabs.filter((tab) =>
+			tab.org != null
+		);
+		pop_currentTabs.length = 0;
+		pop_currentTabs.push(...orgSpecificTabs);
+	}
+	pop_currentTabs.push(...newTabs);
 }
 
 /**
@@ -127,7 +132,7 @@ function pop_setStorage(tabs) {
 	if (!arraysAreEqual(tabs, pop_currentTabs)) {
 		pop_sendMessage({ what: "set", tabs }, pop_afterSet);
 	}
-    pop_overrideCurrentTabs(tabs);
+	pop_overrideCurrentTabs(tabs);
 }
 
 /**
@@ -151,7 +156,7 @@ function pop_setStorage(tabs) {
  * SetupOneHome/home
  */
 function pop_minifyURL(url) {
-    return pop_sendMessage({ what: "minify", url });
+	return pop_sendMessage({ what: "minify", url });
 }
 
 /**
@@ -159,7 +164,7 @@ function pop_minifyURL(url) {
  *
  * @param {string} url - The URL from which the Org name has to be extracted
  */
-function pop_extractOrgName(url = location.href){
+function pop_extractOrgName(url = location.href) {
 	return pop_sendMessage({ what: "extract-org", url });
 }
 
@@ -168,8 +173,8 @@ function pop_extractOrgName(url = location.href){
  *
  * @param {string} url - The URL to be checked.
  */
-function pop_containsSalesforceId(url = location.href){
-    return pop_sendMessage({what: "contains-sf-id", url});
+function pop_containsSalesforceId(url = location.href) {
+	return pop_sendMessage({ what: "contains-sf-id", url });
 }
 
 /**
@@ -177,7 +182,11 @@ function pop_containsSalesforceId(url = location.href){
  * This function is called by the delete button at the end of each tab.
  */
 function deleteTab() {
-    console.log(this.closest(".tab"),this.closest(".tab").querySelector(".delete"),this.closest(".tab").querySelector(".delete") == this);
+	console.log(
+		this.closest(".tab"),
+		this.closest(".tab").querySelector(".delete"),
+		this.closest(".tab").querySelector(".delete") == this,
+	);
 	this.closest(".tab").remove();
 	saveTabs();
 }
@@ -323,9 +332,9 @@ function createElement() {
 	const url = element.querySelector(".url");
 	setInfoForDrag(url, () => inputTitleUrlListener("url"));
 
-    element.querySelector(".only-org").addEventListener("click", () => {
-        saveTabs(false);
-    });
+	element.querySelector(".only-org").addEventListener("click", () => {
+		saveTabs(false);
+	});
 
 	loggers.push({ title, url, last_input: {} }); // set last_input as an empty object
 	return element;
@@ -358,7 +367,7 @@ function loadTabs(items) {
 		updateTabAttributes();
 	}
 	tabAppendElement.append(createElement()); // always leave a blank at the bottom
-    pop_overrideCurrentTabs(rowObjs);
+	pop_overrideCurrentTabs(rowObjs);
 }
 
 /**
@@ -393,15 +402,17 @@ async function findTabs(callback, doReload) {
 
 			if (tabTitle && url) {
 				const tabVal = { tabTitle, url };
-                // the user has not checked the onlyOrg checkbox &&
-                // the link does not contain a Salesforce Id
-                const containsSalesforceId = await pop_containsSalesforceId(tabUrl);
+				// the user has not checked the onlyOrg checkbox &&
+				// the link does not contain a Salesforce Id
+				const containsSalesforceId = await pop_containsSalesforceId(
+					tabUrl,
+				);
 				if (!onlyOrg && !containsSalesforceId) {
-                    return tabVal;
+					return tabVal;
 				}
-                // FIXME
+				// FIXME
 				//tabVal.org = await pop_extractOrgName();
-                //console.log(tabVal);
+				//console.log(tabVal);
 				return tabVal;
 			}
 			return null; // Return null for invalid tabs
@@ -427,9 +438,9 @@ async function findTabs(callback, doReload) {
  * @param {Array} tabs - The tabs to save.
  */
 function saveTabs(doReload = true, tabs) {
-    if (tabs == null || !Array.isArray(tabs)) {
-        findTabs(saveTabs, doReload);
-    }
+	if (tabs == null || !Array.isArray(tabs)) {
+		findTabs(saveTabs, doReload);
+	}
 	pop_setStorage(tabs);
 	doReload && reloadRows({ tabs, key: "tabs" });
 }

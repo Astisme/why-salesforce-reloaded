@@ -220,7 +220,9 @@ function showFileImport() {
  * @param {boolean} message.skipDuplicates - Whether to skip the duplicated values of the URLs of already saved tabs
  */
 function importer(message) {
-	const currentUrls = !message.overwrite ? new Set(sf_currentTabs.map((current) => current.url)) : new Set();
+	const currentUrls = !message.overwrite
+		? new Set(sf_currentTabs.map((current) => current.url))
+		: new Set();
 	let importedArray = message.imported;
 
 	// check for duplicated entries
@@ -260,9 +262,9 @@ reader.onload = function (e) {
 				typeof item.tabTitle === "string" &&
 				typeof item.url === "string" &&
 				(
-                    item.org == null ||
-                    typeof item.org === "string"
-                )
+					item.org == null ||
+					typeof item.org === "string"
+				)
 			)
 		) {
 			const message = {
@@ -334,7 +336,7 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 		return;
 	}
 	if (message.what == "add") {
-        sendResponse(null);
+		sendResponse(null);
 		showFileImport();
 		listenToFileUpload();
 	}

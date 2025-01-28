@@ -22,7 +22,10 @@ function bg_addKey(items, callback) {
  * @param {function} callback - The callback to invoke with the retrieved data.
  */
 function bg_getStorage(callback) {
-	browserObj.storage.sync.get([whyKey], (items) => bg_addKey(items, callback));
+	browserObj.storage.sync.get(
+		[whyKey],
+		(items) => bg_addKey(items, callback),
+	);
 }
 
 /**
@@ -119,33 +122,33 @@ function bg_minifyURL(url) {
  * @returns string | undefined - The Org name OR nothing if an error occurs
  */
 function bg_extractOrgName(url) {
-    const https = "https://";
-    let host;
-    //try {
-        const parsedUrl = new URL(
-            url.startsWith(https) ? url : `${https}${url}`,
-        );
-        host = parsedUrl.host;
-    /*} catch (error) {
+	const https = "https://";
+	let host;
+	//try {
+	const parsedUrl = new URL(
+		url.startsWith(https) ? url : `${https}${url}`,
+	);
+	host = parsedUrl.host;
+	/*} catch (error) {
         return console.error(error); // this may happen if we do not pass a string starting with https
     }*/
 
-    const lightningForceCom = ".lightning.force.com";
-    if (host.endsWith(lightningForceCom)) {
-        host = host.slice(0, host.indexOf(lightningForceCom));
-    }
+	const lightningForceCom = ".lightning.force.com";
+	if (host.endsWith(lightningForceCom)) {
+		host = host.slice(0, host.indexOf(lightningForceCom));
+	}
 
-    const mySalesforceSetupCom = ".my.salesforce-setup.com";
-    if (host.endsWith(mySalesforceSetupCom)) {
-        host = host.slice(0, host.indexOf(mySalesforceSetupCom));
-    }
+	const mySalesforceSetupCom = ".my.salesforce-setup.com";
+	if (host.endsWith(mySalesforceSetupCom)) {
+		host = host.slice(0, host.indexOf(mySalesforceSetupCom));
+	}
 
-    const mySalesforceCom = ".my.salesforce.com";
-    if (host.endsWith(mySalesforceCom)) {
-        host = host.slice(0, host.indexOf(mySalesforceCom));
-    }
+	const mySalesforceCom = ".my.salesforce.com";
+	if (host.endsWith(mySalesforceCom)) {
+		host = host.slice(0, host.indexOf(mySalesforceCom));
+	}
 
-    return host;
+	return host;
 }
 
 /**
@@ -177,21 +180,21 @@ function bg_expandURL(message) {
 	return `${baseUrl}${isSetupLink ? setupLightning : ""}${url}`;
 }
 
-const salesforceIdPattern = /(?:^|\/|=)([a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})(?:$|\/|\?|&)/; 
+const salesforceIdPattern =
+	/(?:^|\/|=)([a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})(?:$|\/|\?|&)/;
 /**
  * Checks if a given URL contains a valid Salesforce ID.
- * 
- * A Salesforce ID is either 15 or 18 alphanumeric characters, typically found 
- * in URL paths or query parameters. The function also handles encoded URLs 
+ *
+ * A Salesforce ID is either 15 or 18 alphanumeric characters, typically found
+ * in URL paths or query parameters. The function also handles encoded URLs
  * (e.g., `%2F` becomes `/`) by decoding them before matching.
- * 
+ *
  * @param {string} url - The URL to check for a Salesforce ID.
  * @returns {boolean} - Returns `true` if the URL contains a Salesforce ID, otherwise `false`.
  */
 function bg_containsSalesforceId(url) {
-    return salesforceIdPattern.test(decodeURIComponent(url));
+	return salesforceIdPattern.test(decodeURIComponent(url));
 }
-
 
 const menuItems = [
 	{
@@ -331,7 +334,9 @@ function bg_checkAddRemoveContextMenus() {
 }
 
 // when the extension is installed / updated
-browserObj.runtime.onInstalled.addListener(() => bg_checkAddRemoveContextMenus());
+browserObj.runtime.onInstalled.addListener(() =>
+	bg_checkAddRemoveContextMenus()
+);
 /* TODO add tutorial on install and link to current changes on update
 if (details.reason == "install") {
 }

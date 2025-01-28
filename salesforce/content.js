@@ -67,7 +67,10 @@ function _handleLightningLinkClick(e) {
  * @param {Function} callback - The callback function to execute after sending the message.
  */
 function sf_sendMessage(message, callback) {
-	return chrome.runtime.sendMessage({ message, url: location.href }, callback);
+	return chrome.runtime.sendMessage(
+		{ message, url: location.href },
+		callback,
+	);
 }
 
 /**
@@ -99,22 +102,22 @@ function sf_setStorage(tabs) {
 
 /**
  * Overwrites the `sf_currentTabs` array with new tabs, with an option to reset the tabs (replacing all of them with the newTabs) and another one to remove non-org-specific tabs.
- * 
+ *
  * @param {Array<Object> | Object} newTabsOrOptions - An array of new tab objects to be added to `sf_currentTabs` OR An object containing the parameters for key-based function calling.
  * @param {boolean} [resetTabs=true] - If `true`, resets `sf_currentTabs`.
  * @param {boolean} [removeOrgSpecificTabs=false] - If `true`, removes all Org specific tabs; otherwise, only non-org-specific tabs (tabs with `org == null`) are removed, retaining org-specific tabs.
  * @param {boolean} [setStorage=true] - If `true`, calls `sf_setStorage` to save the `sf_currentTabs` array.
- * 
+ *
  * @example
  * // Remove all tabs
  * sf_overwriteCurrentTabs(null, true, true);
  * sf_overwriteCurrentTabs([], true, true);
- * 
+ *
  * @example
  * // Remove all org-specific tabs
  * sf_overwriteCurrentTabs(null, false, true);
  * sf_overwriteCurrentTabs([], false, true);
- * 
+ *
  * @example
  * // DEFAULT: Keep only org-specific tabs
  * sf_overwriteCurrentTabs(null);
@@ -123,7 +126,7 @@ function sf_setStorage(tabs) {
  * sf_overwriteCurrentTabs([], true);
  * sf_overwriteCurrentTabs(null, true, false);
  * sf_overwriteCurrentTabs([], true, false);
- * 
+ *
  * @example
  * // Remove all tabs and add new ones
  * sf_overwriteCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }], true, true);
@@ -133,58 +136,71 @@ function sf_setStorage(tabs) {
  * sf_overwriteCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }, { tabTitle: "b", url: "b" }]);
  * sf_overwriteCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }, { tabTitle: "b", url: "b" }], true);
  * sf_overwriteCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }, { tabTitle: "b", url: "b" }], true, false);
- * 
+ *
  * @example
  * // Keep all tabs and add new ones
  * sf_overwriteCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }], false);
  * sf_overwriteCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }], false, false);
- * 
+ *
  * @example
  * // Remove org-specific tabs and add new ones
  * sf_overwriteCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }], false, true);
  */
-function sf_overwriteCurrentTabs(newTabsOrOptions, resetTabs = true, removeOrgSpecificTabs = false, setStorage = true){
-    let newTabs;
-    if (typeof newTabsOrOptions === "object" && !Array.isArray(newTabsOrOptions)) {
-        const { newTabs: nt, resetTabs: rt = true, removeOrgSpecificTabs: ro = false, setStorage: ss = true } = newTabsOrOptions;
-        newTabs = nt;
-        resetTabs = rt;
-        removeOrgSpecificTabs = ro;
-        setStorage = ss;
-    } else {
-        newTabs = newTabsOrOptions;
-    }
+function sf_overwriteCurrentTabs(
+	newTabsOrOptions,
+	resetTabs = true,
+	removeOrgSpecificTabs = false,
+	setStorage = true,
+) {
+	let newTabs;
+	if (
+		typeof newTabsOrOptions === "object" && !Array.isArray(newTabsOrOptions)
+	) {
+		const {
+			newTabs: nt,
+			resetTabs: rt = true,
+			removeOrgSpecificTabs: ro = false,
+			setStorage: ss = true,
+		} = newTabsOrOptions;
+		newTabs = nt;
+		resetTabs = rt;
+		removeOrgSpecificTabs = ro;
+		setStorage = ss;
+	} else {
+		newTabs = newTabsOrOptions;
+	}
 
+	/**
+	 * Filters the current tabs based on whether they are org-specific.
+	 *
+	 * @param {boolean} keepOrgTabs - If `true`, keeps org-specific tabs (tabs with `org != null`); otherwise, keeps non-org-specific tabs (tabs with `org == null`).
+	 * @returns {Array<Object>} - The filtered array of tabs.
+	 */
+	function filterOrgSpecificTabs(isOrgTab = true) {
+		return sf_currentTabs.filter((tab) =>
+			(isOrgTab && tab.org != null) || (!isOrgTab && tab.org == null)
+		);
+	}
 
-    /**
-     * Filters the current tabs based on whether they are org-specific.
-     * 
-     * @param {boolean} keepOrgTabs - If `true`, keeps org-specific tabs (tabs with `org != null`); otherwise, keeps non-org-specific tabs (tabs with `org == null`).
-     * @returns {Array<Object>} - The filtered array of tabs.
-     */
-    function filterOrgSpecificTabs(isOrgTab = true){
-        return sf_currentTabs.filter(tab => (isOrgTab && tab.org != null) || (!isOrgTab && tab.org == null))
-    }
+	if (resetTabs) {
+		if (removeOrgSpecificTabs) {
+			sf_currentTabs.length = 0;
+		} else {
+			// prevent accidental deletion of tabs that are not for "this" current Org
+			const orgSpecificTabs = filterOrgSpecificTabs();
+			sf_currentTabs.length = 0;
+			sf_currentTabs.push(...orgSpecificTabs);
+		}
+	} else {
+		if (removeOrgSpecificTabs) {
+			const non_orgSpecificTabs = filterOrgSpecificTabs(false);
+			sf_currentTabs.length = 0;
+			sf_currentTabs.push(...non_orgSpecificTabs);
+		}
+	}
 
-    if(resetTabs){
-        if(removeOrgSpecificTabs)
-            sf_currentTabs.length = 0;
-        else {
-            // prevent accidental deletion of tabs that are not for "this" current Org
-            const orgSpecificTabs = filterOrgSpecificTabs();
-            sf_currentTabs.length = 0;
-            sf_currentTabs.push(...orgSpecificTabs);
-        }
-    } else {
-        if(removeOrgSpecificTabs){
-            const non_orgSpecificTabs = filterOrgSpecificTabs(false);
-            sf_currentTabs.length = 0;
-            sf_currentTabs.push(...non_orgSpecificTabs);
-        }
-    }
-
-    Array.isArray(newTabs) && sf_currentTabs.push(...newTabs);
-    setStorage && sf_setStorage();
+	Array.isArray(newTabs) && sf_currentTabs.push(...newTabs);
+	setStorage && sf_setStorage();
 }
 
 /**
@@ -208,7 +224,7 @@ function sf_overwriteCurrentTabs(newTabsOrOptions, resetTabs = true, removeOrgSp
  * SetupOneHome/home
  */
 function sf_minifyURL(url) {
-    return sf_sendMessage({ what: "minify", url });
+	return sf_sendMessage({ what: "minify", url });
 }
 
 /**
@@ -216,17 +232,8 @@ function sf_minifyURL(url) {
  *
  * @param {string} url - The URL from which the Org name has to be extracted
  */
-function sf_extractOrgName(url = location.href){
-    return sf_sendMessage({ what: "extract-org", url });
-}
-
-/**
- * Checks if the url passed as input contains a Salesforce Id.
- *
- * @param {string} url - The URL to be checked.
- */
-function sf_containsSalesforceId(url = location.href){
-    return sf_sendMessage({what: "contains-sf-id", url});
+function sf_extractOrgName(url = location.href) {
+	return sf_sendMessage({ what: "extract-org", url });
 }
 
 /**
@@ -291,16 +298,17 @@ function init(items) {
 		: items[items.key];
 
 	if (rowObj.length > 0) {
-        sf_extractOrgName()
-        .then(orgName =>
-            rowObj.forEach((row) => {
-                // hide org-specific but not-this-org tabs
-                if(row.org == null || row.org === orgName) // TODO add option to hide or show org-specific but not-this-org tabs
-                    _generateRowTemplate(row)
-                    .then((r) => setupTabUl.appendChild(r))
-            })
-        );
-        sf_overwriteCurrentTabs({newTabs: rowObj, setStorage: false});
+		sf_extractOrgName()
+			.then((orgName) =>
+				rowObj.forEach((row) => {
+					// hide org-specific but not-this-org tabs
+					if (row.org == null || row.org === orgName) { // TODO add option to hide or show org-specific but not-this-org tabs
+						_generateRowTemplate(row)
+							.then((r) => setupTabUl.appendChild(r));
+					}
+				})
+			);
+		sf_overwriteCurrentTabs({ newTabs: rowObj, setStorage: false });
 	}
 	isOnSavedTab();
 	showFavouriteButton();
@@ -497,14 +505,14 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 
 		if (delta > 2) {
 			sf_extractOrgName(value)
-                .then(newT => {
-                    newTarget = newT;
-                    if (newTarget != null && newTarget !== value) {
-                        target.value = newTarget;
-                    }
+				.then((newT) => {
+					newTarget = newT;
+					if (newTarget != null && newTarget !== value) {
+						target.value = newTarget;
+					}
 
-                    lastInput = newTarget;
-                });
+					lastInput = newTarget;
+				});
 		}
 
 		lastInput = value;
@@ -517,29 +525,29 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 			return;
 		}
 
-        let alreadyExtracted = false;
-        sf_extractOrgName(inputVal).then(newTarget => {
-            if(alreadyExtracted) return;
-            alreadyExtracted = true;
-            if (
-                !newTarget.match(
-                    /^[a-zA-Z0-9\-]+(--[a-zA-Z0-9]+\.sandbox)?(\.develop)?$/g,
-                )
-            ) {
-                showToast("Please insert a valid Org!", false);
-                return;
-            }
+		let alreadyExtracted = false;
+		sf_extractOrgName(inputVal).then((newTarget) => {
+			if (alreadyExtracted) return;
+			alreadyExtracted = true;
+			if (
+				!newTarget.match(
+					/^[a-zA-Z0-9\-]+(--[a-zA-Z0-9]+\.sandbox)?(\.develop)?$/g,
+				)
+			) {
+				showToast("Please insert a valid Org!", false);
+				return;
+			}
 
-            const url = new URL(
-                `${https}${newTarget}${lightningForceCom}${
-                    !miniURL.startsWith("/") ? setupLightning : ""
-                }${miniURL}`,
-            );
-            if (confirm(`Are you sure you want to open\n${url}?`)) {
-                closeButton.click();
-                open(url, "_blank");
-            }
-        })
+			const url = new URL(
+				`${https}${newTarget}${lightningForceCom}${
+					!miniURL.startsWith("/") ? setupLightning : ""
+				}${miniURL}`,
+			);
+			if (confirm(`Are you sure you want to open\n${url}?`)) {
+				closeButton.click();
+				open(url, "_blank");
+			}
+		});
 	});
 }
 

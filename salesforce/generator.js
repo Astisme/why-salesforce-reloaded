@@ -43,7 +43,7 @@ function getRng_n_digits(digits = 1) {
  * SetupOneHome/home
  */
 function sf_expandURL(url) {
-    return sf_sendMessage({ what: "expand", url, baseUrl: globalThis.origin });
+	return sf_sendMessage({ what: "expand", url, baseUrl: globalThis.origin });
 }
 
 /**
