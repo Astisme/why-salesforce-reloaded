@@ -100,9 +100,10 @@ function sf_setStorage(tabs) {
 /**
  * Overwrites the `sf_currentTabs` array with new tabs, with an option to reset the tabs (replacing all of them with the newTabs) and another one to remove non-org-specific tabs.
  * 
- * @param {Array<Object>} newTabs - An array of new tab objects to be added to `sf_currentTabs`.
+ * @param {Array<Object> | Object} newTabsOrOptions - An array of new tab objects to be added to `sf_currentTabs` OR An object containing the parameters for key-based function calling.
  * @param {boolean} [resetTabs=true] - If `true`, resets `sf_currentTabs`.
  * @param {boolean} [removeOrgSpecificTabs=false] - If `true`, removes all Org specific tabs; otherwise, only non-org-specific tabs (tabs with `org == null`) are removed, retaining org-specific tabs.
+ * @param {boolean} [setStorage=true] - If `true`, calls `sf_setStorage` to save the `sf_currentTabs` array.
  * 
  * @example
  * // Remove all tabs
@@ -115,7 +116,11 @@ function sf_setStorage(tabs) {
  * sf_overwriteCurrentTabs([], false, true);
  * 
  * @example
- * // Remove all non-org-specific tabs
+ * // DEFAULT: Keep only org-specific tabs
+ * sf_overwriteCurrentTabs(null);
+ * sf_overwriteCurrentTabs([]);
+ * sf_overwriteCurrentTabs(null, true);
+ * sf_overwriteCurrentTabs([], true);
  * sf_overwriteCurrentTabs(null, true, false);
  * sf_overwriteCurrentTabs([], true, false);
  * 
@@ -124,7 +129,7 @@ function sf_setStorage(tabs) {
  * sf_overwriteCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }], true, true);
  *
  * @example
- * // Keep org-specific tabs and add new ones
+ * // DEFAULT: Keep org-specific tabs and add new ones
  * sf_overwriteCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }, { tabTitle: "b", url: "b" }]);
  * sf_overwriteCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }, { tabTitle: "b", url: "b" }], true);
  * sf_overwriteCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }, { tabTitle: "b", url: "b" }], true, false);
@@ -138,7 +143,19 @@ function sf_setStorage(tabs) {
  * // Remove org-specific tabs and add new ones
  * sf_overwriteCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }], false, true);
  */
-function sf_overwriteCurrentTabs(newTabs, resetTabs = true, removeOrgSpecificTabs = false){
+function sf_overwriteCurrentTabs(newTabsOrOptions, resetTabs = true, removeOrgSpecificTabs = false, setStorage = true){
+    let newTabs;
+    if (typeof newTabsOrOptions === "object" && !Array.isArray(newTabsOrOptions)) {
+        const { newTabs: nt, resetTabs: rt = true, removeOrgSpecificTabs: ro = false, setStorage: ss = true } = newTabsOrOptions;
+        newTabs = nt;
+        resetTabs = rt;
+        removeOrgSpecificTabs = ro;
+        setStorage = ss;
+    } else {
+        newTabs = newTabsOrOptions;
+    }
+
+
     /**
      * Filters the current tabs based on whether they are org-specific.
      * 
@@ -167,6 +184,7 @@ function sf_overwriteCurrentTabs(newTabs, resetTabs = true, removeOrgSpecificTab
     }
 
     Array.isArray(newTabs) && sf_currentTabs.push(...newTabs);
+    setStorage && sf_setStorage();
 }
 
 /**
@@ -280,7 +298,7 @@ function init(items) {
 			_generateRowTemplate(row)
 				.then((r) => setupTabUl.appendChild(r))
 		);
-		sf_overwriteCurrentTabs(rowObj);
+		sf_overwriteCurrentTabs({newTabs: rowObj, setStorage: false});
 	}
 	isOnSavedTab();
 	showFavouriteButton();
@@ -444,8 +462,7 @@ function removeTab(url, title = null) {
 	if (sf_currentTabs.length === filteredTabs.length) {
 		return showToast("This tab was not found.", false, true);
 	}
-	sf_overwriteCurrentTabs(filteredTabs);
-	sf_setStorage();
+	sf_overwriteCurrentTabs(filteredTabs, true, true);
 }
 /**
  * Shows a modal to ask the user into which org they want to open the given URL.

@@ -125,7 +125,6 @@ function toggleFavouriteButton(isSaved, button) {
 function addTab(url, parent) {
 	const tabTitle = parent.querySelector(".breadcrumbDetail").innerText;
 	sf_overwriteCurrentTabs([{ tabTitle, url }], false);
-	setStorage();
 }
 /**
  * Adds or removes the current tab from the saved tabs list based on the button's state.
@@ -133,7 +132,7 @@ function addTab(url, parent) {
  * @param {HTMLElement} parent - The parent element of the favourite button.
  */
 function actionFavourite(parent) {
-	minifyURL(href)
+	sf_minifyURL(href)
 		.then((url) => {
 			_minifiedURL = url;
 
@@ -152,7 +151,7 @@ function actionFavourite(parent) {
  */
 function checkUpdateFavouriteButton() {
 	// check if the current page is being imported
-	minifyURL(href)
+	sf_minifyURL(href)
 		.then((miniURL) => {
 			_minifiedURL = miniURL;
 			const isOnFavouriteTab = sf_currentTabs.some((current) =>

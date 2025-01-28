@@ -27,7 +27,7 @@ function getRng_n_digits(digits = 1) {
 
 /**
  * Expands a URL by adding the domain and the Salesforce setup parts.
- * This function undoes what minifyURL did to a URL.
+ * This function undoes what sf_minifyURL did to a URL.
  *
  * @param {string} url - The URL to expand.
  * @returns {string} The expanded URL.
@@ -42,10 +42,8 @@ function getRng_n_digits(digits = 1) {
  * SetupOneHome/home/
  * SetupOneHome/home
  */
-function expandURL(url) {
-	return chrome.runtime.sendMessage({
-		message: { what: "expand", url, baseUrl: globalThis.origin },
-	});
+function sf_expandURL(url) {
+    return sf_sendMessage({ what: "expand", url, baseUrl: globalThis.origin });
 }
 
 /**
@@ -58,8 +56,8 @@ function expandURL(url) {
  */
 function _generateRowTemplate(row) {
 	const { tabTitle, url } = row;
-	const miniURLpromise = minifyURL(url);
-	const expURLpromise = expandURL(url);
+	const miniURLpromise = sf_minifyURL(url);
+	const expURLpromise = sf_expandURL(url);
 
 	return Promise.all([miniURLpromise, expURLpromise])
 		.then(([miniURL, expURL]) => {

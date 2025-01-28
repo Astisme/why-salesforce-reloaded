@@ -427,8 +427,8 @@ browserObj.runtime.onMessage.addListener((request, _, sendResponse) => {
 		case "theme":
 		case "error":
 		case "warning":
-			bg_notify(message);
 			sendResponse(null);
+			setTimeout(() => bg_notify(message), 250); // delay the notification to prevent accidental removal (for "add")
 			return false; // we won't call sendResponse
 		case "minify":
 			sendResponse(bg_minifyURL(message.url));

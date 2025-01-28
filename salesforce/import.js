@@ -103,15 +103,15 @@ function generateSldsImport() {
 
 	const closeButton = document.createElement("button");
 	closeButton.id = closeModalId;
-	const closeSpan = document.createElement("span");
-	closeSpan.innerHTML = "&times;";
-	closeButton.appendChild(closeSpan);
-	modal.appendChild(closeButton);
-
 	closeButton.addEventListener(
 		"click",
 		() => dropArea.remove(),
 	);
+	modal.appendChild(closeButton);
+
+	const closeSpan = document.createElement("span");
+	closeSpan.innerHTML = "&times;";
+	closeButton.appendChild(closeSpan);
 
 	const header = document.createElement("h4");
 	header.classList.add("modal-header");
@@ -247,7 +247,6 @@ function importer(message) {
 	sf_overwriteCurrentTabs(importedArray, message.overwrite);
 	// remove file import
 	setupTabUl.removeChild(dropArea);
-	setStorage();
 }
 
 reader.onload = function (e) {
@@ -335,7 +334,7 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 		return;
 	}
 	if (message.what == "add") {
-		sendResponse(null);
+        sendResponse(null);
 		showFileImport();
 		listenToFileUpload();
 	}
