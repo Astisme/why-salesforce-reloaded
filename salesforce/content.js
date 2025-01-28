@@ -156,15 +156,25 @@ function sf_overwriteCurrentTabs(
 			sf_currentTabs.length = 0;
 			sf_currentTabs.push(...orgSpecificTabs);
 		}
-	} else {
-		if (removeOrgSpecificTabs) {
-			const non_orgSpecificTabs = filterOrgSpecificTabs(false);
-			sf_currentTabs.length = 0;
-			sf_currentTabs.push(...non_orgSpecificTabs);
-		}
+	} else if (removeOrgSpecificTabs) {
+        const non_orgSpecificTabs = filterOrgSpecificTabs(false);
+        sf_currentTabs.length = 0;
+        sf_currentTabs.push(...non_orgSpecificTabs);
 	}
 
-	Array.isArray(newTabs) && sf_currentTabs.push(...newTabs);
+    function removeDuplicates(array) {
+        const unique = new Map();
+        array.forEach(item => {
+            const normalized = JSON.stringify(Object.entries(item).sort());
+            unique.set(normalized, item);
+        });
+        return Array.from(unique.values());
+    }
+
+    // needed due to org-specific tabs (don't know why)
+    const tabsNoDuplicates = removeDuplicates([...sf_currentTabs, ...newTabs]);
+    sf_currentTabs.length = 0;
+    sf_currentTabs.push(...tabsNoDuplicates);
 	setStorage && sf_setStorage();
 }
 

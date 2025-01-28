@@ -139,7 +139,7 @@ function addTab(url, parent) {
 	};
 	sf_containsSalesforceId()
 		.then((response) => {
-			if (!response) {
+			if (response == false) {
 				return addThisTab(tab);
 			}
 			sf_extractOrgName()
