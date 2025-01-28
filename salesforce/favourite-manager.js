@@ -124,7 +124,21 @@ function toggleFavouriteButton(isSaved, button) {
  */
 function addTab(url, parent) {
 	const tabTitle = parent.querySelector(".breadcrumbDetail").innerText;
-	sf_overwriteCurrentTabs([{ tabTitle, url }], false);
+    const tab = { tabTitle, url };
+    const addThisTab = (tab) => {
+        sf_overwriteCurrentTabs([tab], false);
+        console.log(sf_currentTabs);
+    }
+    sf_containsSalesforceId()
+    .then(response => {
+        if(response)
+            sf_extractOrgName()
+            .then(orgName => {
+                addThisTab({...tab, org: orgName});
+            });
+        else
+            addThisTab(tab);
+    });
 }
 /**
  * Adds or removes the current tab from the saved tabs list based on the button's state.

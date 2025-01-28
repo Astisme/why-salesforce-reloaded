@@ -169,7 +169,7 @@ function pop_extractOrgName(url = location.href){
  * @param {string} url - The URL to be checked.
  */
 function pop_containsSalesforceId(url = location.href){
-    return sf_sendMessage({what: "contains-sf-id", url});
+    return pop_sendMessage({what: "contains-sf-id", url});
 }
 
 /**
@@ -177,6 +177,7 @@ function pop_containsSalesforceId(url = location.href){
  * This function is called by the delete button at the end of each tab.
  */
 function deleteTab() {
+    console.log(this.closest(".tab"),this.closest(".tab").querySelector(".delete"),this.closest(".tab").querySelector(".delete") == this);
 	this.closest(".tab").remove();
 	saveTabs();
 }
@@ -394,10 +395,13 @@ async function findTabs(callback, doReload) {
 				const tabVal = { tabTitle, url };
                 // the user has not checked the onlyOrg checkbox &&
                 // the link does not contain a Salesforce Id
-				if (!onlyOrg && !(await pop_containsSalesforceId(tabUrl))) {
+                const containsSalesforceId = await pop_containsSalesforceId(tabUrl);
+				if (!onlyOrg && !containsSalesforceId) {
                     return tabVal;
 				}
-				tabVal.org = await pop_extractOrgName();
+                // FIXME
+				//tabVal.org = await pop_extractOrgName();
+                //console.log(tabVal);
 				return tabVal;
 			}
 			return null; // Return null for invalid tabs
@@ -423,10 +427,9 @@ async function findTabs(callback, doReload) {
  * @param {Array} tabs - The tabs to save.
  */
 function saveTabs(doReload = true, tabs) {
-	tabs = tabs ?? findTabs(saveTabs, doReload);
-	if (tabs == null || !Array.isArray(tabs)) {
-		return;
-	}
+    if (tabs == null || !Array.isArray(tabs)) {
+        findTabs(saveTabs, doReload);
+    }
 	pop_setStorage(tabs);
 	doReload && reloadRows({ tabs, key: "tabs" });
 }

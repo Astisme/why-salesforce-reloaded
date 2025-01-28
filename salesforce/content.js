@@ -269,14 +269,12 @@ function showToast(message, isSuccess = true, isWarning = false) {
  *
  * @returns {Array} - The list of initialized tabs.
  */
-function initTabs() {
-	const tabs = [
+function getDefaultTabs() {
+	return [
 		{ tabTitle: "⚡", url: "/lightning" },
 		{ tabTitle: "Flows", url: "/lightning/app/standard__FlowsApp" },
 		{ tabTitle: "Users", url: "ManageUsers/home" },
 	];
-	sf_setStorage(tabs);
-	return tabs;
 }
 
 /**
@@ -287,18 +285,24 @@ function initTabs() {
  * @param {Array<Object>} items[key] - The array of tab data retrieved from storage or the default tabs.
  */
 function init(items) {
-	//call inittabs if we did not find data inside storage
+	//call getDefaultTabs if we did not find data inside storage
 	const rowObj = (items == null || items[items.key] == null)
-		? initTabs()
+		? getDefaultTabs()
 		: items[items.key];
 
-	sf_currentTabs.length = 0;
-	if (rowObj.length !== 0) {
-		rowObj.forEach((row) =>
-			_generateRowTemplate(row)
-				.then((r) => setupTabUl.appendChild(r))
-		);
-		sf_overwriteCurrentTabs({newTabs: rowObj, setStorage: false});
+	if (rowObj.length > 0) {
+        sf_extractOrgName()
+        .then(orgName =>
+            rowObj.forEach((row) => {
+                console.log(row.org,orgName,row.org == null || row.org === orgName);
+                // hide org-specific but not-this-org tabs
+                if(row.org == null || row.org === orgName) // TODO add option to hide or show org-specific but not-this-org tabs
+                    _generateRowTemplate(row)
+                    .then((r) => setupTabUl.appendChild(r))
+            })
+        );
+        sf_overwriteCurrentTabs({newTabs: rowObj, setStorage: false});
+        console.log(rowObj);
 	}
 	isOnSavedTab();
 	showFavouriteButton();
