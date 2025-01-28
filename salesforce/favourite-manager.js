@@ -124,7 +124,7 @@ function toggleFavouriteButton(isSaved, button) {
  */
 function addTab(url, parent) {
 	const tabTitle = parent.querySelector(".breadcrumbDetail").innerText;
-	currentTabs.push({ tabTitle, url });
+	sf_overrideCurrentTabs([{ tabTitle, url }], false);
 	setStorage();
 }
 /**
@@ -155,7 +155,7 @@ function checkUpdateFavouriteButton() {
 	minifyURL(href)
 		.then((miniURL) => {
 			_minifiedURL = miniURL;
-			const isOnFavouriteTab = currentTabs.some((current) =>
+			const isOnFavouriteTab = sf_currentTabs.some((current) =>
 				current.url === miniURL
 			);
 			toggleFavouriteButton(isOnFavouriteTab);

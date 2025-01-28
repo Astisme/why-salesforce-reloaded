@@ -10,9 +10,10 @@ const setupLightning = "/lightning/setup/";
  * tabForCurrentTabs = {
  *      tabTitle: "string", // this is the label for the URL
  *      url: "string", // this is the URL in its minified version
+ *      org: "string | undefined", // this is the Org name where this tab is active in
  * }
  */
-const currentTabs = [];
+const sf_currentTabs = [];
 
 let wasOnSavedTab;
 let isCurrentlyOnSavedTab;
@@ -92,8 +93,80 @@ function sf_afterSet(what = null) {
  * @param {Array} tabs - The array of tabs to save.
  */
 function sf_setStorage(tabs) {
-	tabs = tabs ?? currentTabs;
+	tabs = tabs ?? sf_currentTabs;
 	sf_sendMessage({ what: "set", tabs }, sf_afterSet);
+}
+
+/**
+ * Overrides the `sf_currentTabs` array with new tabs, with an option to reset the tabs (replacing all of them with the newTabs) and another one to remove non-org-specific tabs.
+ * 
+ * @param {Array<Object>} newTabs - An array of new tab objects to be added to `sf_currentTabs`.
+ * @param {boolean} [resetTabs=true] - If `true`, resets `sf_currentTabs`.
+ * @param {boolean} [removeOrgSpecificTabs=false] - If `true`, removes all Org specific tabs; otherwise, only non-org-specific tabs (tabs with `org == null`) are removed, retaining org-specific tabs.
+ * 
+ * @example
+ * // Remove all tabs
+ * sf_overrideCurrentTabs(null, true, true);
+ * sf_overrideCurrentTabs([], true, true);
+ * 
+ * @example
+ * // Remove all org-specific tabs
+ * sf_overrideCurrentTabs(null, false, true);
+ * sf_overrideCurrentTabs([], false, true);
+ * 
+ * @example
+ * // Remove all non-org-specific tabs
+ * sf_overrideCurrentTabs(null, true, false);
+ * sf_overrideCurrentTabs([], true, false);
+ * 
+ * @example
+ * // Remove all tabs and add new ones
+ * sf_overrideCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }], true, true);
+ *
+ * @example
+ * // Keep org-specific tabs and add new ones
+ * sf_overrideCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }, { tabTitle: "b", url: "b" }]);
+ * sf_overrideCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }, { tabTitle: "b", url: "b" }], true);
+ * sf_overrideCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }, { tabTitle: "b", url: "b" }], true, false);
+ * 
+ * @example
+ * // Keep all tabs and add new ones
+ * sf_overrideCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }], false);
+ * sf_overrideCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }], false, false);
+ * 
+ * @example
+ * // Remove org-specific tabs and add new ones
+ * sf_overrideCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }], false, true);
+ */
+function sf_overrideCurrentTabs(newTabs, resetTabs = true, removeOrgSpecificTabs = false){
+    /**
+     * Filters the current tabs based on whether they are org-specific.
+     * 
+     * @param {boolean} keepOrgTabs - If `true`, keeps org-specific tabs (tabs with `org != null`); otherwise, keeps non-org-specific tabs (tabs with `org == null`).
+     * @returns {Array<Object>} - The filtered array of tabs.
+     */
+    function filterOrgSpecificTabs(isOrgTab = true){
+        return sf_currentTabs.filter(tab => (isOrgTab && tab.org != null) || (!isOrgTab && tab.org == null))
+    }
+
+    if(resetTabs){
+        if(removeOrgSpecificTabs)
+            sf_currentTabs.length = 0;
+        else {
+            // prevent accidental deletion of tabs that are not for "this" current Org
+            const orgSpecificTabs = filterOrgSpecificTabs();
+            sf_currentTabs.length = 0;
+            sf_currentTabs.push(...orgSpecificTabs);
+        }
+    } else {
+        if(removeOrgSpecificTabs){
+            const non_orgSpecificTabs = filterOrgSpecificTabs(false);
+            sf_currentTabs.length = 0;
+            sf_currentTabs.push(...non_orgSpecificTabs);
+        }
+    }
+
+    Array.isArray(newTabs) && sf_currentTabs.push(...newTabs);
 }
 
 /**
@@ -127,6 +200,15 @@ function sf_minifyURL(url) {
  */
 function sf_extractOrgName(url = location.href){
     return sf_sendMessage({ what: "extract-org", url });
+}
+
+/**
+ * Checks if the url passed as input contains a Salesforce Id.
+ *
+ * @param {string} url - The URL to be checked.
+ */
+function sf_containsSalesforceId(url = location.href){
+    return sf_sendMessage({what: "contains-sf-id", url});
 }
 
 /**
@@ -192,13 +274,13 @@ function init(items) {
 		? initTabs()
 		: items[items.key];
 
-	currentTabs.length = 0;
+	sf_currentTabs.length = 0;
 	if (rowObj.length !== 0) {
 		rowObj.forEach((row) =>
 			_generateRowTemplate(row)
 				.then((r) => setupTabUl.appendChild(r))
 		);
-		currentTabs.push(...rowObj);
+		sf_overrideCurrentTabs(rowObj);
 	}
 	isOnSavedTab();
 	showFavouriteButton();
@@ -222,7 +304,7 @@ function isOnSavedTab(isFromHrefUpdate = false, callback) {
 			_minifiedURL = loc;
 
 			wasOnSavedTab = isCurrentlyOnSavedTab;
-			isCurrentlyOnSavedTab = currentTabs.some((tabdef) =>
+			isCurrentlyOnSavedTab = sf_currentTabs.some((tabdef) =>
 				tabdef.url.includes(loc)
 			);
 
@@ -356,16 +438,13 @@ function makeDuplicatesBold(miniURL) {
  * @param {string} title - the label of the tab to remove. if null, all tabs with the given URL will be removed
  */
 function removeTab(url, title = null) {
-	const filteredTabs = currentTabs.filter((tabdef) =>
+	const filteredTabs = sf_currentTabs.filter((tabdef) =>
 		tabdef.url !== url && (title == null || tabdef.tabTitle !== title)
 	);
-	if (currentTabs.length === filteredTabs.length) {
+	if (sf_currentTabs.length === filteredTabs.length) {
 		return showToast("This tab was not found.", false, true);
 	}
-	currentTabs.length = 0;
-	currentTabs.push(
-		...filteredTabs,
-	);
+	sf_overrideCurrentTabs(filteredTabs);
 	sf_setStorage();
 }
 /**
@@ -379,7 +458,7 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 		_generateOpenOtherOrgModal(
 			miniURL,
 			tabTitle ??
-				currentTabs.find((current) => current.url === miniURL)
+				sf_currentTabs.find((current) => current.url === miniURL)
 					?.tabTitle ??
 				"Where to?",
 		);
@@ -471,26 +550,26 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
  */
 function moveTab(miniURL, tabTitle, moveBefore = true, fullMovement = false) {
 	if (tabTitle == null) {
-		tabTitle = currentTabs.find((current) =>
+		tabTitle = sf_currentTabs.find((current) =>
 			current.url === miniURL
 		).tabTitle;
 	}
-	const index = currentTabs.findIndex((tab) =>
+	const index = sf_currentTabs.findIndex((tab) =>
 		tab.url === miniURL && tab.tabTitle === tabTitle
 	);
 	if (index === -1) {
 		return showToast("This tab was not found.", false, true);
 	}
 
-	const [tab] = currentTabs.splice(index, 1);
+	const [tab] = sf_currentTabs.splice(index, 1);
 
 	if (fullMovement) {
-		moveBefore ? currentTabs.unshift(tab) : currentTabs.push(tab);
+		moveBefore ? sf_currentTabs.unshift(tab) : sf_currentTabs.push(tab);
 	} else {
 		const newIndex = moveBefore
 			? Math.max(0, index - 1)
-			: Math.min(currentTabs.length, index + 1);
-		currentTabs.splice(newIndex, 0, tab);
+			: Math.min(sf_currentTabs.length, index + 1);
+		sf_currentTabs.splice(newIndex, 0, tab);
 	}
 
 	sf_setStorage();
@@ -513,13 +592,13 @@ function moveTab(miniURL, tabTitle, moveBefore = true, fullMovement = false) {
  */
 function removeOtherTabs(miniURL, tabTitle, removeBefore = null) {
 	if (tabTitle == null) {
-		tabTitle = currentTabs.find((current) =>
+		tabTitle = sf_currentTabs.find((current) =>
 			current.url === miniURL
 		).tabTitle;
 	}
 	// check if the clicked tab is not one of the favourited ones
 	if (
-		!currentTabs.some((favTab) =>
+		!sf_currentTabs.some((favTab) =>
 			favTab.url === miniURL && favTab.tabTitle === tabTitle
 		)
 	) {
@@ -528,15 +607,15 @@ function removeOtherTabs(miniURL, tabTitle, removeBefore = null) {
 	if (removeBefore == null) {
 		return sf_setStorage([{ tabTitle, url: miniURL }]);
 	}
-	const index = currentTabs.findIndex((tab) =>
+	const index = sf_currentTabs.findIndex((tab) =>
 		tab.url === miniURL && tab.tabTitle === tabTitle
 	);
 	if (index === -1) return;
 
 	sf_setStorage(
 		removeBefore
-			? currentTabs.slice(index)
-			: currentTabs.slice(0, index + 1),
+			? sf_currentTabs.slice(index)
+			: sf_currentTabs.slice(0, index + 1),
 	);
 }
 

@@ -6,6 +6,19 @@ const html = document.documentElement;
 const sun = document.getElementById("sun");
 const moon = document.getElementById("moon");
 
+const tabTemplate = document.getElementById("tr_template");
+const tabAppendElement = document.getElementById("tabs");
+
+/**
+ * tabForCurrentTabs = {
+ *      tabTitle: "string", // this is the label for the URL
+ *      url: "string", // this is the URL in its minified version
+ *      org: "string | undefined", // this is the Org name where this tab is active in
+ * }
+ */
+const pop_currentTabs = [];
+let loggers = [];
+
 /**
  * Initializes the theme SVG elements based on the current theme and updates visibility.
  */
@@ -50,12 +63,6 @@ function switchTheme() {
 	handleSwitchColorTheme();
 }
 
-const tabTemplate = document.getElementById("tr_template");
-const tabAppendElement = document.getElementById("tabs");
-
-let knownTabs = [];
-let loggers = [];
-
 /**
  * Sends a message to the background script with the specified message and the current URL.
  *
@@ -94,16 +101,33 @@ function arraysAreEqual(arr1, arr2) {
 }
 
 /**
+ * Overrides the `pop_currentTabs` array with new tabs, with an optional 
+ * option to remove non-org-specific or all existing tabs.
+ * 
+ * @param {Array<Object>} newTabs - An array of new tab objects to be added to `pop_currentTabs`.
+ * @param {boolean} [removeOrgSpecificTabs=false] - If `true`, clears all tabs in `pop_currentTabs` before adding `newTabs`. If `false`, only non-org-specific tabs (tabs with `org == null`) are removed, retaining org-specific tabs.
+ */
+function pop_overrideCurrentTabs(newTabs, removeOrgSpecificTabs = false){
+    if(removeOrgSpecificTabs)
+        pop_currentTabs.length = 0;
+    else {
+        const orgSpecificTabs = pop_currentTabs.filter(tab => tab.org != null);
+        pop_currentTabs.length = 0;
+        pop_currentTabs.push(...orgSpecificTabs);
+    }
+    pop_currentTabs.push(...newTabs);
+}
+
+/**
  * Sets the stored tabs data in the background script, optionally checking for changes.
  *
  * @param {Array} tabs - The tabs to save.
- * @param {boolean} check - Whether to check for changes before saving.
  */
-function pop_setStorage(tabs, check = true) {
-	if ((check && !arraysAreEqual(tabs, knownTabs)) || !check) {
+function pop_setStorage(tabs) {
+	if (!arraysAreEqual(tabs, pop_currentTabs)) {
 		pop_sendMessage({ what: "set", tabs }, pop_afterSet);
 	}
-	knownTabs = tabs;
+    pop_overrideCurrentTabs(tabs);
 }
 
 /**
@@ -137,6 +161,15 @@ function pop_minifyURL(url) {
  */
 function pop_extractOrgName(url = location.href){
 	return pop_sendMessage({ what: "extract-org", url });
+}
+
+/**
+ * Checks if the url passed as input contains a Salesforce Id.
+ *
+ * @param {string} url - The URL to be checked.
+ */
+function pop_containsSalesforceId(url = location.href){
+    return sf_sendMessage({what: "contains-sf-id", url});
 }
 
 /**
@@ -212,7 +245,7 @@ function inputTitleUrlListener(type) {
 			.then((v) => {
 				element.value = v;
 				// check eventual duplicates
-				if (knownTabs.some((tab) => tab.url === v)) {
+				if (pop_currentTabs.some((tab) => tab.url === v)) {
 					// show warning in salesforce
 					pop_sendMessage({
 						what: "warning",
@@ -324,7 +357,7 @@ function loadTabs(items) {
 		updateTabAttributes();
 	}
 	tabAppendElement.append(createElement()); // always leave a blank at the bottom
-	knownTabs = rowObjs;
+    pop_overrideCurrentTabs(rowObjs);
 }
 
 /**
@@ -351,16 +384,18 @@ async function findTabs(callback, doReload) {
 	const tabPromises = Array.from(tabElements)
 		.map(async (tab) => {
 			const tabTitle = tab.querySelector(".tabTitle").value;
-			const href = tab.querySelector(".url").value;
+			const tabUrl = tab.querySelector(".url").value;
 			const onlyOrg = tab.querySelector(".only-org").checked;
 
 			// Await the minified URL
-			const url = await pop_minifyURL(href);
+			const url = await pop_minifyURL(tabUrl);
 
 			if (tabTitle && url) {
 				const tabVal = { tabTitle, url };
-				if (!onlyOrg) {
-					return tabVal;
+                // the user has not checked the onlyOrg checkbox &&
+                // the link does not contain a Salesforce Id
+				if (!onlyOrg && !(await pop_containsSalesforceId(tabUrl))) {
+                    return tabVal;
 				}
 				tabVal.org = await pop_extractOrgName();
 				return tabVal;
@@ -392,7 +427,7 @@ function saveTabs(doReload = true, tabs) {
 	if (tabs == null || !Array.isArray(tabs)) {
 		return;
 	}
-	pop_setStorage(tabs, true);
+	pop_setStorage(tabs);
 	doReload && reloadRows({ tabs, key: "tabs" });
 }
 
@@ -408,7 +443,7 @@ function importHandler() {
  */
 function exportHandler() {
 	// Convert JSON string to Blob
-	const blob = new Blob([JSON.stringify(knownTabs, null, 4)], {
+	const blob = new Blob([JSON.stringify(pop_currentTabs, null, 4)], {
 		type: "application/json",
 	});
 

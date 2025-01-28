@@ -216,15 +216,12 @@ function showFileImport() {
  *
  * @param {Object} message - The message containing the imported tab data.
  * @param {Array<Object>} message.imported - The array of imported tab data.
+ * @param {boolean} message.override - Whether the imported array should overwrite the currently saved tabs
+ * @param {boolean} message.skipDuplicates - Whether to skip the duplicated values of the URLs of already saved tabs
  */
 function importer(message) {
-	if (message.override) {
-		currentTabs.length = 0;
-	}
-
-	const currentUrls = new Set(currentTabs.map((current) => current.url));
+	const currentUrls = !message.override ? new Set(sf_currentTabs.map((current) => current.url)) : new Set();
 	let importedArray = message.imported;
-	let duplicatesArray;
 
 	// check for duplicated entries
 	if (message.skipDuplicates) {
@@ -233,7 +230,7 @@ function importer(message) {
 		);
 	} else {
 		// check if there are duplicates to warn the user
-		duplicatesArray = importedArray.filter((imported) =>
+		const duplicatesArray = importedArray.filter((imported) =>
 			currentUrls.has(imported.url)
 		);
 		if (duplicatesArray.length >= 1) {
@@ -247,7 +244,7 @@ function importer(message) {
 		}
 	}
 
-	currentTabs.push(...importedArray);
+	sf_overrideCurrentTabs(importedArray, message.override);
 	// remove file import
 	setupTabUl.removeChild(dropArea);
 	setStorage();
