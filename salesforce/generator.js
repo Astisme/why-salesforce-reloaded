@@ -52,6 +52,7 @@ function sf_expandURL(url) {
  * @param {Object} row - The tab data object containing title and URL.
  * @param {string} row.tabTitle - The title of the tab.
  * @param {string} row.url - The URL of the tab.
+ * @param {string} row.org - The org of the org-specific tab.
  * @returns {HTMLElement} - The generated list item element representing the tab.
  */
 function _generateRowTemplate(row) {
@@ -87,7 +88,7 @@ function _generateRowTemplate(row) {
 			a.style.zIndex = 0;
 			a.addEventListener("click", _handleLightningLinkClick);
 
-			const span = document.createElement("span");
+			const span = document.createElement(row.org == null ? "span" : "b");
 			span.classList.add("title", "slds-truncate");
 			span.textContent = tabTitle;
 

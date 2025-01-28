@@ -294,7 +294,6 @@ function init(items) {
         sf_extractOrgName()
         .then(orgName =>
             rowObj.forEach((row) => {
-                console.log(row.org,orgName,row.org == null || row.org === orgName);
                 // hide org-specific but not-this-org tabs
                 if(row.org == null || row.org === orgName) // TODO add option to hide or show org-specific but not-this-org tabs
                     _generateRowTemplate(row)
@@ -302,7 +301,6 @@ function init(items) {
             })
         );
         sf_overwriteCurrentTabs({newTabs: rowObj, setStorage: false});
-        console.log(rowObj);
 	}
 	isOnSavedTab();
 	showFavouriteButton();

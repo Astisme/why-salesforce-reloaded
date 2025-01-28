@@ -127,7 +127,6 @@ function addTab(url, parent) {
     const tab = { tabTitle, url };
     const addThisTab = (tab) => {
         sf_overwriteCurrentTabs([tab], false);
-        console.log(sf_currentTabs);
     }
     sf_containsSalesforceId()
     .then(response => {
