@@ -1,10 +1,10 @@
 "use strict";
 
-let overridePick;
+let overwritePick;
 let duplicatePick;
 const importId = `${prefix}-import`;
 const importFileId = `${importId}-file`;
-const overrideId = `${prefix}-override`;
+const overwriteId = `${prefix}-overwrite`;
 const duplicateId = `${prefix}-duplicate`;
 const closeModalId = `${prefix}-modal-close`;
 let dropArea;
@@ -176,15 +176,15 @@ function generateSldsImport() {
 
 	modal.appendChild(fileLabel);
 
-	const overrideCheckboxLabel = document.createElement("label");
-	const overrideCheckbox = document.createElement("input");
-	overrideCheckbox.type = "checkbox";
-	overrideCheckbox.id = overrideId;
-	overrideCheckbox.name = "override-tabs";
-	overrideCheckbox.checked = false;
-	overrideCheckboxLabel.appendChild(overrideCheckbox);
-	overrideCheckboxLabel.append("Override saved tabs.");
-	modal.appendChild(overrideCheckboxLabel);
+	const overwriteCheckboxLabel = document.createElement("label");
+	const overwriteCheckbox = document.createElement("input");
+	overwriteCheckbox.type = "checkbox";
+	overwriteCheckbox.id = overwriteId;
+	overwriteCheckbox.name = "overwrite-tabs";
+	overwriteCheckbox.checked = false;
+	overwriteCheckboxLabel.appendChild(overwriteCheckbox);
+	overwriteCheckboxLabel.append("overwrite saved tabs.");
+	modal.appendChild(overwriteCheckboxLabel);
 
 	const duplicateCheckboxLabel = document.createElement("label");
 	const duplicateCheckbox = document.createElement("input");
@@ -216,11 +216,11 @@ function showFileImport() {
  *
  * @param {Object} message - The message containing the imported tab data.
  * @param {Array<Object>} message.imported - The array of imported tab data.
- * @param {boolean} message.override - Whether the imported array should overwrite the currently saved tabs
+ * @param {boolean} message.overwrite - Whether the imported array should overwrite the currently saved tabs
  * @param {boolean} message.skipDuplicates - Whether to skip the duplicated values of the URLs of already saved tabs
  */
 function importer(message) {
-	const currentUrls = !message.override ? new Set(sf_currentTabs.map((current) => current.url)) : new Set();
+	const currentUrls = !message.overwrite ? new Set(sf_currentTabs.map((current) => current.url)) : new Set();
 	let importedArray = message.imported;
 
 	// check for duplicated entries
@@ -244,7 +244,7 @@ function importer(message) {
 		}
 	}
 
-	sf_overrideCurrentTabs(importedArray, message.override);
+	sf_overwriteCurrentTabs(importedArray, message.overwrite);
 	// remove file import
 	setupTabUl.removeChild(dropArea);
 	setStorage();
@@ -259,19 +259,23 @@ reader.onload = function (e) {
 			Array.isArray(imported) &&
 			imported.every((item) =>
 				typeof item.tabTitle === "string" &&
-				typeof item.url === "string"
+				typeof item.url === "string" &&
+				(
+                    item.org == null ||
+                    typeof item.org === "string"
+                )
 			)
 		) {
 			const message = {
 				what: "import",
 				imported,
-				override: overridePick,
+				overwrite: overwritePick,
 				skipDuplicates: duplicatePick,
 			};
 			importer(message);
 		} else {
 			showToast(
-				"Invalid JSON structure. Your file must contain an array in which each item must have 'tabTitle' and 'url' as strings.",
+				"Invalid JSON structure. Your file must contain an array in which each item must have 'tabTitle' and 'url' as strings. Additionally, every item may have an 'org' as string.",
 				false,
 				false,
 			);
@@ -299,7 +303,7 @@ function listenToFileUpload() {
 			return;
 		}
 
-		overridePick = dropArea.querySelector(`#${overrideId}`).checked;
+		overwritePick = dropArea.querySelector(`#${overwriteId}`).checked;
 		duplicatePick = dropArea.querySelector(`#${duplicateId}`).checked;
 		reader.readAsText(file);
 	}

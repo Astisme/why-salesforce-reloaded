@@ -124,7 +124,7 @@ function toggleFavouriteButton(isSaved, button) {
  */
 function addTab(url, parent) {
 	const tabTitle = parent.querySelector(".breadcrumbDetail").innerText;
-	sf_overrideCurrentTabs([{ tabTitle, url }], false);
+	sf_overwriteCurrentTabs([{ tabTitle, url }], false);
 	setStorage();
 }
 /**
