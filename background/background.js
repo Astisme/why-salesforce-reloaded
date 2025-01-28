@@ -11,7 +11,7 @@ const setupLightning = "/lightning/setup/";
  * @param {Object} items - The items to which the key should be added.
  * @param {function} callback - The callback to execute after adding the key.
  */
-function addKey(items, callback) {
+function bg_addKey(items, callback) {
 	items.key = whyKey;
 	callback(items);
 }
@@ -21,8 +21,8 @@ function addKey(items, callback) {
  *
  * @param {function} callback - The callback to invoke with the retrieved data.
  */
-function getStorage(callback) {
-	browserObj.storage.sync.get([whyKey], (items) => addKey(items, callback));
+function bg_getStorage(callback) {
+	browserObj.storage.sync.get([whyKey], (items) => bg_addKey(items, callback));
 }
 
 /**
@@ -31,7 +31,7 @@ function getStorage(callback) {
  * @param {Array} tabs - The tabs to store.
  * @param {function} callback - The callback to execute after storing the data.
  */
-function setStorage(tabs, callback) {
+function bg_setStorage(tabs, callback) {
 	const set = {};
 	set[whyKey] = tabs;
 	browserObj.storage.sync.set(set, () => callback(null));
@@ -43,14 +43,14 @@ function setStorage(tabs, callback) {
  * @param {JSONObject} message - the message to be sent
  * @param {int} count = 0 - how many times the function has been called
  */
-function notify(message, count = 0) {
+function bg_notify(message, count = 0) {
 	browserObj.tabs.query(
 		{ active: true, currentWindow: true },
 		(tabs) => {
 			if (tabs && tabs[0]) {
 				browserObj.tabs.sendMessage(tabs[0].id, message);
 			} else if (count < 5) {
-				setTimeout(() => notify(count + 1), 500);
+				setTimeout(() => bg_notify(count + 1), 500);
 			}
 		},
 	);
@@ -76,7 +76,7 @@ function notify(message, count = 0) {
  * SetupOneHome/home/
  * SetupOneHome/home
  */
-function minifyURL(url) {
+function bg_minifyURL(url) {
 	if (url == null || url == "") {
 		return null;
 	}
@@ -118,7 +118,7 @@ function minifyURL(url) {
  * @param {string} url - The URL from which the Org name has to be extracted.
  * @returns string | undefined - The Org name OR nothing if an error occurs
  */
-function extractOrgName(url) {
+function bg_extractOrgName(url) {
     const https = "https://";
     let host;
     //try {
@@ -150,7 +150,7 @@ function extractOrgName(url) {
 
 /**
  * Expands a URL by adding the domain and the Salesforce setup parts.
- * This function undoes what minifyURL did to a URL.
+ * This function undoes what bg_minifyURL did to a URL.
  *
  * @param {string} url - The URL to expand.
  * @returns {string} The expanded URL.
@@ -165,7 +165,7 @@ function extractOrgName(url) {
  * SetupOneHome/home/
  * SetupOneHome/home
  */
-function expandURL(message) {
+function bg_expandURL(message) {
 	if (message == null || message.url == null || message.baseUrl == null) {
 		return null;
 	}
@@ -177,14 +177,24 @@ function expandURL(message) {
 	return `${baseUrl}${isSetupLink ? setupLightning : ""}${url}`;
 }
 
-function containsSalesforceId(url) {
-    const salesforceIdPattern = /(?:^|\/|=)([a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})(?:$|\/|\?|&)/; 
+const salesforceIdPattern = /(?:^|\/|=)([a-zA-Z0-9]{15}|[a-zA-Z0-9]{18})(?:$|\/|\?|&)/; 
+/**
+ * Checks if a given URL contains a valid Salesforce ID.
+ * 
+ * A Salesforce ID is either 15 or 18 alphanumeric characters, typically found 
+ * in URL paths or query parameters. The function also handles encoded URLs 
+ * (e.g., `%2F` becomes `/`) by decoding them before matching.
+ * 
+ * @param {string} url - The URL to check for a Salesforce ID.
+ * @returns {boolean} - Returns `true` if the URL contains a Salesforce ID, otherwise `false`.
+ */
+function bg_containsSalesforceId(url) {
     return salesforceIdPattern.test(decodeURIComponent(url));
 }
 
 
 /**
- * Listens for incoming messages and processes requests to get, set, or notify about storage changes.
+ * Listens for incoming messages and processes requests to get, set, or bg_notify about storage changes.
  * Also handles theme updates and tab-related messages.
  *
  * @param {Object} request - The incoming message request.
@@ -203,27 +213,30 @@ browserObj.runtime.onMessage.addListener((request, _, sendResponse) => {
 
 	switch (message.what) {
 		case "get":
-			getStorage(sendResponse);
+			bg_getStorage(sendResponse);
 			break;
 		case "set":
-			setStorage(message.tabs, sendResponse);
+			bg_setStorage(message.tabs, sendResponse);
 			break;
 		case "saved":
 		case "add":
 		case "theme":
 		case "error":
 		case "warning":
-			notify(message);
+			bg_notify(message);
 			sendResponse(null);
 			return false; // we won't call sendResponse
 		case "minify":
-			sendResponse(minifyURL(message.url));
+			sendResponse(bg_minifyURL(message.url));
 			return false; // we won't call sendResponse
 		case "extract-org":
-			sendResponse(extractOrgName(message.url));
+			sendResponse(bg_extractOrgName(message.url));
 			return false; // we won't call sendResponse
 		case "expand":
-			sendResponse(expandURL(message));
+			sendResponse(bg_expandURL(message));
+			return false; // we won't call sendResponse
+		case "contains-sf-id":
+			sendResponse(bg_containsSalesforceId(message.url));
 			return false; // we won't call sendResponse
 		case "reload":
 			sendResponse(null);
@@ -344,7 +357,7 @@ let areMenuItemsVisible = false;
  *
  * - Iterates through `menuItems` and creates each item using `browserObj.contextMenus.create`.
  */
-function createMenuItems() {
+function bg_createMenuItems() {
 	if (areMenuItemsVisible) return;
 	areMenuItemsVisible = true;
 	menuItems.forEach((item) => {
@@ -355,7 +368,7 @@ function createMenuItems() {
 /**
  * Removes all existing context menu items.
  */
-function removeMenuItems(callback) {
+function bg_removeMenuItems(callback) {
 	if (!areMenuItemsVisible && callback == null) return;
 	areMenuItemsVisible = false;
 	browserObj.contextMenus.removeAll(callback);
@@ -365,24 +378,24 @@ function removeMenuItems(callback) {
  * Checks the current active tab's URL and conditionally adds or removes context menus.
  *
  * - Queries the currently active tab in the current browser window.
- * - If the tab exists and its URL matches any regex in `contextMenuPatternsRegex`, calls `createMenuItems`.
- * - If no match is found, calls `removeMenuItems` to clean up context menus.
+ * - If the tab exists and its URL matches any regex in `contextMenuPatternsRegex`, calls `bg_createMenuItems`.
+ * - If no match is found, calls `bg_removeMenuItems` to clean up context menus.
  */
-function checkAddRemoveContextMenus() {
+function bg_checkAddRemoveContextMenus() {
 	browserObj.tabs.query({ active: true, currentWindow: true }, (tabs) => {
 		if (tabs && tabs[0]) {
 			const url = tabs[0].url;
 			if (url == null) return;
 			if (contextMenuPatternsRegex.some((cmp) => url.match(cmp))) {
-				removeMenuItems(createMenuItems);
-				notify({ what: "focused" });
-			} else removeMenuItems();
+				bg_removeMenuItems(bg_createMenuItems);
+				bg_notify({ what: "focused" });
+			} else bg_removeMenuItems();
 		}
 	});
 }
 
 // when the extension is installed / updated
-browserObj.runtime.onInstalled.addListener(() => checkAddRemoveContextMenus());
+browserObj.runtime.onInstalled.addListener(() => bg_checkAddRemoveContextMenus());
 /* TODO add tutorial on install and link to current changes on update
 if (details.reason == "install") {
 }
@@ -391,27 +404,27 @@ else if (details.reason == "update") {
     */
 
 // when the browser starts
-browserObj.runtime.onStartup.addListener(() => checkAddRemoveContextMenus());
+browserObj.runtime.onStartup.addListener(() => bg_checkAddRemoveContextMenus());
 
 /*
 // TODO update uninstall url
 browserObj.runtime.setUninstallURL("https://www.duckduckgo.com/", () => {
-    removeMenuItems()
+    bg_removeMenuItems()
 });
 */
 
 // when the tab changes
 browserObj.tabs.onHighlighted.addListener((_) => {
-	checkAddRemoveContextMenus();
+	bg_checkAddRemoveContextMenus();
 });
 
 // when window changes
 browserObj.windows.onFocusChanged.addListener((_) => {
-	checkAddRemoveContextMenus();
+	bg_checkAddRemoveContextMenus();
 });
 
 // create persistent menuItems
-checkAddRemoveContextMenus();
+bg_checkAddRemoveContextMenus();
 
 /**
  * Listener for context menu item clicks, processes actions based on the clicked menu item.
@@ -422,28 +435,28 @@ checkAddRemoveContextMenus();
  *   - Special cases:
  *     - "open-other-org": Adds `pageTabUrl`, `pageUrl`, `linkTabUrl`, `linkUrl`, and `linkTabTitle`.
  *     - "page-save-tab" and "page-remove-tab": Focuses on `pageUrl`.
- * - Calls `notify(message)` to handle further processing or communication.
+ * - Calls `bg_notify(message)` to handle further processing or communication.
  */
 browserObj.contextMenus.onClicked.addListener((info, _) => {
 	const message = { what: info.menuItemId };
 	switch (info.menuItemId) {
 		case "open-other-org":
-			message.pageTabUrl = minifyURL(info.pageUrl);
-			message.pageUrl = expandURL(info.pageUrl);
-			message.linkTabUrl = minifyURL(info.linkUrl);
-			message.linkUrl = expandURL(info.linkUrl);
+			message.pageTabUrl = bg_minifyURL(info.pageUrl);
+			message.pageUrl = bg_expandURL(info.pageUrl);
+			message.linkTabUrl = bg_minifyURL(info.linkUrl);
+			message.linkUrl = bg_expandURL(info.linkUrl);
 			message.linkTabTitle = info.linkText;
 			break;
 		case "page-save-tab":
 		case "page-remove-tab":
-			message.tabUrl = minifyURL(info.pageUrl);
-			message.url = expandURL(info.pageUrl);
+			message.tabUrl = bg_minifyURL(info.pageUrl);
+			message.url = bg_expandURL(info.pageUrl);
 			break;
 		default:
-			message.tabUrl = minifyURL(info.linkUrl);
-			message.url = expandURL(info.linkUrl);
+			message.tabUrl = bg_minifyURL(info.linkUrl);
+			message.url = bg_expandURL(info.linkUrl);
 			message.tabTitle = info.linkText;
 			break;
 	}
-	notify(message);
+	bg_notify(message);
 });
