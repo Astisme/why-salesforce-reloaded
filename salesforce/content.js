@@ -208,20 +208,19 @@ function sf_extractOrgName(url = location.href) {
  * @param {boolean} [isWarning=false] - Whether the toast message is a warning (default is false).
  */
 function showToast(message, isSuccess = true, isWarning = false) {
-
-    /**
-     * Calculates the estimated time (in milliseconds) it takes to read a given message.
-     *
-     * @param {string} message - The message to calculate the reading time for.
-     * @returns {number} - The estimated reading time in milliseconds.
-     */
-    function calculateReadingTime(message) {
-        const words = message.split(/\s+/).filter((word) => word.length > 0);
-        const wordsPerMinute = 200; // Average reading speed
-        const readingTimeMinutes = words.length / wordsPerMinute;
-        const readingTimeSeconds = Math.ceil(readingTimeMinutes * 60);
-        return (readingTimeSeconds + 2) * 1000;
-    }
+	/**
+	 * Calculates the estimated time (in milliseconds) it takes to read a given message.
+	 *
+	 * @param {string} message - The message to calculate the reading time for.
+	 * @returns {number} - The estimated reading time in milliseconds.
+	 */
+	function calculateReadingTime(message) {
+		const words = message.split(/\s+/).filter((word) => word.length > 0);
+		const wordsPerMinute = 200; // Average reading speed
+		const readingTimeMinutes = words.length / wordsPerMinute;
+		const readingTimeSeconds = Math.ceil(readingTimeMinutes * 60);
+		return (readingTimeSeconds + 2) * 1000;
+	}
 
 	const hanger = document.getElementsByClassName(
 		"oneConsoleTabset navexConsoleTabset",
@@ -245,19 +244,18 @@ function showToast(message, isSuccess = true, isWarning = false) {
  * @param {Array<Object>} items[key] - The array of tab data retrieved from storage or the default tabs.
  */
 function init(items) {
-
-    /**
-     * Initializes the default tabs and saves them to storage.
-     *
-     * @returns {Array} - The list of initialized tabs.
-     */
-    function getDefaultTabs() {
-        return [
-            { tabTitle: "⚡", url: "/lightning" },
-            { tabTitle: "Flows", url: "/lightning/app/standard__FlowsApp" },
-            { tabTitle: "Users", url: "ManageUsers/home" },
-        ];
-    }
+	/**
+	 * Initializes the default tabs and saves them to storage.
+	 *
+	 * @returns {Array} - The list of initialized tabs.
+	 */
+	function getDefaultTabs() {
+		return [
+			{ tabTitle: "⚡", url: "/lightning" },
+			{ tabTitle: "Flows", url: "/lightning/app/standard__FlowsApp" },
+			{ tabTitle: "Users", url: "ManageUsers/home" },
+		];
+	}
 
 	//call getDefaultTabs if we did not find data inside storage
 	const rowObj = (items == null || items[items.key] == null)

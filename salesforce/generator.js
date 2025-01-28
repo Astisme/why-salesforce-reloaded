@@ -54,18 +54,18 @@ function sf_expandURL(url) {
 function handleLightningLinkClick(e) {
 	e.preventDefault();
 
-    /**
-     * Picks a link target between _blank and _top based on whether the user is click CTRL or the meta key.
-     * If the link goes outside of setup, always returns _blank.
-     *
-     * @param {Event} e - the click event
-     * @returns {String} "_blank" | "_top"
-     */
-    function getLinkTarget(e, url) {
-        return e.ctrlKey || e.metaKey || !url.includes(setupLightning)
-            ? "_blank"
-            : "_top";
-    }
+	/**
+	 * Picks a link target between _blank and _top based on whether the user is click CTRL or the meta key.
+	 * If the link goes outside of setup, always returns _blank.
+	 *
+	 * @param {Event} e - the click event
+	 * @returns {String} "_blank" | "_top"
+	 */
+	function getLinkTarget(e, url) {
+		return e.ctrlKey || e.metaKey || !url.includes(setupLightning)
+			? "_blank"
+			: "_top";
+	}
 	const url = e.currentTarget.href;
 	const target = e.currentTarget.target ?? getLinkTarget(e, url);
 	// open link into new page when requested or if the user is clicking the favourite tab one more time

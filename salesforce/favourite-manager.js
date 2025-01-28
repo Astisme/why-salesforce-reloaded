@@ -139,12 +139,13 @@ function addTab(url, parent) {
 	};
 	sf_containsSalesforceId()
 		.then((response) => {
-			if (!response)
+			if (!response) {
 				return addThisTab(tab);
-            sf_extractOrgName()
-                .then((orgName) => {
-                    addThisTab({ ...tab, org: orgName });
-                });
+			}
+			sf_extractOrgName()
+				.then((orgName) => {
+					addThisTab({ ...tab, org: orgName });
+				});
 		});
 }
 /**
