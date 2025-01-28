@@ -193,70 +193,6 @@ function bg_containsSalesforceId(url) {
 }
 
 
-/**
- * Listens for incoming messages and processes requests to get, set, or bg_notify about storage changes.
- * Also handles theme updates and tab-related messages.
- *
- * @param {Object} request - The incoming message request.
- * @param {Object} _ - The sender object (unused).
- * @param {function} sendResponse - The function to send a response back.
- * @returns {boolean} Whether the message was handled asynchronously.
- */
-browserObj.runtime.onMessage.addListener((request, _, sendResponse) => {
-	const message = request.message;
-	if (message == null || message.what == null) {
-		console.error({ error: "Invalid message", message, request });
-		sendResponse(null);
-		return false;
-	}
-	let captured = true;
-
-	switch (message.what) {
-		case "get":
-			bg_getStorage(sendResponse);
-			break;
-		case "set":
-			bg_setStorage(message.tabs, sendResponse);
-			break;
-		case "saved":
-		case "add":
-		case "theme":
-		case "error":
-		case "warning":
-			bg_notify(message);
-			sendResponse(null);
-			return false; // we won't call sendResponse
-		case "minify":
-			sendResponse(bg_minifyURL(message.url));
-			return false; // we won't call sendResponse
-		case "extract-org":
-			sendResponse(bg_extractOrgName(message.url));
-			return false; // we won't call sendResponse
-		case "expand":
-			sendResponse(bg_expandURL(message));
-			return false; // we won't call sendResponse
-		case "contains-sf-id":
-			sendResponse(bg_containsSalesforceId(message.url));
-			return false; // we won't call sendResponse
-		case "reload":
-			sendResponse(null);
-			browserObj.tabs.query(
-				{ active: true, currentWindow: true },
-				(tabs) => browserObj.tabs.reload(tabs[0].id),
-			);
-			return false;
-
-		default:
-			captured = ["import"].includes(message.what);
-			if (!captured) {
-				console.error({ "error": "Unknown message", message, request });
-			}
-			break;
-	}
-
-	return captured; // will call sendResponse asynchronously if true
-});
-
 const menuItems = [
 	{
 		id: "open-other-org",
@@ -459,4 +395,68 @@ browserObj.contextMenus.onClicked.addListener((info, _) => {
 			break;
 	}
 	bg_notify(message);
+});
+
+/**
+ * Listens for incoming messages and processes requests to get, set, or bg_notify about storage changes.
+ * Also handles theme updates and tab-related messages.
+ *
+ * @param {Object} request - The incoming message request.
+ * @param {Object} _ - The sender object (unused).
+ * @param {function} sendResponse - The function to send a response back.
+ * @returns {boolean} Whether the message was handled asynchronously.
+ */
+browserObj.runtime.onMessage.addListener((request, _, sendResponse) => {
+	const message = request.message;
+	if (message == null || message.what == null) {
+		console.error({ error: "Invalid message", message, request });
+		sendResponse(null);
+		return false;
+	}
+	let captured = true;
+
+	switch (message.what) {
+		case "get":
+			bg_getStorage(sendResponse);
+			break;
+		case "set":
+			bg_setStorage(message.tabs, sendResponse);
+			break;
+		case "saved":
+		case "add":
+		case "theme":
+		case "error":
+		case "warning":
+			bg_notify(message);
+			sendResponse(null);
+			return false; // we won't call sendResponse
+		case "minify":
+			sendResponse(bg_minifyURL(message.url));
+			return false; // we won't call sendResponse
+		case "extract-org":
+			sendResponse(bg_extractOrgName(message.url));
+			return false; // we won't call sendResponse
+		case "expand":
+			sendResponse(bg_expandURL(message));
+			return false; // we won't call sendResponse
+		case "contains-sf-id":
+			sendResponse(bg_containsSalesforceId(message.url));
+			return false; // we won't call sendResponse
+		case "reload":
+			sendResponse(null);
+			browserObj.tabs.query(
+				{ active: true, currentWindow: true },
+				(tabs) => browserObj.tabs.reload(tabs[0].id),
+			);
+			return false;
+
+		default:
+			captured = ["import"].includes(message.what);
+			if (!captured) {
+				console.error({ "error": "Unknown message", message, request });
+			}
+			break;
+	}
+
+	return captured; // will call sendResponse asynchronously if true
 });
