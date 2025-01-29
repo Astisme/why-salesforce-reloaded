@@ -32,33 +32,34 @@ function initThemeSvg() {
 }
 initThemeSvg();
 
-function getCurrentTab(callback){
-    const queryParams = { active: true, currentWindow: true };
-    if(callback != null)
-        chrome.tabs.query(queryParams, callback);
-    else
-        return new Promise((resolve, reject) => {
-            chrome.tabs.query(queryParams, res => {
-                if (chrome.runtime.lastError) {
-                    reject(chrome.runtime.lastError);
-                } else {
-                    resolve(res[0]);
-                }
-            });
-        });
+function getCurrentTab(callback) {
+	const queryParams = { active: true, currentWindow: true };
+	if (callback != null) {
+		chrome.tabs.query(queryParams, callback);
+	} else {
+		return new Promise((resolve, reject) => {
+			chrome.tabs.query(queryParams, (res) => {
+				if (chrome.runtime.lastError) {
+					reject(chrome.runtime.lastError);
+				} else {
+					resolve(res[0]);
+				}
+			});
+		});
+	}
 }
 // queries the currently active tab of the current active window
 getCurrentTab((tabs) => {
-    // is null if the extension cannot access the current tab
-    if (tabs[0].url == null || !tabs[0].url.match(".*\/lightning\/setup\/.*")) {
-        window.location.href = chrome.runtime.getURL(
-            `action/notSalesforceSetup/notSalesforceSetup.html${
-                tabs[0].url != null ? "?url=" + tabs[0].url : ""
-            }`,
-        );
-    } else {
-        pop_getStorage(loadTabs);
-    }
+	// is null if the extension cannot access the current tab
+	if (tabs[0].url == null || !tabs[0].url.match(".*\/lightning\/setup\/.*")) {
+		window.location.href = chrome.runtime.getURL(
+			`action/notSalesforceSetup/notSalesforceSetup.html${
+				tabs[0].url != null ? "?url=" + tabs[0].url : ""
+			}`,
+		);
+	} else {
+		pop_getStorage(loadTabs);
+	}
 });
 
 /**
@@ -85,21 +86,25 @@ function switchTheme() {
  * @param {function} callback - The callback to execute after sending the message.
  */
 function pop_sendMessage(message, callback, createPromise = false) {
-    if(!createPromise)
-        return chrome.runtime.sendMessage(
-            { message, url: location.href },
-            callback,
-        );
-    else
-        return new Promise((resolve, reject) => {
-            chrome.runtime.sendMessage({ message, url: location.href }, (response) => {
-                if (chrome.runtime.lastError) {
-                    reject(chrome.runtime.lastError);
-                } else {
-                    resolve(response);
-                }
-            });
-        });
+	if (!createPromise) {
+		return chrome.runtime.sendMessage(
+			{ message, url: location.href },
+			callback,
+		);
+	} else {
+		return new Promise((resolve, reject) => {
+			chrome.runtime.sendMessage(
+				{ message, url: location.href },
+				(response) => {
+					if (chrome.runtime.lastError) {
+						reject(chrome.runtime.lastError);
+					} else {
+						resolve(response);
+					}
+				},
+			);
+		});
+	}
 }
 
 /**
@@ -280,8 +285,12 @@ function pop_minifyURL(url) {
  * @param {string} url - The URL from which the Org name has to be extracted
  */
 async function pop_extractOrgName() {
-    const tab = await getCurrentTab()
-    return pop_sendMessage({ what: "extract-org", url: tab.url }, undefined, true);
+	const tab = await getCurrentTab();
+	return pop_sendMessage(
+		{ what: "extract-org", url: tab.url },
+		undefined,
+		true,
+	);
 }
 
 /**
@@ -509,7 +518,7 @@ function reloadRows(items) {
 async function findTabs(callback, doReload) {
 	const tabElements = document.getElementsByClassName("tab");
 	// Get the list of tabs
-    const orgName = await pop_extractOrgName();
+	const orgName = await pop_extractOrgName();
 	const tabPromises = Array.from(tabElements)
 		.map(async (tab) => {
 			const tabTitle = tab.querySelector(".tabTitle").value;
@@ -529,7 +538,7 @@ async function findTabs(callback, doReload) {
 				if (!onlyOrg && !containsSalesforceId) {
 					return tabVal;
 				}
-                tabVal.org = orgName;
+				tabVal.org = orgName;
 				return tabVal;
 			}
 			return null; // Return null for invalid tabs
@@ -540,8 +549,12 @@ async function findTabs(callback, doReload) {
 		// Wait for all promises to resolve and filter out null values
 		const resolvedTabs = await Promise.all(tabPromises);
 		availableTabs = resolvedTabs.filter((tab) => tab !== null);
-        // add all the hidden not-this-org tabs
-        availableTabs.push(...pop_currentTabs.filter(tab => tab.org != null && tab.org !== orgName));
+		// add all the hidden not-this-org tabs
+		availableTabs.push(
+			...pop_currentTabs.filter((tab) =>
+				tab.org != null && tab.org !== orgName
+			),
+		);
 	} catch (err) {
 		console.error("Error processing tabs:", err);
 		availableTabs = [];

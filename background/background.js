@@ -37,7 +37,7 @@ function bg_getStorage(callback) {
 function bg_setStorage(tabs, callback) {
 	const set = {};
 	set[whyKey] = tabs;
-    console.log(tabs,tabs.length);
+	console.log(tabs, tabs.length);
 	browserObj.storage.sync.set(set, () => callback(null));
 }
 
@@ -123,8 +123,9 @@ function bg_minifyURL(url) {
  * @returns string | undefined - The Org name OR nothing if an error occurs
  */
 function bg_extractOrgName(url) {
-    if(url == null)
-        return null;
+	if (url == null) {
+		return null;
+	}
 	const https = "https://";
 	let host = new URL(
 		url.startsWith(https) ? url : `${https}${url}`,
@@ -145,7 +146,7 @@ function bg_extractOrgName(url) {
 		host = host.slice(0, host.indexOf(mySalesforceCom));
 	}
 
-    return host;
+	return host;
 }
 
 /**
@@ -436,8 +437,8 @@ browserObj.runtime.onMessage.addListener((request, _, sendResponse) => {
 			sendResponse(bg_minifyURL(message.url));
 			return false; // we won't call sendResponse
 		case "extract-org":
-            sendResponse(bg_extractOrgName(message.url));
-            return false; // we won't call sendResponse
+			sendResponse(bg_extractOrgName(message.url));
+			return false; // we won't call sendResponse
 		case "expand":
 			sendResponse(bg_expandURL(message));
 			return false; // we won't call sendResponse

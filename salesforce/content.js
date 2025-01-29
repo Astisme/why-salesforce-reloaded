@@ -157,24 +157,24 @@ function sf_overwriteCurrentTabs(
 			sf_currentTabs.push(...orgSpecificTabs);
 		}
 	} else if (removeOrgSpecificTabs) {
-        const non_orgSpecificTabs = filterOrgSpecificTabs(false);
-        sf_currentTabs.length = 0;
-        sf_currentTabs.push(...non_orgSpecificTabs);
+		const non_orgSpecificTabs = filterOrgSpecificTabs(false);
+		sf_currentTabs.length = 0;
+		sf_currentTabs.push(...non_orgSpecificTabs);
 	}
 
-    function removeDuplicates(array) {
-        const unique = new Map();
-        array.forEach(item => {
-            const normalized = JSON.stringify(Object.entries(item).sort());
-            unique.set(normalized, item);
-        });
-        return Array.from(unique.values());
-    }
+	function removeDuplicates(array) {
+		const unique = new Map();
+		array.forEach((item) => {
+			const normalized = JSON.stringify(Object.entries(item).sort());
+			unique.set(normalized, item);
+		});
+		return Array.from(unique.values());
+	}
 
-    // needed due to org-specific tabs (don't know why)
-    const tabsNoDuplicates = removeDuplicates([...sf_currentTabs, ...newTabs]);
-    sf_currentTabs.length = 0;
-    sf_currentTabs.push(...tabsNoDuplicates);
+	// needed due to org-specific tabs (don't know why)
+	const tabsNoDuplicates = removeDuplicates([...sf_currentTabs, ...newTabs]);
+	sf_currentTabs.length = 0;
+	sf_currentTabs.push(...tabsNoDuplicates);
 	setStorage && sf_setStorage();
 }
 
