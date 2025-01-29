@@ -27,10 +27,13 @@ This is a fork of [Why Salesforce](https://www.github.com/walters954/why-salesfo
 ## Install on browser
 
 <a href="https://chromewebstore.google.com/detail/again-why-salesforce/bceeoimjhgjbihanbiifgpndmkklajbi" target="_blank">
-  <img src="https://www.google.com/chrome/static/images/chrome-logo-m100.svg" title="Add to Chrome" width="100px" height="100px" align="right"/>
+  <img src="https://www.google.com/chrome/static/images/chrome-logo-m100.svg" title="Add to Chrome" width="80px" height="80px" align="right"/>
 </a>
 <a href="https://addons.mozilla.org/en-US/firefox/addon/again-why-salesforce/" target="_blank">
-  <img src="https://www.mozilla.org/media/protocol/img/logos/firefox/browser/logo.eb1324e44442.svg" title="Add to Firefox" width="100px" height="100px" align="right"/>
+  <img src="https://www.mozilla.org/media/protocol/img/logos/firefox/browser/logo.eb1324e44442.svg" title="Add to Firefox" width="80px" height="80px" align="right"/>
+</a>
+<a href="https://microsoftedge.microsoft.com/addons/detail/dfdjpokbfeaamjcomllncennmfhpldmm" target="_blank">
+  <img src="https://edgestatic.azureedge.net/shared/cms/lrs1c69a1j/section-images/2c3f3c46bd764335beec466a0acfde0e.png" title="Add to Edge" width="80px" height="80px" align="right"/>
 </a>
 
 Click on the browser icon to be redirected to the extension page.
