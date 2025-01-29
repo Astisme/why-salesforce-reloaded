@@ -122,16 +122,12 @@ function bg_minifyURL(url) {
  * @returns string | undefined - The Org name OR nothing if an error occurs
  */
 function bg_extractOrgName(url) {
+    if(url == null)
+        return null;
 	const https = "https://";
-	let host;
-	//try {
-	const parsedUrl = new URL(
+	let host = new URL(
 		url.startsWith(https) ? url : `${https}${url}`,
-	);
-	host = parsedUrl.host;
-	/*} catch (error) {
-        return console.error(error); // this may happen if we do not pass a string starting with https
-    }*/
+	).host;
 
 	const lightningForceCom = ".lightning.force.com";
 	if (host.endsWith(lightningForceCom)) {
@@ -148,7 +144,7 @@ function bg_extractOrgName(url) {
 		host = host.slice(0, host.indexOf(mySalesforceCom));
 	}
 
-	return host;
+    return host;
 }
 
 /**
@@ -439,8 +435,8 @@ browserObj.runtime.onMessage.addListener((request, _, sendResponse) => {
 			sendResponse(bg_minifyURL(message.url));
 			return false; // we won't call sendResponse
 		case "extract-org":
-			sendResponse(bg_extractOrgName(message.url));
-			return false; // we won't call sendResponse
+            sendResponse(bg_extractOrgName(message.url));
+            return false; // we won't call sendResponse
 		case "expand":
 			sendResponse(bg_expandURL(message));
 			return false; // we won't call sendResponse

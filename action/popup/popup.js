@@ -32,18 +32,32 @@ function initThemeSvg() {
 }
 initThemeSvg();
 
+function getCurrentTab(callback){
+    if(callback != null)
+        chrome.tabs.query({ active: true, currentWindow: true }, callback);
+    else
+        return new Promise((resolve, reject) => {
+            chrome.tabs.query({ active: true, currentWindow: true }, res => {
+                if (chrome.runtime.lastError) {
+                    reject(chrome.runtime.lastError);
+                } else {
+                    resolve(res[0]);
+                }
+            });
+        });
+}
 // queries the currently active tab of the current active window
-chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-	// is null if the extension cannot access the current tab
-	if (tabs[0].url == null || !tabs[0].url.match(".*\/lightning\/setup\/.*")) {
-		window.location.href = chrome.runtime.getURL(
-			`action/notSalesforceSetup/notSalesforceSetup.html${
-				tabs[0].url != null ? "?url=" + tabs[0].url : ""
-			}`,
-		);
-	} else {
-		pop_getStorage(loadTabs);
-	}
+getCurrentTab((tabs) => {
+    // is null if the extension cannot access the current tab
+    if (tabs[0].url == null || !tabs[0].url.match(".*\/lightning\/setup\/.*")) {
+        window.location.href = chrome.runtime.getURL(
+            `action/notSalesforceSetup/notSalesforceSetup.html${
+                tabs[0].url != null ? "?url=" + tabs[0].url : ""
+            }`,
+        );
+    } else {
+        pop_getStorage(loadTabs);
+    }
 });
 
 /**
@@ -69,11 +83,22 @@ function switchTheme() {
  * @param {Object} message - The message to send.
  * @param {function} callback - The callback to execute after sending the message.
  */
-function pop_sendMessage(message, callback) {
-	return chrome.runtime.sendMessage(
-		{ message, url: location.href },
-		callback,
-	);
+function pop_sendMessage(message, callback, createPromise = false) {
+    if(!createPromise)
+        return chrome.runtime.sendMessage(
+            { message, url: location.href },
+            callback,
+        );
+    else
+        return new Promise((resolve, reject) => {
+            chrome.runtime.sendMessage({ message, url: location.href }, (response) => {
+                if (chrome.runtime.lastError) {
+                    reject(chrome.runtime.lastError);
+                } else {
+                    resolve(response);
+                }
+            });
+        });
 }
 
 /**
@@ -153,7 +178,6 @@ function pop_overwriteCurrentTabs(
 	newTabsOrOptions,
 	resetTabs = true,
 	removeOrgSpecificTabs = false,
-	setStorage = true,
 ) {
 	let newTabs;
 	if (
@@ -163,12 +187,10 @@ function pop_overwriteCurrentTabs(
 			newTabs: nt,
 			resetTabs: rt = true,
 			removeOrgSpecificTabs: ro = false,
-			setStorage: ss = true,
 		} = newTabsOrOptions;
 		newTabs = nt;
 		resetTabs = rt;
 		removeOrgSpecificTabs = ro;
-		setStorage = ss;
 	} else {
 		newTabs = newTabsOrOptions;
 	}
@@ -195,25 +217,24 @@ function pop_overwriteCurrentTabs(
 			pop_currentTabs.push(...orgSpecificTabs);
 		}
 	} else if (removeOrgSpecificTabs) {
-        const non_orgSpecificTabs = filterOrgSpecificTabs(false);
-        pop_currentTabs.length = 0;
-        pop_currentTabs.push(...non_orgSpecificTabs);
+		const non_orgSpecificTabs = filterOrgSpecificTabs(false);
+		pop_currentTabs.length = 0;
+		pop_currentTabs.push(...non_orgSpecificTabs);
 	}
 
-    function removeDuplicates(array) {
-        const unique = new Map();
-        array.forEach(item => {
-            const normalized = JSON.stringify(Object.entries(item).sort());
-            unique.set(normalized, item);
-        });
-        return Array.from(unique.values());
-    }
+	function removeDuplicates(array) {
+		const unique = new Map();
+		array.forEach((item) => {
+			const normalized = JSON.stringify(Object.entries(item).sort());
+			unique.set(normalized, item);
+		});
+		return Array.from(unique.values());
+	}
 
-    // needed due to org-specific tabs (don't know why)
-    const tabsNoDuplicates = removeDuplicates([...pop_currentTabs, ...newTabs]);
-    pop_currentTabs.length = 0;
-    pop_currentTabs.push(...tabsNoDuplicates);
-	setStorage && pop_setStorage();
+	// needed due to org-specific tabs (don't know why)
+	const tabsNoDuplicates = removeDuplicates([...pop_currentTabs, ...newTabs]);
+	pop_currentTabs.length = 0;
+	pop_currentTabs.push(...tabsNoDuplicates);
 }
 
 /**
@@ -257,8 +278,9 @@ function pop_minifyURL(url) {
  *
  * @param {string} url - The URL from which the Org name has to be extracted
  */
-function pop_extractOrgName(url = location.href) {
-	return pop_sendMessage({ what: "extract-org", url });
+async function pop_extractOrgName() {
+    const tab = await getCurrentTab()
+    return pop_sendMessage({ what: "extract-org", url: tab.url }, undefined, true);
 }
 
 /**
@@ -290,11 +312,8 @@ function deleteTab() {
  * @param {boolean} [enable=true] - if enabling or disabling the elements in the last td
  */
 function updateTabAttributes(enable = true) {
-	const deleteButton = tabAppendElement.querySelector(
-		"tr:last-child button.delete",
-	);
 	const tr = tabAppendElement.querySelector("tr:last-child");
-	const svg = tr.querySelector("svg");
+	const deleteButton = tr.querySelector("button.delete");
 
 	if (enable) {
 		deleteButton.removeAttribute("disabled");
@@ -304,7 +323,7 @@ function updateTabAttributes(enable = true) {
 		tr.removeAttribute("draggable");
 	}
 	tr.dataset.draggable = enable;
-	svg.dataset.draggable = enable;
+	tr.querySelector("svg").dataset.draggable = enable;
 }
 /**
  * Adds a new empty tab at the bottom of the popup and enables the previously last child's delete button.
@@ -443,28 +462,29 @@ function loadTabs(items) {
 		return addTab();
 	}
 
-    pop_extractOrgName()
-        .then(orgName => {
-            const rowObjs = items[items.key];
-            rowObjs.forEach(tab => {
-                if(tab.org != null && tab.org === orgName)
-                    return; // default hide not-this-org org-specific tabs
-                const element = createElement();
-                element.querySelector(".tabTitle").value = tab.tabTitle;
-                element.querySelector(".url").value = tab.url;
-                element.querySelector(".only-org").checked = tab.org != null;
-                element.querySelector(".delete").removeAttribute("disabled");
-                const logger = loggers.pop();
-                logger.last_input.title = tab.tabTitle;
-                logger.last_input.url = tab.url;
+	pop_extractOrgName()
+		.then((orgName) => {
+			const rowObjs = items[items.key];
+			for (const tab of rowObjs) {
+				if (tab.org != null && tab.org === orgName) {
+					continue; // default hide not-this-org org-specific tabs
+				}
+				const element = createElement();
+				element.querySelector(".tabTitle").value = tab.tabTitle;
+				element.querySelector(".url").value = tab.url;
+				element.querySelector(".only-org").checked = tab.org != null;
+				element.querySelector(".delete").removeAttribute("disabled");
+				const logger = loggers.pop();
+				logger.last_input.title = tab.tabTitle;
+				logger.last_input.url = tab.url;
 
-                loggers.push(logger);
-                tabAppendElement.append(element);
-                updateTabAttributes();
-            });
-            tabAppendElement.append(createElement()); // always leave a blank at the bottom
-            pop_overwriteCurrentTabs(rowObjs);
-        });
+				loggers.push(logger);
+				tabAppendElement.append(element);
+				updateTabAttributes();
+			}
+			tabAppendElement.append(createElement()); // leave a blank at the bottom
+			pop_overwriteCurrentTabs(rowObjs);
+		});
 }
 
 /**
@@ -507,9 +527,7 @@ async function findTabs(callback, doReload) {
 				if (!onlyOrg && !containsSalesforceId) {
 					return tabVal;
 				}
-				// FIXME
-				//tabVal.org = await pop_extractOrgName();
-				//console.log(tabVal);
+                tabVal.org = await pop_extractOrgName();
 				return tabVal;
 			}
 			return null; // Return null for invalid tabs
@@ -536,7 +554,7 @@ async function findTabs(callback, doReload) {
  */
 function saveTabs(doReload = true, tabs) {
 	if (tabs == null || !Array.isArray(tabs)) {
-		findTabs(saveTabs, doReload);
+		return findTabs(saveTabs, doReload);
 	}
 	pop_setStorage(tabs);
 	doReload && reloadRows({ tabs, key: "tabs" });
