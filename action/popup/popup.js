@@ -85,8 +85,8 @@ function switchTheme() {
  * @param {Object} message - The message to send.
  * @param {function} callback - The callback to execute after sending the message.
  */
-function pop_sendMessage(message, callback, createPromise = false) {
-	if (!createPromise) {
+function pop_sendMessage(message, callback) {
+	if (callback != null) {
 		return chrome.runtime.sendMessage(
 			{ message, url: location.href },
 			callback,
@@ -286,11 +286,7 @@ function pop_minifyURL(url) {
  */
 async function pop_extractOrgName() {
 	const tab = await getCurrentTab();
-	return pop_sendMessage(
-		{ what: "extract-org", url: tab.url },
-		undefined,
-		true,
-	);
+	return pop_sendMessage({ what: "extract-org", url: tab.url });
 }
 
 /**
