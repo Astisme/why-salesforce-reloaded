@@ -442,7 +442,7 @@ function makeDuplicatesBold(miniURL) {
  */
 function removeTab(url, title = null) {
 	const filteredTabs = sf_currentTabs.filter((tabdef) =>
-		tabdef.url !== url && (title == null || tabdef.tabTitle !== title)
+		!(tabdef.url === url && (title == null || tabdef.tabTitle == title))
 	);
 	if (sf_currentTabs.length === filteredTabs.length) {
 		return showToast("This tab was not found.", false, true);
