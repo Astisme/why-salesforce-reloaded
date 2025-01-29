@@ -33,11 +33,12 @@ function initThemeSvg() {
 initThemeSvg();
 
 function getCurrentTab(callback){
+    const queryParams = { active: true, currentWindow: true };
     if(callback != null)
-        chrome.tabs.query({ active: true, currentWindow: true }, callback);
+        chrome.tabs.query(queryParams, callback);
     else
         return new Promise((resolve, reject) => {
-            chrome.tabs.query({ active: true, currentWindow: true }, res => {
+            chrome.tabs.query(queryParams, res => {
                 if (chrome.runtime.lastError) {
                     reject(chrome.runtime.lastError);
                 } else {
@@ -466,7 +467,7 @@ function loadTabs(items) {
 		.then((orgName) => {
 			const rowObjs = items[items.key];
 			for (const tab of rowObjs) {
-				if (tab.org != null && tab.org === orgName) {
+				if (tab.org != null && tab.org !== orgName) {
 					continue; // default hide not-this-org org-specific tabs
 				}
 				const element = createElement();
@@ -508,6 +509,7 @@ function reloadRows(items) {
 async function findTabs(callback, doReload) {
 	const tabElements = document.getElementsByClassName("tab");
 	// Get the list of tabs
+    const orgName = await pop_extractOrgName();
 	const tabPromises = Array.from(tabElements)
 		.map(async (tab) => {
 			const tabTitle = tab.querySelector(".tabTitle").value;
@@ -527,7 +529,7 @@ async function findTabs(callback, doReload) {
 				if (!onlyOrg && !containsSalesforceId) {
 					return tabVal;
 				}
-                tabVal.org = await pop_extractOrgName();
+                tabVal.org = orgName;
 				return tabVal;
 			}
 			return null; // Return null for invalid tabs
@@ -538,6 +540,8 @@ async function findTabs(callback, doReload) {
 		// Wait for all promises to resolve and filter out null values
 		const resolvedTabs = await Promise.all(tabPromises);
 		availableTabs = resolvedTabs.filter((tab) => tab !== null);
+        // add all the hidden not-this-org tabs
+        availableTabs.push(...pop_currentTabs.filter(tab => tab.org != null && tab.org !== orgName));
 	} catch (err) {
 		console.error("Error processing tabs:", err);
 		availableTabs = [];
