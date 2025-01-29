@@ -104,23 +104,116 @@ function arraysAreEqual(arr1, arr2) {
 }
 
 /**
- * Overrides the `pop_currentTabs` array with new tabs, with an optional
- * option to remove non-org-specific or all existing tabs.
+ * Overwrites the `pop_currentTabs` array with new tabs, with an option to reset the tabs (replacing all of them with the newTabs) and another one to remove non-org-specific tabs.
  *
- * @param {Array<Object>} newTabs - An array of new tab objects to be added to `pop_currentTabs`.
- * @param {boolean} [removeOrgSpecificTabs=false] - If `true`, clears all tabs in `pop_currentTabs` before adding `newTabs`. If `false`, only non-org-specific tabs (tabs with `org == null`) are removed, retaining org-specific tabs.
+ * @param {Array<Object> | Object} newTabsOrOptions - An array of new tab objects to be added to `pop_currentTabs` OR An object containing the parameters for key-based function calling.
+ * @param {boolean} [resetTabs=true] - If `true`, resets `pop_currentTabs`.
+ * @param {boolean} [removeOrgSpecificTabs=false] - If `true`, removes all Org specific tabs; otherwise, only non-org-specific tabs (tabs with `org == null`) are removed, retaining org-specific tabs.
+ * @param {boolean} [setStorage=true] - If `true`, calls `pop_setStorage` to save the `pop_currentTabs` array.
+ *
+ * @example
+ * // Remove all tabs
+ * pop_overwriteCurrentTabs(null, true, true);
+ * pop_overwriteCurrentTabs([], true, true);
+ *
+ * @example
+ * // Remove all org-specific tabs
+ * pop_overwriteCurrentTabs(null, false, true);
+ * pop_overwriteCurrentTabs([], false, true);
+ *
+ * @example
+ * // DEFAULT: Keep only org-specific tabs
+ * pop_overwriteCurrentTabs(null);
+ * pop_overwriteCurrentTabs([]);
+ * pop_overwriteCurrentTabs(null, true);
+ * pop_overwriteCurrentTabs([], true);
+ * pop_overwriteCurrentTabs(null, true, false);
+ * pop_overwriteCurrentTabs([], true, false);
+ *
+ * @example
+ * // Remove all tabs and add new ones
+ * pop_overwriteCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }], true, true);
+ *
+ * @example
+ * // DEFAULT: Keep org-specific tabs and add new ones
+ * pop_overwriteCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }, { tabTitle: "b", url: "b" }]);
+ * pop_overwriteCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }, { tabTitle: "b", url: "b" }], true);
+ * pop_overwriteCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }, { tabTitle: "b", url: "b" }], true, false);
+ *
+ * @example
+ * // Keep all tabs and add new ones
+ * pop_overwriteCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }], false);
+ * pop_overwriteCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }], false, false);
+ *
+ * @example
+ * // Remove org-specific tabs and add new ones
+ * pop_overwriteCurrentTabs([{ tabTitle: "a", url: "a", org: "OrgA" }], false, true);
  */
-function pop_overrideCurrentTabs(newTabs, removeOrgSpecificTabs = false) {
-	if (removeOrgSpecificTabs) {
-		pop_currentTabs.length = 0;
+function pop_overwriteCurrentTabs(
+	newTabsOrOptions,
+	resetTabs = true,
+	removeOrgSpecificTabs = false,
+	setStorage = true,
+) {
+	let newTabs;
+	if (
+		typeof newTabsOrOptions === "object" && !Array.isArray(newTabsOrOptions)
+	) {
+		const {
+			newTabs: nt,
+			resetTabs: rt = true,
+			removeOrgSpecificTabs: ro = false,
+			setStorage: ss = true,
+		} = newTabsOrOptions;
+		newTabs = nt;
+		resetTabs = rt;
+		removeOrgSpecificTabs = ro;
+		setStorage = ss;
 	} else {
-		const orgSpecificTabs = pop_currentTabs.filter((tab) =>
-			tab.org != null
-		);
-		pop_currentTabs.length = 0;
-		pop_currentTabs.push(...orgSpecificTabs);
+		newTabs = newTabsOrOptions;
 	}
-	pop_currentTabs.push(...newTabs);
+
+	/**
+	 * Filters the current tabs based on whether they are org-specific.
+	 *
+	 * @param {boolean} keepOrgTabs - If `true`, keeps org-specific tabs (tabs with `org != null`); otherwise, keeps non-org-specific tabs (tabs with `org == null`).
+	 * @returns {Array<Object>} - The filtered array of tabs.
+	 */
+	function filterOrgSpecificTabs(isOrgTab = true) {
+		return pop_currentTabs.filter((tab) =>
+			(isOrgTab && tab.org != null) || (!isOrgTab && tab.org == null)
+		);
+	}
+
+	if (resetTabs) {
+		if (removeOrgSpecificTabs) {
+			pop_currentTabs.length = 0;
+		} else {
+			// prevent accidental deletion of tabs that are not for "this" current Org
+			const orgSpecificTabs = filterOrgSpecificTabs();
+			pop_currentTabs.length = 0;
+			pop_currentTabs.push(...orgSpecificTabs);
+		}
+	} else if (removeOrgSpecificTabs) {
+        const non_orgSpecificTabs = filterOrgSpecificTabs(false);
+        pop_currentTabs.length = 0;
+        pop_currentTabs.push(...non_orgSpecificTabs);
+	}
+
+    function removeDuplicates(array) {
+        const unique = new Map();
+        array.forEach(item => {
+            const normalized = JSON.stringify(Object.entries(item).sort());
+            unique.set(normalized, item);
+        });
+        return Array.from(unique.values());
+    }
+
+    // needed due to org-specific tabs (don't know why)
+    const tabsNoDuplicates = removeDuplicates([...pop_currentTabs, ...newTabs]);
+    pop_currentTabs.length = 0;
+    pop_currentTabs.push(...tabsNoDuplicates);
+	setStorage && pop_setStorage();
 }
 
 /**
@@ -132,7 +225,7 @@ function pop_setStorage(tabs) {
 	if (!arraysAreEqual(tabs, pop_currentTabs)) {
 		pop_sendMessage({ what: "set", tabs }, pop_afterSet);
 	}
-	pop_overrideCurrentTabs(tabs);
+	pop_overwriteCurrentTabs(tabs);
 }
 
 /**
@@ -350,24 +443,28 @@ function loadTabs(items) {
 		return addTab();
 	}
 
-	const rowObjs = items[items.key];
-	for (const tab of rowObjs) {
-		const element = createElement();
-		element.querySelector(".tabTitle").value = tab.tabTitle;
-		element.querySelector(".url").value = tab.url;
-		element.querySelector(".only-org").checked = tab.org != null &&
-			location.href.includes(tab.org);
-		element.querySelector(".delete").removeAttribute("disabled");
-		const logger = loggers.pop();
-		logger.last_input.title = tab.tabTitle;
-		logger.last_input.url = tab.url;
+    pop_extractOrgName()
+        .then(orgName => {
+            const rowObjs = items[items.key];
+            rowObjs.forEach(tab => {
+                if(tab.org != null && tab.org === orgName)
+                    return; // default hide not-this-org org-specific tabs
+                const element = createElement();
+                element.querySelector(".tabTitle").value = tab.tabTitle;
+                element.querySelector(".url").value = tab.url;
+                element.querySelector(".only-org").checked = tab.org != null;
+                element.querySelector(".delete").removeAttribute("disabled");
+                const logger = loggers.pop();
+                logger.last_input.title = tab.tabTitle;
+                logger.last_input.url = tab.url;
 
-		loggers.push(logger);
-		tabAppendElement.append(element);
-		updateTabAttributes();
-	}
-	tabAppendElement.append(createElement()); // always leave a blank at the bottom
-	pop_overrideCurrentTabs(rowObjs);
+                loggers.push(logger);
+                tabAppendElement.append(element);
+                updateTabAttributes();
+            });
+            tabAppendElement.append(createElement()); // always leave a blank at the bottom
+            pop_overwriteCurrentTabs(rowObjs);
+        });
 }
 
 /**
