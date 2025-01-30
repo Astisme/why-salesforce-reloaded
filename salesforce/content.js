@@ -1,6 +1,7 @@
 "use strict";
 
 let setupTabUl; // This is on Salesforce Setup
+let objectManagerLi; // This is the standard last li of setupTabUl
 let modalHanger; // This is where modals should be inserted in Salesforce Setup
 let href = globalThis.location.href;
 let _minifiedURL;
@@ -347,9 +348,10 @@ function delayLoadSetupTabs(count = 0) {
 	}
 
 	setupTabUl = document.getElementsByClassName("tabBarItems slds-grid")[0];
-	if (setupTabUl == null) {
+	if (setupTabUl == null || setupTabUl.lastElementChild == null) {
 		return setTimeout(() => delayLoadSetupTabs(count + 1), 500);
 	}
+    objectManagerLi = setupTabUl.childNodes[2];
 
 	// Start observing changes to the DOM to then check for URL change
 	// when URL changes, show the favourite button
@@ -363,7 +365,7 @@ function delayLoadSetupTabs(count = 0) {
 	if (!setupTabUl.style.overflowX.includes("auto")) {
 		setupTabUl.setAttribute(
 			"style",
-			`overflow-x: auto; overflow-y: hidden; scrollbar-width: none; ${
+			`overflow-x: auto; overflow-y: hidden; scrollbar-width: thin; ${
 				setupTabUl.getAttribute("style") ?? ""
 			}`,
 		);
@@ -383,10 +385,18 @@ function delayLoadSetupTabs(count = 0) {
 	reloadTabs();
 }
 
+let firstRun = true;
 /**
  * Reloads the tabs by clearing the current list and fetching the updated data from storage.
  */
 function reloadTabs() {
+    // prevent creating duplicate tabs when refocusing on the setup window/tab
+    // only needed after the first run of this function
+    if(setupTabUl.childElementCount === 0 || (!firstRun && setupTabUl.childElementCount <= 3 && document.getElementsByClassName("tabBarItems slds-grid")[0]?.lastElementChild === objectManagerLi))
+        return setTimeout(reloadTabs, 500);
+    firstRun = false;
+
+    // remove the tabs that are already in the page
 	while (setupTabUl.childElementCount > 3) { // hidden li + Home + Object Manager
 		setupTabUl.removeChild(setupTabUl.lastChild);
 	}
@@ -424,12 +434,12 @@ function makeDuplicatesBold(miniURL) {
 	if (duplicatetabs == null) {
 		return;
 	}
-	duplicatetabs.forEach((a) => a.classList.add("slds-theme--warning"));
+    function toggleWarning() {
+        duplicatetabs.forEach(tab => tab.classList.toggle("slds-theme--warning"));
+    }
+	toggleWarning();
 	setTimeout(
-		() =>
-			duplicatetabs.forEach((a) =>
-				a.classList.remove("slds-theme--warning")
-			),
+		() => toggleWarning(),
 		4000,
 	);
 }
