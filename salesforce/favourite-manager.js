@@ -5,10 +5,12 @@ const starId = `${prefix}-star`;
 const slashedStarId = `${prefix}-slashed-star`;
 
 /**
- * Finds on the page 
+ * Finds on the page
  */
-function getHeader(innerElement = ""){
-    return document.querySelector(`div.tabsetBody.main-content.mainContentMark.fullheight.active.isSetupApp > div.split-right > section.tabContent.oneConsoleTab.active div.overflow.uiBlock ${innerElement}`);
+function getHeader(innerElement = "") {
+	return document.querySelector(
+		`div.tabsetBody.main-content.mainContentMark.fullheight.active.isSetupApp > div.split-right > section.tabContent.oneConsoleTab.active div.overflow.uiBlock ${innerElement}`,
+	);
 }
 /**
  * Generates the element for the favourite button.
@@ -209,7 +211,7 @@ function showFavouriteButton(count = 0) {
 	// there's possibly 2 headers: one for Setup home and one for Object Manager by getting the active one, we're sure to get the correct one (and only one)
 	const header = getHeader("div.bRight");
 	if (header == null) {
-		return setTimeout(() => showFavouriteButton(count + 1), 500);		
+		return setTimeout(() => showFavouriteButton(count + 1), 500);
 	}
 
 	// ensure we have clean data
@@ -217,13 +219,13 @@ function showFavouriteButton(count = 0) {
 		isOnSavedTab();
 	}
 
-    const oldButton = header.querySelector(`#${buttonId}`);
-    if (oldButton != null) {
-        // already inserted my button, check if I should switch it
-        checkUpdateFavouriteButton();
-        return;
-    }
-    const button = generateFavouriteButton();
-    header.appendChild(button);
-    toggleFavouriteButton(isCurrentlyOnSavedTab, button); // init correctly
+	const oldButton = header.querySelector(`#${buttonId}`);
+	if (oldButton != null) {
+		// already inserted my button, check if I should switch it
+		checkUpdateFavouriteButton();
+		return;
+	}
+	const button = generateFavouriteButton();
+	header.appendChild(button);
+	toggleFavouriteButton(isCurrentlyOnSavedTab, button); // init correctly
 }
