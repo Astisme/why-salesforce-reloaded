@@ -303,11 +303,6 @@ function pop_containsSalesforceId(url = location.href) {
  * This function is called by the delete button at the end of each tab.
  */
 function deleteTab() {
-	console.log(
-		this.closest(".tab"),
-		this.closest(".tab").querySelector(".delete"),
-		this.closest(".tab").querySelector(".delete") == this,
-	);
 	this.closest(".tab").remove();
 	saveTabs();
 }

@@ -37,7 +37,6 @@ function bg_getStorage(callback) {
 function bg_setStorage(tabs, callback) {
 	const set = {};
 	set[whyKey] = tabs;
-	console.log(tabs, tabs.length);
 	browserObj.storage.sync.set(set, () => callback(null));
 }
 

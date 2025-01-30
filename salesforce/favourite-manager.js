@@ -5,6 +5,12 @@ const starId = `${prefix}-star`;
 const slashedStarId = `${prefix}-slashed-star`;
 
 /**
+ * Finds on the page 
+ */
+function getHeader(innerElement = ""){
+    return document.querySelector(`div.tabsetBody.main-content.mainContentMark.fullheight.active.isSetupApp > div.split-right > section.tabContent.oneConsoleTab.active div.overflow.uiBlock ${innerElement}`);
+}
+/**
  * Generates the element for the favourite button.
  *
  * @returns {Element} - The generated element for the favourite button.
@@ -20,7 +26,7 @@ function generateFavouriteButton() {
 	button.setAttribute("data-aura-class", "uiButton");
 	button.addEventListener(
 		"click",
-		() => actionFavourite(document.querySelector("div.overflow.uiBlock")),
+		actionFavourite,
 	);
 
 	const span = document.createElement("span");
@@ -131,8 +137,8 @@ function sf_containsSalesforceId(url = location.href) {
  * @param {string} url - the minified URL of the tab to add
  * @param {HTMLElement} parent - the parent node of the favourite button
  */
-function addTab(url, parent) {
-	const tabTitle = parent.querySelector(".breadcrumbDetail").innerText;
+function addTab(url) {
+	const tabTitle = getHeader(".breadcrumbDetail").innerText;
 	const tab = { tabTitle, url };
 	const addThisTab = (tab) => {
 		sf_overwriteCurrentTabs([tab], false);
@@ -153,7 +159,7 @@ function addTab(url, parent) {
  *
  * @param {HTMLElement} parent - The parent element of the favourite button.
  */
-function actionFavourite(parent) {
+function actionFavourite() {
 	sf_minifyURL(href)
 		.then((url) => {
 			_minifiedURL = url;
@@ -161,7 +167,7 @@ function actionFavourite(parent) {
 			if (isCurrentlyOnSavedTab) {
 				removeTab(url);
 			} else {
-				addTab(url, parent);
+				addTab(url);
 			}
 
 			toggleFavouriteButton();
@@ -200,12 +206,10 @@ function showFavouriteButton(count = 0) {
 		return;
 	}
 
-	// there's possibly 2 headers: one for Setup home and one for Object Manager
-	const headers = Array.from(
-		document.querySelectorAll("div.overflow.uiBlock > div.bRight"),
-	);
-	if (headers == null || headers.length < 1) {
-		return setTimeout(() => showFavouriteButton(count + 1), 500);
+	// there's possibly 2 headers: one for Setup home and one for Object Manager by getting the active one, we're sure to get the correct one (and only one)
+	const header = getHeader("div.bRight");
+	if (header == null) {
+		return setTimeout(() => showFavouriteButton(count + 1), 500);		
 	}
 
 	// ensure we have clean data
@@ -213,14 +217,13 @@ function showFavouriteButton(count = 0) {
 		isOnSavedTab();
 	}
 
-	for (const header of headers) {
-		if (header.querySelector(`#${buttonId}`) != null) {
-			// already inserted my button, check if I should switch it
-			checkUpdateFavouriteButton();
-			continue;
-		}
-		const button = generateFavouriteButton();
-		header.appendChild(button);
-		toggleFavouriteButton(isCurrentlyOnSavedTab, button); // init correctly
-	}
+    const oldButton = header.querySelector(`#${buttonId}`);
+    if (oldButton != null) {
+        // already inserted my button, check if I should switch it
+        checkUpdateFavouriteButton();
+        return;
+    }
+    const button = generateFavouriteButton();
+    header.appendChild(button);
+    toggleFavouriteButton(isCurrentlyOnSavedTab, button); // init correctly
 }
