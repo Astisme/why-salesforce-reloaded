@@ -456,74 +456,80 @@ function removeTab(url, title = null) {
  * @param {string} tabTitle - the name of the URL for which the user has engaged this action. If not found, we try to find the name through the saved tabs; otherwise a default text is shown.
  */
 function showModalOpenOtherOrg(miniURL, tabTitle) {
-	const { modalParent, saveButton, closeButton, inputContainer } =
-		_generateOpenOtherOrgModal(
-			miniURL,
-			tabTitle ??
-				sf_currentTabs.find((current) => current.url === miniURL)
-					?.tabTitle ??
-				"Where to?",
-		);
-	modalHanger = modalHanger ??
-		document.querySelector("div.DESKTOP.uiContainerManager");
-	modalHanger.appendChild(modalParent);
+    sf_containsSalesforceId()
+    .then(containsSfId => {
+        if(containsSfId)
+            showToast("This page could not exist in another Org, because it contains an Id!", false, true);
 
-	const https = "https://";
-	const lightningForceCom = ".lightning.force.com";
+        const { modalParent, saveButton, closeButton, inputContainer } =
+            _generateOpenOtherOrgModal(
+                miniURL,
+                tabTitle ??
+                sf_currentTabs.find((current) => current.url === miniURL)
+                ?.tabTitle ??
+                "Where to?",
+            );
+        modalHanger = modalHanger ??
+            document.querySelector("div.DESKTOP.uiContainerManager");
+        modalHanger.appendChild(modalParent);
 
-	let lastInput = "";
-	inputContainer.addEventListener("input", (e) => {
-		const target = e.target;
-		const value = target.value;
-		const delta = value.length - lastInput.length;
-		let newTarget;
+        const https = "https://";
+        const lightningForceCom = ".lightning.force.com";
 
-		if (delta > 2) {
-			sf_extractOrgName(value)
-				.then((newT) => {
-					newTarget = newT;
-					if (newTarget != null && newTarget !== value) {
-						target.value = newTarget;
-					}
+        let lastInput = "";
+        inputContainer.addEventListener("input", (e) => {
+            const target = e.target;
+            const value = target.value;
+            const delta = value.length - lastInput.length;
+            let newTarget;
 
-					lastInput = newTarget;
-				});
-		}
+            if (delta > 2) {
+                sf_extractOrgName(value)
+                    .then((newT) => {
+                        newTarget = newT;
+                        if (newTarget != null && newTarget !== value) {
+                            target.value = newTarget;
+                        }
 
-		lastInput = value;
-	});
+                        lastInput = newTarget;
+                    });
+            }
 
-	saveButton.addEventListener("click", (e) => {
-		e.preventDefault();
-		const inputVal = inputContainer.value;
-		if (inputVal == null || inputVal === "") {
-			return;
-		}
+            lastInput = value;
+        });
 
-		let alreadyExtracted = false;
-		sf_extractOrgName(inputVal).then((newTarget) => {
-			if (alreadyExtracted) return;
-			alreadyExtracted = true;
-			if (
-				!newTarget.match(
-					/^[a-zA-Z0-9\-]+(--[a-zA-Z0-9]+\.sandbox)?(\.develop)?$/g,
-				)
-			) {
-				showToast("Please insert a valid Org!", false);
-				return;
-			}
+        saveButton.addEventListener("click", (e) => {
+            e.preventDefault();
+            const inputVal = inputContainer.value;
+            if (inputVal == null || inputVal === "") {
+                return;
+            }
 
-			const url = new URL(
-				`${https}${newTarget}${lightningForceCom}${
-					!miniURL.startsWith("/") ? setupLightning : ""
-				}${miniURL}`,
-			);
-			if (confirm(`Are you sure you want to open\n${url}?`)) {
-				closeButton.click();
-				open(url, "_blank");
-			}
-		});
-	});
+            let alreadyExtracted = false;
+            sf_extractOrgName(inputVal).then((newTarget) => {
+                if (alreadyExtracted) return;
+                alreadyExtracted = true;
+                if (
+                    !newTarget.match(
+                        /^[a-zA-Z0-9\-]+(--[a-zA-Z0-9]+\.sandbox)?(\.develop)?$/g,
+                    )
+                ) {
+                    showToast("Please insert a valid Org!", false);
+                    return;
+                }
+
+                const url = new URL(
+                    `${https}${newTarget}${lightningForceCom}${
+                        !miniURL.startsWith("/") ? setupLightning : ""
+                    }${miniURL}`,
+                );
+                if (confirm(`Are you sure you want to open\n${url}?`)) {
+                    closeButton.click();
+                    open(url, "_blank");
+                }
+            });
+        });
+    });
 }
 
 /**
@@ -598,16 +604,18 @@ function removeOtherTabs(miniURL, tabTitle, removeBefore = null) {
 			current.url === miniURL
 		).tabTitle;
 	}
+    function isSpecifiedTab(favTab) {
+        return favTab.url === miniURL && favTab.tabTitle === tabTitle
+    }
 	// check if the clicked tab is not one of the favourited ones
 	if (
-		!sf_currentTabs.some((favTab) =>
-			favTab.url === miniURL && favTab.tabTitle === tabTitle
-		)
+		!sf_currentTabs.some(isSpecifiedTab)
 	) {
 		return showToast("This is not a saved tab!", false, true);
 	}
 	if (removeBefore == null) {
-		return sf_setStorage([{ tabTitle, url: miniURL }]);
+        // using filter, if the user picks an org-specific tab, the org info is kept intact
+		return sf_setStorage(sf_currentTabs.filter(isSpecifiedTab));
 	}
 	const index = sf_currentTabs.findIndex((tab) =>
 		tab.url === miniURL && tab.tabTitle === tabTitle
