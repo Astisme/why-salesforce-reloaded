@@ -218,7 +218,6 @@ browser.contextMenus.onClicked.addListener((info, _) => {
 
 // Start periodic check
 setInterval(async () => {
-	console.log({ areMenuItemsVisible });
 	if (!areMenuItemsVisible) {
 		await checkAddRemoveContextMenus();
 	}

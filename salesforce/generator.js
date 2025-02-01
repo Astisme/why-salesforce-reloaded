@@ -80,6 +80,7 @@ function handleLightningLinkClick(e) {
 		}, "*");
 	}
 }
+
 /**
  * Generates the HTML for a tab row.
  *
@@ -262,6 +263,15 @@ function _generateSldsToastMessage(message, isSuccess, isWarning) {
 	return toastContainer;
 }
 
+/**
+ * Creates and returns an abbreviation element indicating a required field.
+ *
+ * The function constructs an <abbr> element, applies the "slds-required" class,
+ * sets the "title" attribute to "required" and the "part" attribute to "required",
+ * and sets its text content to an asterisk ("*").
+ *
+ * @returns {HTMLElement} The <abbr> element representing the required indicator.
+ */
 function generateRequired() {
 	const requiredElement = document.createElement("abbr");
 	requiredElement.classList.add("slds-required");
@@ -557,6 +567,7 @@ function generateSldsModal(modalTitle) {
 	);
 	modalHeader.appendChild(closeButton);
 	closeButton.addEventListener("click", () => modalParent.remove());
+    backdropDiv.addEventListener("click", () => closeButton.click());
 
 	const closeIcon = document.createElement("lightning-primitive-icon");
 	closeIcon.setAttribute("variant", "bare");
@@ -920,85 +931,241 @@ function _generateOpenOtherOrgModal(miniURL, tabTitle) {
 	return { modalParent, saveButton, closeButton, inputContainer };
 }
 
-function _generateFileInput(allowDrop = true, required = true) {
-	const fileInputWrapper = document.createElement("div");
-	fileInputWrapper.id = importId;
+/**
+ * Generates an SLDS file input component with configurable file selection and drag-and-drop support.
+ *
+ * Depending on the parameters, this function constructs a complex DOM structure styled with SLDS classes.
+ * It supports enabling/disabling drag-and-drop, preventing file selection, and toggling single or multiple file uploads.
+ *
+ * @param {boolean} [singleFile=false] - If true, restricts the input to a single file; if false, multiple files can be selected.
+ * @param {boolean} [allowDrop=true] - If true, enables file drop functionality.
+ * @param {boolean} [preventFileSelection=false] - If true, disables file selection via the file dialog.
+ *                                                Note: Cannot be true if allowDrop is false.
+ * @param {boolean} [required=true] - If true, marks the file input as required and appends a required indicator.
+ * @throws {Error} Throws an error if allowDrop is false while preventFileSelection is true.
+ * @returns {{ fileInputWrapper: HTMLElement, inputContainer: HTMLInputElement }} An object containing:
+ *   - fileInputWrapper: The wrapper element for the entire file input component.
+ *   - inputContainer: The actual file input element.
+ */
+function _generateSldsFileInput(singleFile = false, allowDrop = true, preventFileSelection = false, required = true){
+    if(!allowDrop && preventFileSelection)
+        throw new Error("Cannot generate a file input when allowDrop == false && preventFileSelection == true");
 
-	const inputContainer = document.createElement("input");
-	inputContainer.type = "file";
-	inputContainer.id = importFileId;
-	inputContainer.accept = ".json";
-	inputContainer.classList.add(
-		"slds-file-selector__input",
-		"slds-assistive-text",
-	);
-	inputContainer.setAttribute("multiple", "");
-	inputContainer.setAttribute("name", "fileInput");
-	inputContainer.setAttribute("part", "input");
-	inputContainer.setAttribute(
-		"aria-labelledby",
-		"form-label-166 file-selector-label-166",
-	);
-	fileInputWrapper.appendChild(inputContainer);
+    const fileInputWrapper = document.createElement("div");
+    fileInputWrapper.id = importId;
+    fileInputWrapper.classList.add("previewMode","MEDIUM","forceRelatedListPreview");
+    fileInputWrapper.setAttribute("data-aura-class", "forceRelatedListPreview");
+    fileInputWrapper.style.width = "100%";
 
-	const fileLabel = document.createElement("label");
-	fileLabel.classList.add("slds-file-selector__body");
-	fileLabel.setAttribute("for", importFileId);
-	fileLabel.setAttribute("aria-hidden", "true");
-	fileLabel.style.display = "flex";
-	fileLabel.style.alignItems = "center";
-	fileLabel.style.flexDirection = "column";
-	fileInputWrapper.appendChild(fileLabel);
+    const innerDiv = document.createElement("div");
+    fileInputWrapper.appendChild(innerDiv);
 
-	const buttonSpan = document.createElement("span");
-	buttonSpan.classList.add(
-		"slds-file-selector__button",
-		"slds-button",
-		"slds-button_neutral",
-	);
-	buttonSpan.setAttribute("part", "button");
-	fileLabel.appendChild(buttonSpan);
+    const cardBodyDiv = document.createElement("div");
+    cardBodyDiv.classList.add("slds-card__body_inner","forceContentFileDroppableZone","forceContentRelatedListPreviewFileList");
+    cardBodyDiv.setAttribute("data-aura-class", "forceContentFileDroppableZone forceContentRelatedListPreviewFileList");
+    innerDiv.appendChild(cardBodyDiv);
 
-	const icon = document.createElement("lightning-primitive-icon");
-	icon.setAttribute("variant", "bare");
-	buttonSpan.appendChild(icon);
-	buttonSpan.append("Upload Files");
-	required && buttonSpan.appendChild(generateRequired());
+    if(preventFileSelection && allowDrop){
+        const fileSelectorDiv = document.createElement("div");
+        fileSelectorDiv.classList.add("slds-file-selector","slds-file-selector--integrated","slds-file-selector--integrated");
+        cardBodyDiv.appendChild(fileSelectorDiv);
 
-	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-	svg.setAttribute("class", "slds-button__icon slds-button__icon_left");
-	svg.setAttribute("focusable", "false");
-	svg.setAttribute("data-key", "upload");
-	svg.setAttribute("aria-hidden", "true");
-	svg.setAttribute("viewBox", "0 0 520 520");
-	svg.setAttribute("part", "icon");
-	icon.appendChild(svg);
+        const dropzoneDiv = document.createElement("div");
+        dropzoneDiv.classList.add("slds-file-selector__dropzone","slds-file-selector__dropzone--integrated");
+        fileSelectorDiv.appendChild(dropzoneDiv);
 
-	const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-	svg.appendChild(g);
+        const dropzoneBodySpan = document.createElement("span");
+        dropzoneBodySpan.classList.add("slds-file-selector__body","slds-file-selector__body--integrated");
+        dropzoneDiv.appendChild(dropzoneBodySpan);
 
-	const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-	path.setAttribute(
-		"d",
-		"M485 310h-30c-8 0-15 8-15 15v100c0 8-7 15-15 15H95c-8 0-15-7-15-15V325c0-7-7-15-15-15H35c-8 0-15 8-15 15v135a40 40 0 0040 40h400a40 40 0 0040-40V325c0-7-7-15-15-15zM270 24c-6-6-15-6-21 0L114 159c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l56-56c6-6 18-2 18 7v212c0 8 6 15 14 15h30c8 0 16-8 16-15V153c0-9 10-13 17-7l56 56c6 6 15 6 21 0l21-21c6-6 6-15 0-21z",
-	);
-	g.appendChild(path);
+        const lightningIcon = document.createElement("lightning-icon");
+        lightningIcon.classList.add("slds-icon-utility-upload","slds-file-selector__body-icon","slds-icon","slds-icon-text-default","slds-button__icon","slds-icon_container forceIcon");
+        lightningIcon.setAttribute("icon-name", "utility:upload");
+        lightningIcon.setAttribute("data-data-rendering-service-uid", "742");
+        lightningIcon.setAttribute("data-aura-class", "forceIcon");
+        dropzoneBodySpan.appendChild(lightningIcon);
 
-	if (allowDrop) {
-		const textSpan = document.createElement("span");
-		textSpan.classList.add("slds-file-selector__text", "slds-medium-show");
-		textSpan.textContent = "Or drop files";
-		fileLabel.appendChild(textSpan);
+        const iconSpan = document.createElement("span");
+        iconSpan.style.setProperty("--sds-c-icon-color-background", "var(--slds-c-icon-color-background, transparent)");
+        iconSpan.setAttribute("part", "boundary");
+        lightningIcon.appendChild(iconSpan);
 
-		fileInputWrapper.style.border = "1px dashed black";
-		fileInputWrapper.style.width = "100%";
-		fileInputWrapper.style.paddingTop = "1rem";
-		fileInputWrapper.style.paddingBottom = "1rem";
-	}
+        const primitiveIcon = document.createElement("lightning-primitive-icon");
+        primitiveIcon.setAttribute("exportparts", "icon");
+        primitiveIcon.setAttribute("size", "medium");
+        primitiveIcon.setAttribute("variant", "inverse");
+        iconSpan.appendChild(primitiveIcon);
+
+        const svg = document.createElement("svg");
+        svg.setAttribute("focusable", "false");
+        svg.setAttribute("aria-hidden", "true");
+        svg.setAttribute("viewBox", "0 0 520 520");
+        svg.setAttribute("part", "icon");
+        svg.classList.add("slds-icon");
+        primitiveIcon.appendChild(svg);
+
+        const g = document.createElement("g");
+        svg.appendChild(g);
+
+        const path = document.createElement("path");
+        path.setAttribute(
+            "d",
+            "M485 310h-30c-8 0-15 8-15 15v100c0 8-7 15-15 15H95c-8 0-15-7-15-15V325c0-7-7-15-15-15H35c-8 0-15 8-15 15v135a40 40 0 0040 40h400a40 40 0 0040-40V325c0-7-7-15-15-15zM270 24c-6-6-15-6-21 0L114 159c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l56-56c6-6 18-2 18 7v212c0 8 6 15 14 15h30c8 0 16-8 16-15V153c0-9 10-13 17-7l56 56c6 6 15 6 21 0l21-21c6-6 6-15 0-21z"
+        );
+        g.appendChild(path);
+
+        const dropFilesSpan = document.createElement("span");
+        dropFilesSpan.classList.add("slds-file-selector__text","slds-file-selector__text--integrated","slds-text-heading--medium","slds-text-align--center");
+        dropFilesSpan.textContent = `Drop File${singleFile ? "" : "s"}`;
+        dropzoneBodySpan.appendChild(dropFilesSpan);
+    }
+
+    const dragOverDiv = document.createElement("div");
+    dragOverDiv.classList.add("drag-over-body");
+    cardBodyDiv.appendChild(dragOverDiv);
+
+    const lightningInput = document.createElement("lightning-input");
+    lightningInput.classList.add("slds-form-element","lightningInput");
+    lightningInput.setAttribute("data-data-rendering-service-uid", "743");
+    dragOverDiv.appendChild(lightningInput);
+
+    const primitiveInputFile = document.createElement("lightning-primitive-input-file");
+    primitiveInputFile.setAttribute("exportparts", "button");
+    lightningInput.appendChild(primitiveInputFile);
+
+    const formLabelSpan = document.createElement("span");
+    formLabelSpan.classList.add("slds-form-element__label","slds-assistive-text");
+    primitiveInputFile.appendChild(formLabelSpan);
+
+    const controlDiv = document.createElement("div");
+    controlDiv.classList.add("slds-form-element__control");
+    primitiveInputFile.appendChild(controlDiv);
+
+    const fileSelectorImagesDiv = document.createElement("div");
+    fileSelectorImagesDiv.classList.add("slds-file-selector","slds-file-selector--images","slds-file-selector_images");
+    fileSelectorImagesDiv.setAttribute("part", "file-selector");
+    controlDiv.appendChild(fileSelectorImagesDiv);
+
+    const fileDroppableZone = document.createElement("lightning-primitive-file-droppable-zone");
+    fileDroppableZone.classList.add("slds-file-selector__dropzone");
+    fileSelectorImagesDiv.appendChild(fileDroppableZone);
+
+    const slot = document.createElement("slot");
+    fileDroppableZone.appendChild(slot);
+
+    const inputContainer = document.createElement("input");
+    inputContainer.id = importFileId;
+    inputContainer.classList.add("slds-file-selector__input","slds-assistive-text");
+    inputContainer.setAttribute("type", "file");
+    inputContainer.setAttribute("part", "input");
+    inputContainer.setAttribute("multiple", "");
+    inputContainer.setAttribute("name", "fileInput");
+    slot.appendChild(inputContainer);
+
+    const fileSelectorLabel = document.createElement("label");
+    fileSelectorLabel.classList.add("slds-file-selector__body");
+    fileSelectorLabel.setAttribute("for", importFileId);
+    slot.appendChild(fileSelectorLabel);
+
+    const fileSelectorButtonSpan = document.createElement("span");
+    fileSelectorButtonSpan.classList.add("slds-file-selector__button","slds-button","slds-button_neutral");
+    fileSelectorButtonSpan.setAttribute("part", "button");
+    fileSelectorLabel.appendChild(fileSelectorButtonSpan);
+
+    const buttonIcon = document.createElement("lightning-primitive-icon");
+    buttonIcon.setAttribute("variant", "bare");
+    fileSelectorButtonSpan.appendChild(buttonIcon);
+    fileSelectorButtonSpan.append(`Upload File${singleFile ? "" : "s"}`);
+	required && fileSelectorButtonSpan.appendChild(generateRequired());
+
+	const buttonSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    buttonSvg.classList.add("slds-button__icon","slds-button__icon_left");
+    buttonSvg.setAttribute("focusable", "false");
+	buttonSvg.setAttribute("data-key", "upload");
+    buttonSvg.setAttribute("aria-hidden", "true");
+    buttonSvg.setAttribute("viewBox", "0 0 520 520");
+	buttonSvg.setAttribute("part", "icon");
+    buttonIcon.appendChild(buttonSvg);
+
+	const buttonG = document.createElementNS("http://www.w3.org/2000/svg", "g");
+    buttonSvg.appendChild(buttonG);
+
+	const buttonPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
+    buttonPath.setAttribute(
+      "d",
+      "M485 310h-30c-8 0-15 8-15 15v100c0 8-7 15-15 15H95c-8 0-15-7-15-15V325c0-7-7-15-15-15H35c-8 0-15 8-15 15v135a40 40 0 0040 40h400a40 40 0 0040-40V325c0-7-7-15-15-15zM270 24c-6-6-15-6-21 0L114 159c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l56-56c6-6 18-2 18 7v212c0 8 6 15 14 15h30c8 0 16-8 16-15V153c0-9 10-13 17-7l56 56c6 6 15 6 21 0l21-21c6-6 6-15 0-21z"
+    );
+    buttonG.appendChild(buttonPath);
+
+    if(allowDrop){
+        const orDropFilesSpan = document.createElement("span");
+        orDropFilesSpan.classList.add("slds-file-selector__text","slds-medium-show");
+        orDropFilesSpan.textContent = `Or drop file${singleFile ? "" : "s"}`;
+        fileSelectorLabel.appendChild(orDropFilesSpan);
+    }
+
+    /*
+        const helpTextDiv = document.createElement("div");
+    helpTextDiv.classList.add("slds-form-element__help");
+    helpTextDiv.setAttribute("data-name", "fileInput");
+    helpTextDiv.setAttribute("part", "help-text");
+    helpTextDiv.setAttribute("role", "status");
+    primitiveInputFile.appendChild(helpTextDiv);
+
+    const hiddenPlaceholderDiv = document.createElement("div");
+    hiddenPlaceholderDiv.classList.add("slds-hide");
+
+    const forcePlaceholder = document.createElement("force-placeholder2");
+
+    const placeholderBodyDiv = document.createElement("div");
+    placeholderBodyDiv.classList.add("body","slds-grid","slds-grid_vertical-align-center","slds-p-around_large");
+
+    const placeholderFigureDiv = document.createElement("div");
+    placeholderFigureDiv.classList.add("slds-media__figure","slds-avatar","slds-m-right_small");
+
+    const placeholderTextContainerDiv = document.createElement("div");
+    placeholderTextContainerDiv.classList.add("text-container");
+
+    const placeholderTextDiv1 = document.createElement("div");
+    placeholderTextDiv1.classList.add("text","slds-m-bottom_small");
+
+    const placeholderTextDiv2 = document.createElement("div");
+    placeholderTextDiv2.classList.add("text","text-medium");
+
+    placeholderTextContainerDiv.appendChild(placeholderTextDiv1);
+    placeholderTextContainerDiv.appendChild(placeholderTextDiv2);
+    placeholderBodyDiv.appendChild(placeholderFigureDiv);
+    placeholderBodyDiv.appendChild(placeholderTextContainerDiv);
+    forcePlaceholder.appendChild(placeholderBodyDiv);
+    hiddenPlaceholderDiv.appendChild(forcePlaceholder);
+
+    const abstractList = document.createElement("ul");
+    abstractList.classList.add("uiAbstractList");
+
+    const emptyContentDiv = document.createElement("div");
+    emptyContentDiv.classList.add("emptyContent","hidden");
+
+    const emptyContentInnerDiv = document.createElement("div");
+    emptyContentInnerDiv.classList.add("emptyContentInner","slds-text-align_center","slds-text-align--center");
+
+    emptyContentDiv.appendChild(emptyContentInnerDiv);
+
+    dragOverDiv.appendChild(hiddenPlaceholderDiv);
+    dragOverDiv.appendChild(abstractList);
+    dragOverDiv.appendChild(emptyContentDiv);
+    */
 
 	return { fileInputWrapper, inputContainer };
 }
 
+/**
+ * Generates a checkbox input element with an associated label.
+ *
+ * @param {string} id - The unique identifier for the checkbox.
+ * @param {string} label - The text to display next to the checkbox.
+ * @param {boolean} [checked=false] - Whether the checkbox should be initially checked.
+ * @returns {HTMLLabelElement} The label element containing the checkbox input and its text.
+ */
 function _generateCheckboxWithLabel(id, label, checked = false) {
 	const checkboxLabel = document.createElement("label");
 	checkboxLabel.for = id;

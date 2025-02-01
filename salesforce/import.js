@@ -2,24 +2,37 @@
 
 let overwritePick;
 let duplicatePick;
+let otherOrgPick;
 const importId = `${prefix}-import`;
 const importFileId = `${importId}-file`;
 const overwriteId = `${importId}-overwrite`;
 const duplicateId = `${importId}-duplicate`;
 const otherOrgId = `${importId}-other-org`;
-//const closeModalId = `${prefix}-modal-close`;
+const closeModalId = `${prefix}-modal-close`;
 
 const reader = new FileReader();
 
 /**
- * Generates the HTMLElement for the import modal.
+ * Generates an SLDS import modal for importing tabs.
  *
- * @returns {HTMLElement} - The HTMLElement used to import data.
+ * This function creates a modal dialog by calling generateSldsModal with the title "Import Tabs",
+ * and then sets up a section with a full-width, flex container. It appends an SLDS file input component
+ * (created by _generateSldsFileInput) and three checkboxes with labels for import options:
+ * "Overwrite saved tabs.", "Skip duplicate tabs.", and "Preserve tabs for other orgs."
+ * Additionally, it assigns an ID to the close button using closeModalId.
+ *
+ * @returns {{
+ *   modalParent: HTMLElement,
+ *   saveButton: HTMLElement,
+ *   closeButton: HTMLElement,
+ *   inputContainer: HTMLInputElement
+ * }} An object containing the modal's parent element, the save button, the close button, and the file input element.
  */
-function new_generateSldsImport() {
+function generateSldsImport() {
 	const { modalParent, article, saveButton, closeButton } = generateSldsModal(
 		"Import Tabs",
 	);
+    closeButton.id = closeModalId;
 
 	const { section, divParent } = generateSection();
 	divParent.style.width = "100%"; // makes the elements inside have full width
@@ -28,7 +41,7 @@ function new_generateSldsImport() {
 	divParent.style.flexDirection = "column";
 	article.appendChild(section);
 
-	const { fileInputWrapper, inputContainer } = _generateFileInput();
+	const { fileInputWrapper, inputContainer } = _generateSldsFileInput();
 	fileInputWrapper.style.marginBottom = "1rem";
 	divParent.appendChild(fileInputWrapper);
 	divParent.appendChild(
@@ -48,23 +61,6 @@ function new_generateSldsImport() {
 	return { modalParent, saveButton, closeButton, inputContainer };
 }
 
-/**
- * Displays the import modal for uploading tab data.
- */
-function showFileImport() {
-	if (setupTabUl.querySelector(`#${importId}`) != null) {
-		return;
-	}
-
-	const { modalParent, saveButton } = new_generateSldsImport();
-
-	modalHanger = getModalHanger();
-	modalHanger.appendChild(modalParent);
-	console.log(modalHanger);
-
-	saveButton.remove();
-	listenToFileUpload();
-}
 /**
  * Handles the imported tab data and updates the storage with the newly imported tabs.
  * If the user wants to skip the duplicated urls, they won't be imported; otherwise, if duplicates are detected, the user will be warned about it.
@@ -104,7 +100,7 @@ function importer(message) {
 
 	sf_overwriteCurrentTabs(importedArray, message.overwrite);
 	// remove file import
-	setupTabUl.removeChild(document.getElementById(importId));
+	document.getElementById(closeModalId).click();
 }
 
 reader.onload = function (e) {
@@ -128,6 +124,7 @@ reader.onload = function (e) {
 				imported,
 				overwrite: overwritePick,
 				skipDuplicates: duplicatePick,
+				preserveOtherOrg: otherOrgPick,
 			};
 			importer(message);
 		} else {
@@ -145,47 +142,72 @@ reader.onload = function (e) {
 		);
 	}
 };
+
 /**
- * Sets up event listeners for file upload through both input field and drag-and-drop.
- * The function reads the uploaded file if it is a JSON file and sends the content to the importer function
+ * Attaches event listeners to handle file uploads via both file selection and drag-and-drop.
+ *
+ * This function sets up listeners on the file input element (identified by the global `importId`)
+ * within the modal. It handles the "change" event for file selection and "dragover", "dragleave",
+ * and "drop" events for drag-and-drop actions. When a file is uploaded, it validates that the file
+ * type is "application/json", retrieves import options (overwrite, duplicate, and other org picks)
+ * from checkboxes within the modal, and reads the file as text using a FileReader.
+ *
+ * @param {HTMLElement} modalParent - The parent element of the modal that contains the file input and option checkboxes.
  */
-function listenToFileUpload() {
+function listenToFileUpload(modalParent) {
 	function readFile(file) {
 		if (file.type !== "application/json") {
-			showToast(
-				"Invalid file type. Only JSON files are supported.",
+			return showToast(
+				`Invalid file type: ${file.type}.\nOnly JSON files are supported.`,
 				false,
 				false,
 			);
-			return;
 		}
 
-		overwritePick = dropArea.querySelector(`#${overwriteId}`).checked;
-		duplicatePick = dropArea.querySelector(`#${duplicateId}`).checked;
+		overwritePick = modalParent.querySelector(`#${overwriteId}`).checked;
+		duplicatePick = modalParent.querySelector(`#${duplicateId}`).checked;
+		otherOrgPick = modalParent.querySelector(`#${otherOrgId}`).checked;
 		reader.readAsText(file);
 	}
 
 	const dropArea = document.getElementById(importId);
-	console.log(dropArea);
-	dropArea.querySelector(`#${importFileId}`).addEventListener(
-		"change",
-		function (event) {
-			event.preventDefault();
-			const file = event.target.files[0];
-			readFile(file);
-		},
-	);
+	dropArea.addEventListener("change", function (event) {
+        event.preventDefault();
+        readFile(event.target.files[0]);
+    });
 
-	// Prevent default behavior for drag events
 	dropArea.addEventListener("dragover", function (event) {
 		event.preventDefault();
+        //console.log('dragover')
+        //dropArea.classList.add("slds-has-drag-over");
 	});
+    dropArea.addEventListener("dragleave", function (event) {
+        event.preventDefault();
+        //console.log('dragleave')
+        //dropArea.classList.remove("slds-has-drag-over");
+    });
 
-	// Handle drop event
 	dropArea.addEventListener("drop", function (event) {
 		event.preventDefault();
-		event.dataTransfer.files.forEach(f = readFile(f));
+        Array.from(event.dataTransfer.files).forEach(f => readFile(f));
 	});
+}
+
+/**
+ * Displays the import modal for uploading tab data.
+ */
+function showFileImport() {
+	if (setupTabUl.querySelector(`#${importId}`) != null) {
+		return;
+	}
+
+	const { modalParent, saveButton } = generateSldsImport();
+
+	modalHanger = getModalHanger();
+	modalHanger.appendChild(modalParent);
+
+	saveButton.remove();
+	listenToFileUpload(modalParent);
 }
 
 // listen from saves from the action page
