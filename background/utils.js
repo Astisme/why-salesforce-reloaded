@@ -4,7 +4,9 @@ import {
 	commonSetupDomain,
 	https,
 	setupLightning,
+    whyKey
 } from "./constants.js";
+import { bg_getStorage } from "./background.js"
 
 /**
  * Sends the same message back to other parts of the extension.
@@ -108,4 +110,39 @@ export function bg_expandURL(message) {
 	}
 	const isSetupLink = !url.startsWith("/") && url.length > 0;
 	return `${baseUrl}${isSetupLink ? setupLightning : ""}${url}`;
+}
+
+/**
+ * Handles the export functionality by downloading the current tabs as a JSON file.
+ */
+function _exportHandler(bg_currentTabs) {
+	// Convert JSON string to Blob
+	const blob = new Blob([JSON.stringify(bg_currentTabs[whyKey], null, 4)], {
+		type: "application/json",
+	});
+
+	// Create a download link
+	const link = document.createElement("a");
+	link.href = URL.createObjectURL(blob);
+	link.download = "again-why-salesforce.json";
+
+	// Append the link to the body and trigger the download
+	document.body.appendChild(link);
+	link.click();
+
+	// Cleanup
+	document.body.removeChild(link);
+}
+
+/**
+ * Exposes a function wrapper for the actual exportHandler due to the need for getting the currently saved tabs.
+ *
+ * @param [Array] bg_currentTabs - the currently saved tabs. if null, the tabs are retrieved automatically
+ */
+export function exportHandler(bg_currentTabs = null) {
+  if(bg_currentTabs == null)
+    return bg_getStorage(_exportHandler);
+  const tabs = {};
+  tabs[whyKey] = bg_currentTabs;
+  _exportHandler(tabs);
 }

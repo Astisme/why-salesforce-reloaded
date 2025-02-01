@@ -4,77 +4,93 @@ import {
 	contextMenuPatternsRegex,
 	framePatterns,
 } from "./constants.js";
-import { bg_expandURL, bg_minifyURL, bg_notify } from "./utils.js";
+import { bg_expandURL, bg_minifyURL, bg_notify, exportHandler } from "./utils.js";
 
 let areMenuItemsVisible = false;
 
 const menuItems = [
 	{
 		id: "open-other-org",
-		title: "Open in another Org",
+		title: "🔗 Open in another Org",
 		contexts: ["link", "page", "frame"],
 	},
 
-	{ id: "move", title: "Move tab", contexts: ["link"] },
+	{ id: "move", title: "🧭 Move tab", contexts: ["link"] },
 	{
 		id: "move-first",
-		title: "Make first",
+		title: "↩️ Make first",
 		contexts: ["link"],
 		parentId: "move",
 	},
 	{
 		id: "move-left",
-		title: "Move left",
+		title: "👈 Move left",
 		contexts: ["link"],
 		parentId: "move",
 	},
 	{
 		id: "move-right",
-		title: "Move right",
+		title: "👉 Move right",
 		contexts: ["link"],
 		parentId: "move",
 	},
 	{
 		id: "move-last",
-		title: "Make last",
+		title: "↪️ Make last",
 		contexts: ["link"],
 		parentId: "move",
 	},
 
-	{ id: "remove", title: "Remove tab(s)", contexts: ["link"] },
+	{ id: "remove", title: "💥 Remove tab(s)", contexts: ["link"] },
 	{
 		id: "remove-tab",
-		title: "Remove this tab",
+		title: "1️⃣ This tab",
 		contexts: ["link"],
 		parentId: "remove",
 	},
 	{
 		id: "remove-other-tabs",
-		title: "Remove other tabs",
+		title: "↔️ Other tabs",
 		contexts: ["link"],
 		parentId: "remove",
 	},
 	{
 		id: "remove-left-tabs",
-		title: "Remove tabs to the left",
+		title: "🔥 Tabs to the left",
 		contexts: ["link"],
 		parentId: "remove",
 	},
 	{
 		id: "remove-right-tabs",
-		title: "Remove tabs to the right",
+		title: "🌊 Tabs to the right",
 		contexts: ["link"],
 		parentId: "remove",
 	},
 	{
+		id: "empty-no-org-tabs",
+		title: "👀 All visible tabs",
+		contexts: ["link"],
+		parentId: "remove",
+    },
+	{
 		id: "empty-tabs",
-		title: "Remove ALL tabs",
+		title: "😨 ALL tabs",
 		contexts: ["link"],
 		parentId: "remove",
 	},
 
-	{ id: "page-save-tab", title: "Save as tab", contexts: ["page", "frame"] },
-	{ id: "page-remove-tab", title: "Remove tab", contexts: ["page", "frame"] },
+	{
+		id: "import-tabs",
+		title: "🆙 Import tabs",
+		contexts: ["page", "frame"],
+	},
+	{
+		id: "export-tabs",
+		title: "⬇️ Export tabs",
+		contexts: ["page", "frame"],
+	},
+	{ id: "page-save-tab", title: "💾 Save as tab", contexts: ["page", "frame"] },
+	{ id: "page-remove-tab", title: "👋 Remove tab", contexts: ["page", "frame"] },
 ];
 
 /**
@@ -202,6 +218,12 @@ browser.contextMenus.onClicked.addListener((info, _) => {
 			message.linkUrl = bg_expandURL(info.linkUrl);
 			message.linkTabTitle = info.linkText;
 			break;
+		case "import-tabs":
+            message.what = "add";
+            break;
+		case "export-tabs":
+            exportHandler();
+            break;
 		case "page-save-tab":
 		case "page-remove-tab":
 			message.tabUrl = bg_minifyURL(info.pageUrl);

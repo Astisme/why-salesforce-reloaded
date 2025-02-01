@@ -86,6 +86,7 @@ function sf_setStorage(tabs) {
  *
  * @example
  * // DEFAULT: Keep only org-specific tabs
+ * sf_overwriteCurrentTabs();
  * sf_overwriteCurrentTabs(null);
  * sf_overwriteCurrentTabs([]);
  * sf_overwriteCurrentTabs(null, true);
@@ -173,7 +174,7 @@ function sf_overwriteCurrentTabs(
 	}
 
 	// needed due to org-specific tabs (don't know why)
-	const tabsNoDuplicates = removeDuplicates([...sf_currentTabs, ...newTabs]);
+	const tabsNoDuplicates = removeDuplicates([...sf_currentTabs, ...(newTabs ?? [])]);
 	sf_currentTabs.length = 0;
 	sf_currentTabs.push(...tabsNoDuplicates);
 	setStorage && sf_setStorage();
@@ -721,6 +722,9 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 			break;
 		case "remove-right-tabs":
 			removeOtherTabs(message.tabUrl, message.tabTitle, false);
+			break;
+		case "empty-no-org-tabs":
+            sf_overwriteCurrentTabs();
 			break;
 		case "empty-tabs":
 			sf_setStorage([]);

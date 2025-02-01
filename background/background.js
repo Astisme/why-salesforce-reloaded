@@ -26,7 +26,7 @@ function bg_addKey(items, callback) {
  *
  * @param {function} callback - The callback to invoke with the retrieved data.
  */
-function bg_getStorage(callback) {
+export function bg_getStorage(callback) {
 	browser.storage.sync.get(
 		[whyKey],
 		(items) => bg_addKey(items, callback),
