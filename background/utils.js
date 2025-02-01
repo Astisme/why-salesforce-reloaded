@@ -4,9 +4,9 @@ import {
 	commonSetupDomain,
 	https,
 	setupLightning,
-    whyKey
+	whyKey,
 } from "./constants.js";
-import { bg_getStorage } from "./background.js"
+import { bg_getStorage } from "./background.js";
 
 /**
  * Sends the same message back to other parts of the extension.
@@ -140,9 +140,10 @@ function _exportHandler(bg_currentTabs) {
  * @param [Array] bg_currentTabs - the currently saved tabs. if null, the tabs are retrieved automatically
  */
 export function exportHandler(bg_currentTabs = null) {
-  if(bg_currentTabs == null)
-    return bg_getStorage(_exportHandler);
-  const tabs = {};
-  tabs[whyKey] = bg_currentTabs;
-  _exportHandler(tabs);
+	if (bg_currentTabs == null) {
+		return bg_getStorage(_exportHandler);
+	}
+	const tabs = {};
+	tabs[whyKey] = bg_currentTabs;
+	_exportHandler(tabs);
 }
