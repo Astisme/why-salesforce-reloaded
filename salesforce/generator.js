@@ -947,12 +947,12 @@ function _generateOpenOtherOrgModal(miniURL, tabTitle) {
  *   - fileInputWrapper: The wrapper element for the entire file input component.
  *   - inputContainer: The actual file input element.
  */
-function _generateSldsFileInput(singleFile = false, allowDrop = true, preventFileSelection = false, required = true){
+function _generateSldsFileInput(wrapperId, inputElementId, singleFile = false, allowDrop = true, preventFileSelection = false, required = true){
     if(!allowDrop && preventFileSelection)
         throw new Error("Cannot generate a file input when allowDrop == false && preventFileSelection == true");
 
     const fileInputWrapper = document.createElement("div");
-    fileInputWrapper.id = importId;
+    fileInputWrapper.id = wrapperId;
     fileInputWrapper.classList.add("previewMode","MEDIUM","forceRelatedListPreview");
     fileInputWrapper.setAttribute("data-aura-class", "forceRelatedListPreview");
     fileInputWrapper.style.width = "100%";
@@ -1054,7 +1054,7 @@ function _generateSldsFileInput(singleFile = false, allowDrop = true, preventFil
     fileDroppableZone.appendChild(slot);
 
     const inputContainer = document.createElement("input");
-    inputContainer.id = importFileId;
+    inputContainer.id = inputElementId;
     inputContainer.classList.add("slds-file-selector__input","slds-assistive-text");
     inputContainer.setAttribute("type", "file");
     inputContainer.setAttribute("part", "input");
@@ -1064,7 +1064,7 @@ function _generateSldsFileInput(singleFile = false, allowDrop = true, preventFil
 
     const fileSelectorLabel = document.createElement("label");
     fileSelectorLabel.classList.add("slds-file-selector__body");
-    fileSelectorLabel.setAttribute("for", importFileId);
+    fileSelectorLabel.setAttribute("for", inputElementId);
     slot.appendChild(fileSelectorLabel);
 
     const fileSelectorButtonSpan = document.createElement("span");

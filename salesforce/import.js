@@ -41,7 +41,7 @@ function generateSldsImport() {
 	divParent.style.flexDirection = "column";
 	article.appendChild(section);
 
-	const { fileInputWrapper, inputContainer } = _generateSldsFileInput();
+	const { fileInputWrapper, inputContainer } = _generateSldsFileInput(importId, importFileId);
 	fileInputWrapper.style.marginBottom = "1rem";
 	divParent.appendChild(fileInputWrapper);
 	divParent.appendChild(
