@@ -578,23 +578,8 @@ function importHandler() {
 /**
  * Handles the export functionality by downloading the current tabs as a JSON file.
  */
-function exportHandler() {
-	// Convert JSON string to Blob
-	const blob = new Blob([JSON.stringify(pop_currentTabs, null, 4)], {
-		type: "application/json",
-	});
-
-	// Create a download link
-	const link = document.createElement("a");
-	link.href = URL.createObjectURL(blob);
-	link.download = "again-why-salesforce.json";
-
-	// Append the link to the body and trigger the download
-	document.body.appendChild(link);
-	link.click();
-
-	// Cleanup
-	document.body.removeChild(link);
+function pop_exportHandler() {
+	pop_sendMessage({ what: "export", tabs: pop_currentTabs }, close);
 }
 
 /**
@@ -614,5 +599,5 @@ document.getElementById("theme-selector").addEventListener(
 	switchTheme,
 );
 document.getElementById("import").addEventListener("click", importHandler);
-document.getElementById("export").addEventListener("click", exportHandler);
+document.getElementById("export").addEventListener("click", pop_exportHandler);
 document.getElementById("delete-all").addEventListener("click", emptyTabs);

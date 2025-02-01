@@ -8,7 +8,7 @@ import {
 	salesforceIdPattern,
 	whyKey,
 } from "./constants.js";
-import { bg_expandURL, bg_minifyURL, bg_notify } from "./utils.js";
+import { bg_expandURL, bg_minifyURL, bg_notify, exportHandler } from "./utils.js";
 
 /**
  * Adds the key to the items object and invokes the provided callback.
@@ -140,6 +140,10 @@ browser.runtime.onMessage.addListener((request, _, sendResponse) => {
 				(tabs) => browser.tabs.reload(tabs[0].id),
 			);
 			return false;
+		case "export":
+            exportHandler(message.tabs);
+            sendResponse(null);
+            return false;
 
 		default:
 			captured = ["import"].includes(message.what);
