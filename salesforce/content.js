@@ -468,8 +468,9 @@ function removeTab(url, title = null) {
 	sf_overwriteCurrentTabs(filteredTabs, true, true);
 }
 
-function getModalHanger(){
-    return modalHanger ?? document.querySelector("div.DESKTOP.uiContainerManager")
+function getModalHanger() {
+	return modalHanger ??
+		document.querySelector("div.DESKTOP.uiContainerManager");
 }
 /**
  * Shows a modal to ask the user into which org they want to open the given URL.
@@ -488,16 +489,18 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 				);
 			}
 
-            const { modalParent, saveButton, closeButton, inputContainer } =
-                _generateOpenOtherOrgModal(
-                    miniURL,
-                    tabTitle ??
-                    sf_currentTabs.find((current) => current.url === miniURL)
-                    ?.tabTitle ??
-                    "Where to?",
-                );
-            modalHanger = getModalHanger();
-            modalHanger.appendChild(modalParent);
+			const { modalParent, saveButton, closeButton, inputContainer } =
+				_generateOpenOtherOrgModal(
+					miniURL,
+					tabTitle ??
+						sf_currentTabs.find((current) =>
+							current.url === miniURL
+						)
+							?.tabTitle ??
+						"Where to?",
+				);
+			modalHanger = getModalHanger();
+			modalHanger.appendChild(modalParent);
 
 			const https = "https://";
 			const lightningForceCom = ".lightning.force.com";

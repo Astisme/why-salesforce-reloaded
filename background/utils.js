@@ -1,5 +1,10 @@
 "use strict";
-import { commonSetupDomain, commonMainDomain, setupLightning, https } from "./constants.js";
+import {
+	commonMainDomain,
+	commonSetupDomain,
+	https,
+	setupLightning,
+} from "./constants.js";
 
 /**
  * Sends the same message back to other parts of the extension.
@@ -104,4 +109,3 @@ export function bg_expandURL(message) {
 	const isSetupLink = !url.startsWith("/") && url.length > 0;
 	return `${baseUrl}${isSetupLink ? setupLightning : ""}${url}`;
 }
-

@@ -1,8 +1,14 @@
 "use strict";
 import "./context-menus.js"; // initiate context-menu loop
-import { whyKey, https, lightningForceCom, mySalesforceSetupCom, mySalesforceCom, salesforceIdPattern } from "./constants.js";
-import { bg_notify, bg_minifyURL, bg_expandURL } from "./utils.js";
-
+import {
+	https,
+	lightningForceCom,
+	mySalesforceCom,
+	mySalesforceSetupCom,
+	salesforceIdPattern,
+	whyKey,
+} from "./constants.js";
+import { bg_expandURL, bg_minifyURL, bg_notify } from "./utils.js";
 
 /**
  * Adds the key to the items object and invokes the provided callback.

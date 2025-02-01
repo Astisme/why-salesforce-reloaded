@@ -1,6 +1,10 @@
 "use strict";
-import { framePatterns, contextMenuPatterns, contextMenuPatternsRegex } from "./constants.js";
-import { bg_notify, bg_minifyURL, bg_expandURL } from "./utils.js";
+import {
+	contextMenuPatterns,
+	contextMenuPatternsRegex,
+	framePatterns,
+} from "./constants.js";
+import { bg_expandURL, bg_minifyURL, bg_notify } from "./utils.js";
 
 let areMenuItemsVisible = false;
 
@@ -73,16 +77,15 @@ const menuItems = [
 	{ id: "page-remove-tab", title: "Remove tab", contexts: ["page", "frame"] },
 ];
 
-
 /**
  * - Updates `documentUrlPatterns` for each menu item:
  *   - Uses `framePatterns` if the item context includes "frame".
  *   - Uses `contextMenuPatterns` otherwise.
  */
 menuItems.forEach((item) => {
-    item.documentUrlPatterns = item.contexts.includes("frame")
-        ? framePatterns
-        : contextMenuPatterns;
+	item.documentUrlPatterns = item.contexts.includes("frame")
+		? framePatterns
+		: contextMenuPatterns;
 });
 
 /**
@@ -91,34 +94,34 @@ menuItems.forEach((item) => {
  * - Iterates through `menuItems` and creates each item using `browser.contextMenus.create`.
  */
 async function createMenuItems() {
-    if (areMenuItemsVisible) return;
-    
-    try {
-        await browser.contextMenus.removeAll();
-        
-        for (const item of menuItems) {
-            await browser.contextMenus.create(item);
-        }
-        
-        areMenuItemsVisible = true;
-    } catch (error) {
-        console.error('Error creating menu items:', error);
-        areMenuItemsVisible = false;
-    }
+	if (areMenuItemsVisible) return;
+
+	try {
+		await browser.contextMenus.removeAll();
+
+		for (const item of menuItems) {
+			await browser.contextMenus.create(item);
+		}
+
+		areMenuItemsVisible = true;
+	} catch (error) {
+		console.error("Error creating menu items:", error);
+		areMenuItemsVisible = false;
+	}
 }
 
 /**
  * Removes all existing context menu items.
  */
 async function removeMenuItems() {
-    if (!areMenuItemsVisible) return;
-    
-    try {
-        await browser.contextMenus.removeAll();
-        areMenuItemsVisible = false;
-    } catch (error) {
-        console.error('Error removing menu items:', error);
-    }
+	if (!areMenuItemsVisible) return;
+
+	try {
+		await browser.contextMenus.removeAll();
+		areMenuItemsVisible = false;
+	} catch (error) {
+		console.error("Error removing menu items:", error);
+	}
 }
 
 /**
@@ -129,23 +132,26 @@ async function removeMenuItems() {
  * - If no match is found, calls `removeMenuItems` to clean up context menus.
  */
 async function checkAddRemoveContextMenus() {
-    try {
-        const tabs = await browser.tabs.query({ active: true, currentWindow: true });
-        
-        if (tabs && tabs[0] && tabs[0].url) {
-            const url = tabs[0].url;
-            
-            if (contextMenuPatternsRegex.some((cmp) => url.match(cmp))) {
-                await removeMenuItems();
-                await createMenuItems();
-                bg_notify({ what: "focused" });
-            } else {
-                await removeMenuItems();
-            }
-        }
-    } catch (error) {
-        console.error('Error checking context menus:', error);
-    }
+	try {
+		const tabs = await browser.tabs.query({
+			active: true,
+			currentWindow: true,
+		});
+
+		if (tabs && tabs[0] && tabs[0].url) {
+			const url = tabs[0].url;
+
+			if (contextMenuPatternsRegex.some((cmp) => url.match(cmp))) {
+				await removeMenuItems();
+				await createMenuItems();
+				bg_notify({ what: "focused" });
+			} else {
+				await removeMenuItems();
+			}
+		}
+	} catch (error) {
+		console.error("Error checking context menus:", error);
+	}
 }
 
 // when the browser starts
@@ -154,8 +160,8 @@ browser.runtime.onStartup.addListener(checkAddRemoveContextMenus);
 browser.runtime.onInstalled.addListener(checkAddRemoveContextMenus);
 // when the extension is activated by the browser
 self.addEventListener("activate", () => {
-    console.error('activate')
-    checkAddRemoveContextMenus();
+	console.error("activate");
+	checkAddRemoveContextMenus();
 });
 // when the tab changes
 browser.tabs.onHighlighted.addListener(checkAddRemoveContextMenus);
@@ -212,10 +218,10 @@ browser.contextMenus.onClicked.addListener((info, _) => {
 
 // Start periodic check
 setInterval(async () => {
-    console.log({areMenuItemsVisible});
-    if (!areMenuItemsVisible) {
-        await checkAddRemoveContextMenus();
-    }
+	console.log({ areMenuItemsVisible });
+	if (!areMenuItemsVisible) {
+		await checkAddRemoveContextMenus();
+	}
 }, 60000);
 
 // create persistent menuItems

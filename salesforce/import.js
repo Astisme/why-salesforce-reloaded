@@ -16,24 +16,34 @@ const reader = new FileReader();
  *
  * @returns {HTMLElement} - The HTMLElement used to import data.
  */
-function new_generateSldsImport(){
+function new_generateSldsImport() {
 	const { modalParent, article, saveButton, closeButton } = generateSldsModal(
-        "Import Tabs"
+		"Import Tabs",
 	);
 
 	const { section, divParent } = generateSection();
 	divParent.style.width = "100%"; // makes the elements inside have full width
 	divParent.style.display = "flex";
 	divParent.style.alignItems = "center";
-    divParent.style.flexDirection = "column";
+	divParent.style.flexDirection = "column";
 	article.appendChild(section);
 
-    const { fileInputWrapper, inputContainer } = _generateFileInput();
-    fileInputWrapper.style.marginBottom = "1rem";
+	const { fileInputWrapper, inputContainer } = _generateFileInput();
+	fileInputWrapper.style.marginBottom = "1rem";
 	divParent.appendChild(fileInputWrapper);
-    divParent.appendChild(_generateCheckboxWithLabel(overwriteId, "Overwrite saved tabs.", false));
-    divParent.appendChild(_generateCheckboxWithLabel(duplicateId, "Skip duplicate tabs.", true));
-    divParent.appendChild(_generateCheckboxWithLabel(otherOrgId, "Preserve tabs for other orgs.", true));
+	divParent.appendChild(
+		_generateCheckboxWithLabel(overwriteId, "Overwrite saved tabs.", false),
+	);
+	divParent.appendChild(
+		_generateCheckboxWithLabel(duplicateId, "Skip duplicate tabs.", true),
+	);
+	divParent.appendChild(
+		_generateCheckboxWithLabel(
+			otherOrgId,
+			"Preserve tabs for other orgs.",
+			true,
+		),
+	);
 
 	return { modalParent, saveButton, closeButton, inputContainer };
 }
@@ -46,14 +56,14 @@ function showFileImport() {
 		return;
 	}
 
-    const { modalParent, saveButton } = new_generateSldsImport();
+	const { modalParent, saveButton } = new_generateSldsImport();
 
-    modalHanger = getModalHanger();
-    modalHanger.appendChild(modalParent);
-    console.log(modalHanger);
+	modalHanger = getModalHanger();
+	modalHanger.appendChild(modalParent);
+	console.log(modalHanger);
 
-    saveButton.remove();
-    listenToFileUpload();
+	saveButton.remove();
+	listenToFileUpload();
 }
 /**
  * Handles the imported tab data and updates the storage with the newly imported tabs.
@@ -155,8 +165,8 @@ function listenToFileUpload() {
 		reader.readAsText(file);
 	}
 
-    const dropArea = document.getElementById(importId);
-    console.log(dropArea)
+	const dropArea = document.getElementById(importId);
+	console.log(dropArea);
 	dropArea.querySelector(`#${importFileId}`).addEventListener(
 		"change",
 		function (event) {
