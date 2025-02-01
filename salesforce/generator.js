@@ -262,6 +262,15 @@ function _generateSldsToastMessage(message, isSuccess, isWarning) {
 	return toastContainer;
 }
 
+function generateRequired(){
+    const requiredElement = document.createElement("abbr");
+    requiredElement.classList.add("slds-required");
+    requiredElement.setAttribute("title", "required");
+    requiredElement.setAttribute("part", "required");
+    requiredElement.textContent = "*";
+    return requiredElement;
+}
+
 /**
  * Generates a customizable input element wrapped in a Salesforce-styled form structure.
  *
@@ -322,12 +331,7 @@ function generateInput({
 	formElementLabel.appendChild(labelElement);
 
 	if (required) {
-		const requiredElement = document.createElement("abbr");
-		requiredElement.classList.add("slds-required");
-		requiredElement.setAttribute("title", "required");
-		requiredElement.setAttribute("part", "required");
-		requiredElement.textContent = "*";
-		labelElement.appendChild(requiredElement);
+		labelElement.appendChild(generateRequired());
 	}
 	labelElement.append(label);
 
@@ -397,42 +401,44 @@ function generateInput({
  * - Builds a nested grid layout inside the section for content organization.
  * - Adds empty slots (`divParent` and cloned `borderSpacer`) for future customization or dynamic content injection.
  */
-function generateSection(sectionTitle) {
+function generateSection(sectionTitle = null) {
 	const section = document.createElement("records-record-layout-section");
 	section.setAttribute("lwc-692i7qiai51-host", "");
 
-	const newDiv = document.createElement("div");
-	newDiv.setAttribute("lwc-mlenr16lk9", "");
-	newDiv.classList.add("slds-card__body", "slds-card__body_inner");
-	section.appendChild(newDiv);
+    if(sectionTitle != null){
+        const newDiv = document.createElement("div");
+        newDiv.setAttribute("lwc-mlenr16lk9", "");
+        newDiv.classList.add("slds-card__body", "slds-card__body_inner");
+        section.appendChild(newDiv);
 
-	const innerDiv = document.createElement("div");
-	innerDiv.setAttribute("lwc-mlenr16lk9", "");
-	innerDiv.classList.add(
-		"section-layout-container",
-		"slds-section",
-		"slds-is-open",
-	);
-	newDiv.appendChild(innerDiv);
+        const innerDiv = document.createElement("div");
+        innerDiv.setAttribute("lwc-mlenr16lk9", "");
+        innerDiv.classList.add(
+            "section-layout-container",
+            "slds-section",
+            "slds-is-open",
+        );
+        newDiv.appendChild(innerDiv);
 
-	const h3 = document.createElement("h3");
-	h3.setAttribute("lwc-mlenr16lk9", "");
-	h3.classList.add(
-		"label",
-		"slds-section__title",
-		"slds-truncate",
-		"slds-p-around_x-small",
-		"slds-theme_shade",
-	);
-	h3.setAttribute("data-target-reveals", "");
-	innerDiv.appendChild(h3);
+        const h3 = document.createElement("h3");
+        h3.setAttribute("lwc-mlenr16lk9", "");
+        h3.classList.add(
+            "label",
+            "slds-section__title",
+            "slds-truncate",
+            "slds-p-around_x-small",
+            "slds-theme_shade",
+        );
+        h3.setAttribute("data-target-reveals", "");
+        innerDiv.appendChild(h3);
 
-	const span = document.createElement("span");
-	span.setAttribute("lwc-mlenr16lk9", "");
-	span.classList.add("slds-truncate");
-	span.setAttribute("title", sectionTitle);
-	span.textContent = sectionTitle;
-	h3.appendChild(span);
+        const span = document.createElement("span");
+        span.setAttribute("lwc-mlenr16lk9", "");
+        span.classList.add("slds-truncate");
+        span.setAttribute("title", sectionTitle);
+        span.textContent = sectionTitle;
+        h3.appendChild(span);
+    }
 
 	const progressiveContainer = document.createElement("div");
 	progressiveContainer.classList.add(
@@ -881,6 +887,8 @@ function _generateOpenOtherOrgModal(miniURL, tabTitle) {
 
 	const { section, divParent } = generateSection("Other Org info");
 	divParent.style.width = "100%"; // makes the elements inside have full width
+	divParent.style.display = "flex";
+	divParent.style.alignItems = "center";
 	article.appendChild(section);
 
 	const orgLinkInputConf = {
@@ -888,11 +896,13 @@ function _generateOpenOtherOrgModal(miniURL, tabTitle) {
 		type: "text",
 		required: true,
 		placeholder: "other-org",
+        style: "width: 50%",
 	};
 
 	const { inputParent, inputContainer } = generateInput(orgLinkInputConf);
 	const https = document.createElement("span");
 	https.append("https://");
+    https.style.height = "1.5rem";
 	divParent.appendChild(https);
 	divParent.appendChild(inputParent);
 	const linkEnd = document.createElement("span");
@@ -901,10 +911,107 @@ function _generateOpenOtherOrgModal(miniURL, tabTitle) {
 			!miniURL.startsWith("/") ? setupLightning : ""
 		}${miniURL}`,
 	);
+    linkEnd.style.width = "fit-content";
+    linkEnd.style.height = "1.5rem";
+    linkEnd.style.wordBreak = "break-all";
+    linkEnd.style.overflow = "hidden";
 	divParent.appendChild(linkEnd);
 
-	divParent.style.display = "flex";
-	divParent.style.alignItems = "center";
 
 	return { modalParent, saveButton, closeButton, inputContainer };
+}
+
+function _generateFileInput(allowDrop = true, required = true){
+    const fileInputWrapper = document.createElement("div");
+    fileInputWrapper.id = importId;
+
+	const inputContainer = document.createElement("input");
+	inputContainer.type = "file";
+	inputContainer.id = importFileId;
+	inputContainer.accept = ".json";
+	inputContainer.classList.add("slds-file-selector__input", "slds-assistive-text");
+	inputContainer.setAttribute("multiple", "");
+	inputContainer.setAttribute("name", "fileInput");
+	inputContainer.setAttribute("part", "input");
+	inputContainer.setAttribute(
+		"aria-labelledby",
+		"form-label-166 file-selector-label-166",
+	);
+    fileInputWrapper.appendChild(inputContainer);
+
+	const fileLabel = document.createElement("label");
+	fileLabel.classList.add("slds-file-selector__body");
+	fileLabel.setAttribute("for", importFileId);
+	fileLabel.setAttribute("aria-hidden", "true");
+	fileLabel.style.display = "flex";
+	fileLabel.style.alignItems = "center";
+    fileLabel.style.flexDirection = "column";
+    fileInputWrapper.appendChild(fileLabel)
+
+	const buttonSpan = document.createElement("span");
+	buttonSpan.classList.add(
+		"slds-file-selector__button",
+		"slds-button",
+		"slds-button_neutral",
+	);
+	buttonSpan.setAttribute("part", "button");
+    fileLabel.appendChild(buttonSpan);
+
+	const icon = document.createElement("lightning-primitive-icon");
+	icon.setAttribute("variant", "bare");
+	buttonSpan.appendChild(icon);
+	buttonSpan.append("Upload Files");
+    required && buttonSpan.appendChild(generateRequired());
+
+	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+	svg.setAttribute("class", "slds-button__icon slds-button__icon_left");
+	svg.setAttribute("focusable", "false");
+	svg.setAttribute("data-key", "upload");
+	svg.setAttribute("aria-hidden", "true");
+	svg.setAttribute("viewBox", "0 0 520 520");
+	svg.setAttribute("part", "icon");
+	icon.appendChild(svg);
+
+	const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
+	svg.appendChild(g);
+
+	const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+	path.setAttribute(
+		"d",
+		"M485 310h-30c-8 0-15 8-15 15v100c0 8-7 15-15 15H95c-8 0-15-7-15-15V325c0-7-7-15-15-15H35c-8 0-15 8-15 15v135a40 40 0 0040 40h400a40 40 0 0040-40V325c0-7-7-15-15-15zM270 24c-6-6-15-6-21 0L114 159c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l56-56c6-6 18-2 18 7v212c0 8 6 15 14 15h30c8 0 16-8 16-15V153c0-9 10-13 17-7l56 56c6 6 15 6 21 0l21-21c6-6 6-15 0-21z",
+	);
+	g.appendChild(path);
+
+    if(allowDrop){
+        const textSpan = document.createElement("span");
+        textSpan.classList.add("slds-file-selector__text", "slds-medium-show");
+        textSpan.textContent = "Or drop files";
+        fileLabel.appendChild(textSpan);
+
+        fileInputWrapper.style.border = "1px dashed black";
+        fileInputWrapper.style.width = "100%";
+        fileInputWrapper.style.paddingTop = "1rem";
+        fileInputWrapper.style.paddingBottom = "1rem";
+    }
+
+    return { fileInputWrapper, inputContainer };
+}
+
+function _generateCheckboxWithLabel(id, label, checked = false, ){
+	const checkboxLabel = document.createElement("label");
+    checkboxLabel.for = id;
+
+	const checkbox = document.createElement("input");
+	checkbox.type = "checkbox";
+	checkbox.id = id;
+	checkbox.name = label;
+	checkbox.checked = checked;
+	checkboxLabel.appendChild(checkbox);
+
+    const checkboxSpan = document.createElement("span");
+    checkboxSpan.style.marginLeft = "0.5rem";
+    checkboxSpan.textContent = label;
+	checkboxLabel.append(checkboxSpan);
+
+    return checkboxLabel;
 }

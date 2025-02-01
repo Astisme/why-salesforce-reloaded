@@ -459,6 +459,10 @@ function removeTab(url, title = null) {
 	}
 	sf_overwriteCurrentTabs(filteredTabs, true, true);
 }
+
+function getModalHanger(){
+    return modalHanger ?? document.querySelector("div.DESKTOP.uiContainerManager")
+}
 /**
  * Shows a modal to ask the user into which org they want to open the given URL.
  *
@@ -479,8 +483,7 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
                 ?.tabTitle ??
                 "Where to?",
             );
-        modalHanger = modalHanger ??
-            document.querySelector("div.DESKTOP.uiContainerManager");
+        modalHanger = getModalHanger();
         modalHanger.appendChild(modalParent);
 
         const https = "https://";

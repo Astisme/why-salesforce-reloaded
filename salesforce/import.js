@@ -4,10 +4,10 @@ let overwritePick;
 let duplicatePick;
 const importId = `${prefix}-import`;
 const importFileId = `${importId}-file`;
-const overwriteId = `${prefix}-overwrite`;
-const duplicateId = `${prefix}-duplicate`;
-const closeModalId = `${prefix}-modal-close`;
-let dropArea;
+const overwriteId = `${importId}-overwrite`;
+const duplicateId = `${importId}-duplicate`;
+const otherOrgId = `${importId}-other-org`;
+//const closeModalId = `${prefix}-modal-close`;
 
 const reader = new FileReader();
 
@@ -16,187 +16,26 @@ const reader = new FileReader();
  *
  * @returns {HTMLElement} - The HTMLElement used to import data.
  */
-function generateSldsImport() {
-	const style = document.createElement("style");
-	style.textContent = `
-        #${importId} {
-            width: 100%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            position: fixed;
-            left: 0;
-        }
-        #${importId} > .overlay {
-            position: absolute;
-            width: 100vw;
-            height: 100vh;
-            background-color: rgba(0, 0, 0, 0.5);
-            z-index: 2;
-            top: 0;
-            left: 0;
-            pointer-events: all;
-        }
-        #${importId} > .modal {
-            position: absolute;
-            background-color: lightgoldenrodyellow;
-            top: 2rem;
-            width: 18rem;
-            height: 8rem;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            border: 1px solid lightskyblue;
-            border-radius: 1rem;
-            flex-direction: column;
-            box-shadow: 1px 2px 3px black;
-            z-index: 3;
-        }
-        #${closeModalId} {
-            position: absolute;
-            top: 0rem;
-            right: 0rem;
-            width: 1.5rem;
-            height: 1.5rem;
-            background: lightskyblue;
-            border: 1px solid black;
-            color: black;
-            font-size: 1.2rem;
-            cursor: pointer;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            line-height: 1;
-        }
-        #${closeModalId} > span {
-            transform: translateY(-2px) translateX(1px);
-        }
-        .modal-header {
-            font-weight: revert;
-            font-size: initial;
-            margin-bottom: 0.6rem;
-        }
-        .slds-file-selector__body {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-        }
-        .slds-file-selector__text {
-            margin-left: 0.5rem;
-        }
-    `;
-
-	dropArea = document.createElement("div");
-	dropArea.id = importId;
-	dropArea.appendChild(style);
-
-	const overlay = document.createElement("div");
-	overlay.classList.add("overlay");
-	dropArea.appendChild(overlay);
-
-	const modal = document.createElement("div");
-	modal.classList.add("modal");
-	dropArea.appendChild(modal);
-
-	const closeButton = document.createElement("button");
-	closeButton.id = closeModalId;
-	closeButton.addEventListener(
-		"click",
-		() => dropArea.remove(),
+function new_generateSldsImport(){
+	const { modalParent, article, saveButton, closeButton } = generateSldsModal(
+        "Import Tabs"
 	);
-	modal.appendChild(closeButton);
 
-	const closeSpan = document.createElement("span");
-	closeSpan.innerHTML = "&times;";
-	closeButton.appendChild(closeSpan);
+	const { section, divParent } = generateSection();
+	divParent.style.width = "100%"; // makes the elements inside have full width
+	divParent.style.display = "flex";
+	divParent.style.alignItems = "center";
+    divParent.style.flexDirection = "column";
+	article.appendChild(section);
 
-	const header = document.createElement("h4");
-	header.classList.add("modal-header");
-	header.textContent = "Again, Why Salesforce: Import";
-	modal.appendChild(header);
+    const { fileInputWrapper, inputContainer } = _generateFileInput();
+    fileInputWrapper.style.marginBottom = "1rem";
+	divParent.appendChild(fileInputWrapper);
+    divParent.appendChild(_generateCheckboxWithLabel(overwriteId, "Overwrite saved tabs.", false));
+    divParent.appendChild(_generateCheckboxWithLabel(duplicateId, "Skip duplicate tabs.", true));
+    divParent.appendChild(_generateCheckboxWithLabel(otherOrgId, "Preserve tabs for other orgs.", true));
 
-	const inputFile = document.createElement("input");
-	inputFile.type = "file";
-	inputFile.id = importFileId;
-	inputFile.accept = ".json";
-	inputFile.classList.add("slds-file-selector__input", "slds-assistive-text");
-	inputFile.setAttribute("multiple", "");
-	inputFile.setAttribute("name", "fileInput");
-	inputFile.setAttribute("part", "input");
-	inputFile.setAttribute(
-		"aria-labelledby",
-		"form-label-166 file-selector-label-166",
-	);
-	modal.appendChild(inputFile);
-
-	const fileLabel = document.createElement("label");
-	fileLabel.classList.add("slds-file-selector__body");
-	fileLabel.setAttribute("for", importFileId);
-	fileLabel.setAttribute("aria-hidden", "true");
-
-	const buttonSpan = document.createElement("span");
-	buttonSpan.classList.add(
-		"slds-file-selector__button",
-		"slds-button",
-		"slds-button_neutral",
-	);
-	buttonSpan.setAttribute("part", "button");
-
-	const icon = document.createElement("lightning-primitive-icon");
-	icon.setAttribute("variant", "bare");
-
-	const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-	svg.setAttribute("class", "slds-button__icon slds-button__icon_left");
-	svg.setAttribute("focusable", "false");
-	svg.setAttribute("data-key", "upload");
-	svg.setAttribute("aria-hidden", "true");
-	svg.setAttribute("viewBox", "0 0 520 520");
-	svg.setAttribute("part", "icon");
-
-	const g = document.createElementNS("http://www.w3.org/2000/svg", "g");
-	const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-	path.setAttribute(
-		"d",
-		"M485 310h-30c-8 0-15 8-15 15v100c0 8-7 15-15 15H95c-8 0-15-7-15-15V325c0-7-7-15-15-15H35c-8 0-15 8-15 15v135a40 40 0 0040 40h400a40 40 0 0040-40V325c0-7-7-15-15-15zM270 24c-6-6-15-6-21 0L114 159c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l56-56c6-6 18-2 18 7v212c0 8 6 15 14 15h30c8 0 16-8 16-15V153c0-9 10-13 17-7l56 56c6 6 15 6 21 0l21-21c6-6 6-15 0-21z",
-	);
-	g.appendChild(path);
-	svg.appendChild(g);
-	icon.appendChild(svg);
-	buttonSpan.appendChild(icon);
-	buttonSpan.append("Upload Files");
-
-	const textSpan = document.createElement("span");
-	textSpan.classList.add("slds-file-selector__text", "slds-medium-show");
-	textSpan.textContent = "Or drop files";
-	fileLabel.appendChild(buttonSpan);
-	fileLabel.appendChild(textSpan);
-
-	modal.appendChild(fileLabel);
-
-	const overwriteCheckboxLabel = document.createElement("label");
-	const overwriteCheckbox = document.createElement("input");
-	overwriteCheckbox.type = "checkbox";
-	overwriteCheckbox.id = overwriteId;
-	overwriteCheckbox.name = "overwrite-tabs";
-	overwriteCheckbox.checked = false;
-	overwriteCheckboxLabel.appendChild(overwriteCheckbox);
-	overwriteCheckboxLabel.append("overwrite saved tabs.");
-	modal.appendChild(overwriteCheckboxLabel);
-
-	const duplicateCheckboxLabel = document.createElement("label");
-	const duplicateCheckbox = document.createElement("input");
-	duplicateCheckbox.type = "checkbox";
-	duplicateCheckbox.id = duplicateId;
-	duplicateCheckbox.name = "duplicate-tabs";
-	duplicateCheckbox.checked = true;
-	duplicateCheckboxLabel.appendChild(duplicateCheckbox);
-	duplicateCheckboxLabel.append("Skip duplicate tabs.");
-	modal.appendChild(duplicateCheckboxLabel);
-
-	return dropArea;
+	return { modalParent, saveButton, closeButton, inputContainer };
 }
 
 /**
@@ -207,7 +46,14 @@ function showFileImport() {
 		return;
 	}
 
-	setupTabUl.appendChild(generateSldsImport());
+    const { modalParent, saveButton } = new_generateSldsImport();
+
+    modalHanger = getModalHanger();
+    modalHanger.appendChild(modalParent);
+    console.log(modalHanger);
+
+    saveButton.remove();
+    listenToFileUpload();
 }
 /**
  * Handles the imported tab data and updates the storage with the newly imported tabs.
@@ -248,7 +94,7 @@ function importer(message) {
 
 	sf_overwriteCurrentTabs(importedArray, message.overwrite);
 	// remove file import
-	setupTabUl.removeChild(dropArea);
+	setupTabUl.removeChild(document.getElementById(importId));
 }
 
 reader.onload = function (e) {
@@ -309,6 +155,8 @@ function listenToFileUpload() {
 		reader.readAsText(file);
 	}
 
+    const dropArea = document.getElementById(importId);
+    console.log(dropArea)
 	dropArea.querySelector(`#${importFileId}`).addEventListener(
 		"change",
 		function (event) {
@@ -338,6 +186,5 @@ chrome.runtime.onMessage.addListener(function (message, _, sendResponse) {
 	if (message.what == "add") {
 		sendResponse(null);
 		showFileImport();
-		listenToFileUpload();
 	}
 });
