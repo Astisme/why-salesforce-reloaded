@@ -17,10 +17,10 @@
 		"dev-edge": "deno --allow-write manifest/build-manifest.mjs edge",
 		"dev-safari": "deno --allow-write manifest/build-manifest.mjs safari",
 
-        "build-firefox": "bash bin/build-extension.bash firefox",
-        "build-chrome": "bash bin/build-extension.bash chrome",
-        "build-edge": "bash bin/build-extension.bash edge",
-        "build-safari": "bash bin/build-extension.bash safari"
+		"build-firefox": "bash bin/build-extension.bash firefox",
+		"build-chrome": "bash bin/build-extension.bash chrome",
+		"build-edge": "bash bin/build-extension.bash edge",
+		"build-safari": "bash bin/build-extension.bash safari"
 	},
 	"imports": {
 		"/": "./",
