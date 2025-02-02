@@ -4,7 +4,12 @@ import {
 	contextMenuPatternsRegex,
 	framePatterns,
 } from "./constants.js";
-import { bg_expandURL, bg_minifyURL, bg_notify, exportHandler } from "./utils.js";
+import {
+	bg_expandURL,
+	bg_minifyURL,
+	bg_notify,
+	exportHandler,
+} from "./utils.js";
 
 let areMenuItemsVisible = false;
 
@@ -71,7 +76,7 @@ const menuItems = [
 		title: "👀 All visible tabs",
 		contexts: ["link"],
 		parentId: "remove",
-    },
+	},
 	{
 		id: "empty-tabs",
 		title: "😨 ALL tabs",
@@ -89,8 +94,16 @@ const menuItems = [
 		title: "⬇️ Export tabs",
 		contexts: ["page", "frame"],
 	},
-	{ id: "page-save-tab", title: "💾 Save as tab", contexts: ["page", "frame"] },
-	{ id: "page-remove-tab", title: "👋 Remove tab", contexts: ["page", "frame"] },
+	{
+		id: "page-save-tab",
+		title: "💾 Save as tab",
+		contexts: ["page", "frame"],
+	},
+	{
+		id: "page-remove-tab",
+		title: "👋 Remove tab",
+		contexts: ["page", "frame"],
+	},
 ];
 
 /**
@@ -219,11 +232,11 @@ browser.contextMenus.onClicked.addListener((info, _) => {
 			message.linkTabTitle = info.linkText;
 			break;
 		case "import-tabs":
-            message.what = "add";
-            break;
+			message.what = "add";
+			break;
 		case "export-tabs":
-            exportHandler();
-            break;
+			exportHandler();
+			break;
 		case "page-save-tab":
 		case "page-remove-tab":
 			message.tabUrl = bg_minifyURL(info.pageUrl);

@@ -567,7 +567,7 @@ function generateSldsModal(modalTitle) {
 	);
 	modalHeader.appendChild(closeButton);
 	closeButton.addEventListener("click", () => modalParent.remove());
-    backdropDiv.addEventListener("click", () => closeButton.click());
+	backdropDiv.addEventListener("click", () => closeButton.click());
 
 	const closeIcon = document.createElement("lightning-primitive-icon");
 	closeIcon.setAttribute("variant", "bare");
@@ -947,164 +947,239 @@ function _generateOpenOtherOrgModal(miniURL, tabTitle) {
  *   - fileInputWrapper: The wrapper element for the entire file input component.
  *   - inputContainer: The actual file input element.
  */
-function _generateSldsFileInput(wrapperId, inputElementId, singleFile = false, allowDrop = true, preventFileSelection = false, required = true){
-    if(!allowDrop && preventFileSelection)
-        throw new Error("Cannot generate a file input when allowDrop == false && preventFileSelection == true");
+function _generateSldsFileInput(
+	wrapperId,
+	inputElementId,
+	singleFile = false,
+	allowDrop = true,
+	preventFileSelection = false,
+	required = true,
+) {
+	if (!allowDrop && preventFileSelection) {
+		throw new Error(
+			"Cannot generate a file input when allowDrop == false && preventFileSelection == true",
+		);
+	}
 
-    const fileInputWrapper = document.createElement("div");
-    fileInputWrapper.id = wrapperId;
-    fileInputWrapper.classList.add("previewMode","MEDIUM","forceRelatedListPreview");
-    fileInputWrapper.setAttribute("data-aura-class", "forceRelatedListPreview");
-    fileInputWrapper.style.width = "100%";
+	const fileInputWrapper = document.createElement("div");
+	fileInputWrapper.id = wrapperId;
+	fileInputWrapper.classList.add(
+		"previewMode",
+		"MEDIUM",
+		"forceRelatedListPreview",
+	);
+	fileInputWrapper.setAttribute("data-aura-class", "forceRelatedListPreview");
+	fileInputWrapper.style.width = "100%";
 
-    const innerDiv = document.createElement("div");
-    fileInputWrapper.appendChild(innerDiv);
+	const innerDiv = document.createElement("div");
+	fileInputWrapper.appendChild(innerDiv);
 
-    const cardBodyDiv = document.createElement("div");
-    cardBodyDiv.classList.add("slds-card__body_inner","forceContentFileDroppableZone","forceContentRelatedListPreviewFileList");
-    cardBodyDiv.setAttribute("data-aura-class", "forceContentFileDroppableZone forceContentRelatedListPreviewFileList");
-    innerDiv.appendChild(cardBodyDiv);
+	const cardBodyDiv = document.createElement("div");
+	cardBodyDiv.classList.add(
+		"slds-card__body_inner",
+		"forceContentFileDroppableZone",
+		"forceContentRelatedListPreviewFileList",
+	);
+	cardBodyDiv.setAttribute(
+		"data-aura-class",
+		"forceContentFileDroppableZone forceContentRelatedListPreviewFileList",
+	);
+	innerDiv.appendChild(cardBodyDiv);
 
-    if(preventFileSelection && allowDrop){
-        const fileSelectorDiv = document.createElement("div");
-        fileSelectorDiv.classList.add("slds-file-selector","slds-file-selector--integrated","slds-file-selector--integrated");
-        cardBodyDiv.appendChild(fileSelectorDiv);
+	if (preventFileSelection && allowDrop) {
+		const fileSelectorDiv = document.createElement("div");
+		fileSelectorDiv.classList.add(
+			"slds-file-selector",
+			"slds-file-selector--integrated",
+			"slds-file-selector--integrated",
+		);
+		cardBodyDiv.appendChild(fileSelectorDiv);
 
-        const dropzoneDiv = document.createElement("div");
-        dropzoneDiv.classList.add("slds-file-selector__dropzone","slds-file-selector__dropzone--integrated");
-        fileSelectorDiv.appendChild(dropzoneDiv);
+		const dropzoneDiv = document.createElement("div");
+		dropzoneDiv.classList.add(
+			"slds-file-selector__dropzone",
+			"slds-file-selector__dropzone--integrated",
+		);
+		fileSelectorDiv.appendChild(dropzoneDiv);
 
-        const dropzoneBodySpan = document.createElement("span");
-        dropzoneBodySpan.classList.add("slds-file-selector__body","slds-file-selector__body--integrated");
-        dropzoneDiv.appendChild(dropzoneBodySpan);
+		const dropzoneBodySpan = document.createElement("span");
+		dropzoneBodySpan.classList.add(
+			"slds-file-selector__body",
+			"slds-file-selector__body--integrated",
+		);
+		dropzoneDiv.appendChild(dropzoneBodySpan);
 
-        const lightningIcon = document.createElement("lightning-icon");
-        lightningIcon.classList.add("slds-icon-utility-upload","slds-file-selector__body-icon","slds-icon","slds-icon-text-default","slds-button__icon","slds-icon_container forceIcon");
-        lightningIcon.setAttribute("icon-name", "utility:upload");
-        lightningIcon.setAttribute("data-data-rendering-service-uid", "742");
-        lightningIcon.setAttribute("data-aura-class", "forceIcon");
-        dropzoneBodySpan.appendChild(lightningIcon);
+		const lightningIcon = document.createElement("lightning-icon");
+		lightningIcon.classList.add(
+			"slds-icon-utility-upload",
+			"slds-file-selector__body-icon",
+			"slds-icon",
+			"slds-icon-text-default",
+			"slds-button__icon",
+			"slds-icon_container forceIcon",
+		);
+		lightningIcon.setAttribute("icon-name", "utility:upload");
+		lightningIcon.setAttribute("data-data-rendering-service-uid", "742");
+		lightningIcon.setAttribute("data-aura-class", "forceIcon");
+		dropzoneBodySpan.appendChild(lightningIcon);
 
-        const iconSpan = document.createElement("span");
-        iconSpan.style.setProperty("--sds-c-icon-color-background", "var(--slds-c-icon-color-background, transparent)");
-        iconSpan.setAttribute("part", "boundary");
-        lightningIcon.appendChild(iconSpan);
+		const iconSpan = document.createElement("span");
+		iconSpan.style.setProperty(
+			"--sds-c-icon-color-background",
+			"var(--slds-c-icon-color-background, transparent)",
+		);
+		iconSpan.setAttribute("part", "boundary");
+		lightningIcon.appendChild(iconSpan);
 
-        const primitiveIcon = document.createElement("lightning-primitive-icon");
-        primitiveIcon.setAttribute("exportparts", "icon");
-        primitiveIcon.setAttribute("size", "medium");
-        primitiveIcon.setAttribute("variant", "inverse");
-        iconSpan.appendChild(primitiveIcon);
+		const primitiveIcon = document.createElement(
+			"lightning-primitive-icon",
+		);
+		primitiveIcon.setAttribute("exportparts", "icon");
+		primitiveIcon.setAttribute("size", "medium");
+		primitiveIcon.setAttribute("variant", "inverse");
+		iconSpan.appendChild(primitiveIcon);
 
-        const svg = document.createElement("svg");
-        svg.setAttribute("focusable", "false");
-        svg.setAttribute("aria-hidden", "true");
-        svg.setAttribute("viewBox", "0 0 520 520");
-        svg.setAttribute("part", "icon");
-        svg.classList.add("slds-icon");
-        primitiveIcon.appendChild(svg);
+		const svg = document.createElement("svg");
+		svg.setAttribute("focusable", "false");
+		svg.setAttribute("aria-hidden", "true");
+		svg.setAttribute("viewBox", "0 0 520 520");
+		svg.setAttribute("part", "icon");
+		svg.classList.add("slds-icon");
+		primitiveIcon.appendChild(svg);
 
-        const g = document.createElement("g");
-        svg.appendChild(g);
+		const g = document.createElement("g");
+		svg.appendChild(g);
 
-        const path = document.createElement("path");
-        path.setAttribute(
-            "d",
-            "M485 310h-30c-8 0-15 8-15 15v100c0 8-7 15-15 15H95c-8 0-15-7-15-15V325c0-7-7-15-15-15H35c-8 0-15 8-15 15v135a40 40 0 0040 40h400a40 40 0 0040-40V325c0-7-7-15-15-15zM270 24c-6-6-15-6-21 0L114 159c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l56-56c6-6 18-2 18 7v212c0 8 6 15 14 15h30c8 0 16-8 16-15V153c0-9 10-13 17-7l56 56c6 6 15 6 21 0l21-21c6-6 6-15 0-21z"
-        );
-        g.appendChild(path);
+		const path = document.createElement("path");
+		path.setAttribute(
+			"d",
+			"M485 310h-30c-8 0-15 8-15 15v100c0 8-7 15-15 15H95c-8 0-15-7-15-15V325c0-7-7-15-15-15H35c-8 0-15 8-15 15v135a40 40 0 0040 40h400a40 40 0 0040-40V325c0-7-7-15-15-15zM270 24c-6-6-15-6-21 0L114 159c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l56-56c6-6 18-2 18 7v212c0 8 6 15 14 15h30c8 0 16-8 16-15V153c0-9 10-13 17-7l56 56c6 6 15 6 21 0l21-21c6-6 6-15 0-21z",
+		);
+		g.appendChild(path);
 
-        const dropFilesSpan = document.createElement("span");
-        dropFilesSpan.classList.add("slds-file-selector__text","slds-file-selector__text--integrated","slds-text-heading--medium","slds-text-align--center");
-        dropFilesSpan.textContent = `Drop File${singleFile ? "" : "s"}`;
-        dropzoneBodySpan.appendChild(dropFilesSpan);
-    }
+		const dropFilesSpan = document.createElement("span");
+		dropFilesSpan.classList.add(
+			"slds-file-selector__text",
+			"slds-file-selector__text--integrated",
+			"slds-text-heading--medium",
+			"slds-text-align--center",
+		);
+		dropFilesSpan.textContent = `Drop File${singleFile ? "" : "s"}`;
+		dropzoneBodySpan.appendChild(dropFilesSpan);
+	}
 
-    const dragOverDiv = document.createElement("div");
-    dragOverDiv.classList.add("drag-over-body");
-    cardBodyDiv.appendChild(dragOverDiv);
+	const dragOverDiv = document.createElement("div");
+	dragOverDiv.classList.add("drag-over-body");
+	cardBodyDiv.appendChild(dragOverDiv);
 
-    const lightningInput = document.createElement("lightning-input");
-    lightningInput.classList.add("slds-form-element","lightningInput");
-    lightningInput.setAttribute("data-data-rendering-service-uid", "743");
-    dragOverDiv.appendChild(lightningInput);
+	const lightningInput = document.createElement("lightning-input");
+	lightningInput.classList.add("slds-form-element", "lightningInput");
+	lightningInput.setAttribute("data-data-rendering-service-uid", "743");
+	dragOverDiv.appendChild(lightningInput);
 
-    const primitiveInputFile = document.createElement("lightning-primitive-input-file");
-    primitiveInputFile.setAttribute("exportparts", "button");
-    lightningInput.appendChild(primitiveInputFile);
+	const primitiveInputFile = document.createElement(
+		"lightning-primitive-input-file",
+	);
+	primitiveInputFile.setAttribute("exportparts", "button");
+	lightningInput.appendChild(primitiveInputFile);
 
-    const formLabelSpan = document.createElement("span");
-    formLabelSpan.classList.add("slds-form-element__label","slds-assistive-text");
-    primitiveInputFile.appendChild(formLabelSpan);
+	const formLabelSpan = document.createElement("span");
+	formLabelSpan.classList.add(
+		"slds-form-element__label",
+		"slds-assistive-text",
+	);
+	primitiveInputFile.appendChild(formLabelSpan);
 
-    const controlDiv = document.createElement("div");
-    controlDiv.classList.add("slds-form-element__control");
-    primitiveInputFile.appendChild(controlDiv);
+	const controlDiv = document.createElement("div");
+	controlDiv.classList.add("slds-form-element__control");
+	primitiveInputFile.appendChild(controlDiv);
 
-    const fileSelectorImagesDiv = document.createElement("div");
-    fileSelectorImagesDiv.classList.add("slds-file-selector","slds-file-selector--images","slds-file-selector_images");
-    fileSelectorImagesDiv.setAttribute("part", "file-selector");
-    controlDiv.appendChild(fileSelectorImagesDiv);
+	const fileSelectorImagesDiv = document.createElement("div");
+	fileSelectorImagesDiv.classList.add(
+		"slds-file-selector",
+		"slds-file-selector--images",
+		"slds-file-selector_images",
+	);
+	fileSelectorImagesDiv.setAttribute("part", "file-selector");
+	controlDiv.appendChild(fileSelectorImagesDiv);
 
-    const fileDroppableZone = document.createElement("lightning-primitive-file-droppable-zone");
-    fileDroppableZone.classList.add("slds-file-selector__dropzone");
-    fileSelectorImagesDiv.appendChild(fileDroppableZone);
+	const fileDroppableZone = document.createElement(
+		"lightning-primitive-file-droppable-zone",
+	);
+	fileDroppableZone.classList.add("slds-file-selector__dropzone");
+	fileSelectorImagesDiv.appendChild(fileDroppableZone);
 
-    const slot = document.createElement("slot");
-    fileDroppableZone.appendChild(slot);
+	const slot = document.createElement("slot");
+	fileDroppableZone.appendChild(slot);
 
-    const inputContainer = document.createElement("input");
-    inputContainer.id = inputElementId;
-    inputContainer.classList.add("slds-file-selector__input","slds-assistive-text");
-    inputContainer.setAttribute("type", "file");
-    inputContainer.setAttribute("part", "input");
-    inputContainer.setAttribute("multiple", "");
-    inputContainer.setAttribute("name", "fileInput");
-    slot.appendChild(inputContainer);
+	const inputContainer = document.createElement("input");
+	inputContainer.id = inputElementId;
+	inputContainer.classList.add(
+		"slds-file-selector__input",
+		"slds-assistive-text",
+	);
+	inputContainer.setAttribute("type", "file");
+	inputContainer.setAttribute("part", "input");
+	inputContainer.setAttribute("multiple", "");
+	inputContainer.setAttribute("name", "fileInput");
+	slot.appendChild(inputContainer);
 
-    const fileSelectorLabel = document.createElement("label");
-    fileSelectorLabel.classList.add("slds-file-selector__body");
-    fileSelectorLabel.setAttribute("for", inputElementId);
-    slot.appendChild(fileSelectorLabel);
+	const fileSelectorLabel = document.createElement("label");
+	fileSelectorLabel.classList.add("slds-file-selector__body");
+	fileSelectorLabel.setAttribute("for", inputElementId);
+	slot.appendChild(fileSelectorLabel);
 
-    const fileSelectorButtonSpan = document.createElement("span");
-    fileSelectorButtonSpan.classList.add("slds-file-selector__button","slds-button","slds-button_neutral");
-    fileSelectorButtonSpan.setAttribute("part", "button");
-    fileSelectorLabel.appendChild(fileSelectorButtonSpan);
+	const fileSelectorButtonSpan = document.createElement("span");
+	fileSelectorButtonSpan.classList.add(
+		"slds-file-selector__button",
+		"slds-button",
+		"slds-button_neutral",
+	);
+	fileSelectorButtonSpan.setAttribute("part", "button");
+	fileSelectorLabel.appendChild(fileSelectorButtonSpan);
 
-    const buttonIcon = document.createElement("lightning-primitive-icon");
-    buttonIcon.setAttribute("variant", "bare");
-    fileSelectorButtonSpan.appendChild(buttonIcon);
-    fileSelectorButtonSpan.append(`Upload File${singleFile ? "" : "s"}`);
+	const buttonIcon = document.createElement("lightning-primitive-icon");
+	buttonIcon.setAttribute("variant", "bare");
+	fileSelectorButtonSpan.appendChild(buttonIcon);
+	fileSelectorButtonSpan.append(`Upload File${singleFile ? "" : "s"}`);
 	required && fileSelectorButtonSpan.appendChild(generateRequired());
 
-	const buttonSvg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    buttonSvg.classList.add("slds-button__icon","slds-button__icon_left");
-    buttonSvg.setAttribute("focusable", "false");
+	const buttonSvg = document.createElementNS(
+		"http://www.w3.org/2000/svg",
+		"svg",
+	);
+	buttonSvg.classList.add("slds-button__icon", "slds-button__icon_left");
+	buttonSvg.setAttribute("focusable", "false");
 	buttonSvg.setAttribute("data-key", "upload");
-    buttonSvg.setAttribute("aria-hidden", "true");
-    buttonSvg.setAttribute("viewBox", "0 0 520 520");
+	buttonSvg.setAttribute("aria-hidden", "true");
+	buttonSvg.setAttribute("viewBox", "0 0 520 520");
 	buttonSvg.setAttribute("part", "icon");
-    buttonIcon.appendChild(buttonSvg);
+	buttonIcon.appendChild(buttonSvg);
 
 	const buttonG = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    buttonSvg.appendChild(buttonG);
+	buttonSvg.appendChild(buttonG);
 
-	const buttonPath = document.createElementNS("http://www.w3.org/2000/svg", "path");
-    buttonPath.setAttribute(
-      "d",
-      "M485 310h-30c-8 0-15 8-15 15v100c0 8-7 15-15 15H95c-8 0-15-7-15-15V325c0-7-7-15-15-15H35c-8 0-15 8-15 15v135a40 40 0 0040 40h400a40 40 0 0040-40V325c0-7-7-15-15-15zM270 24c-6-6-15-6-21 0L114 159c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l56-56c6-6 18-2 18 7v212c0 8 6 15 14 15h30c8 0 16-8 16-15V153c0-9 10-13 17-7l56 56c6 6 15 6 21 0l21-21c6-6 6-15 0-21z"
-    );
-    buttonG.appendChild(buttonPath);
+	const buttonPath = document.createElementNS(
+		"http://www.w3.org/2000/svg",
+		"path",
+	);
+	buttonPath.setAttribute(
+		"d",
+		"M485 310h-30c-8 0-15 8-15 15v100c0 8-7 15-15 15H95c-8 0-15-7-15-15V325c0-7-7-15-15-15H35c-8 0-15 8-15 15v135a40 40 0 0040 40h400a40 40 0 0040-40V325c0-7-7-15-15-15zM270 24c-6-6-15-6-21 0L114 159c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l56-56c6-6 18-2 18 7v212c0 8 6 15 14 15h30c8 0 16-8 16-15V153c0-9 10-13 17-7l56 56c6 6 15 6 21 0l21-21c6-6 6-15 0-21z",
+	);
+	buttonG.appendChild(buttonPath);
 
-    if(allowDrop){
-        const orDropFilesSpan = document.createElement("span");
-        orDropFilesSpan.classList.add("slds-file-selector__text","slds-medium-show");
-        orDropFilesSpan.textContent = `Or drop file${singleFile ? "" : "s"}`;
-        fileSelectorLabel.appendChild(orDropFilesSpan);
-    }
+	if (allowDrop) {
+		const orDropFilesSpan = document.createElement("span");
+		orDropFilesSpan.classList.add(
+			"slds-file-selector__text",
+			"slds-medium-show",
+		);
+		orDropFilesSpan.textContent = `Or drop file${singleFile ? "" : "s"}`;
+		fileSelectorLabel.appendChild(orDropFilesSpan);
+	}
 
-    /*
+	/*
         const helpTextDiv = document.createElement("div");
     helpTextDiv.classList.add("slds-form-element__help");
     helpTextDiv.setAttribute("data-name", "fileInput");

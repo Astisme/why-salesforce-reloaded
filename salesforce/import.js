@@ -32,7 +32,7 @@ function generateSldsImport() {
 	const { modalParent, article, saveButton, closeButton } = generateSldsModal(
 		"Import Tabs",
 	);
-    closeButton.id = closeModalId;
+	closeButton.id = closeModalId;
 
 	const { section, divParent } = generateSection();
 	divParent.style.width = "100%"; // makes the elements inside have full width
@@ -41,7 +41,10 @@ function generateSldsImport() {
 	divParent.style.flexDirection = "column";
 	article.appendChild(section);
 
-	const { fileInputWrapper, inputContainer } = _generateSldsFileInput(importId, importFileId);
+	const { fileInputWrapper, inputContainer } = _generateSldsFileInput(
+		importId,
+		importFileId,
+	);
 	fileInputWrapper.style.marginBottom = "1rem";
 	divParent.appendChild(fileInputWrapper);
 	divParent.appendChild(
@@ -172,24 +175,24 @@ function listenToFileUpload(modalParent) {
 
 	const dropArea = document.getElementById(importId);
 	dropArea.addEventListener("change", function (event) {
-        event.preventDefault();
-        readFile(event.target.files[0]);
-    });
+		event.preventDefault();
+		readFile(event.target.files[0]);
+	});
 
 	dropArea.addEventListener("dragover", function (event) {
 		event.preventDefault();
-        //console.log('dragover')
-        //dropArea.classList.add("slds-has-drag-over");
+		//console.log('dragover')
+		//dropArea.classList.add("slds-has-drag-over");
 	});
-    dropArea.addEventListener("dragleave", function (event) {
-        event.preventDefault();
-        //console.log('dragleave')
-        //dropArea.classList.remove("slds-has-drag-over");
-    });
+	dropArea.addEventListener("dragleave", function (event) {
+		event.preventDefault();
+		//console.log('dragleave')
+		//dropArea.classList.remove("slds-has-drag-over");
+	});
 
 	dropArea.addEventListener("drop", function (event) {
 		event.preventDefault();
-        Array.from(event.dataTransfer.files).forEach(f => readFile(f));
+		Array.from(event.dataTransfer.files).forEach((f) => readFile(f));
 	});
 }
 
