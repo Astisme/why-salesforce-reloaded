@@ -11,9 +11,16 @@
 		"test": "deno test -A",
 		"fmt": "deno fmt",
 		"lint": "deno lint",
+
 		"dev-firefox": "deno --allow-write manifest/build-manifest.mjs firefox",
 		"dev-chrome": "deno --allow-write manifest/build-manifest.mjs chrome",
-		"dev-safari": "deno --allow-write manifest/build-manifest.mjs safari"
+		"dev-edge": "deno --allow-write manifest/build-manifest.mjs edge",
+		"dev-safari": "deno --allow-write manifest/build-manifest.mjs safari",
+
+        "build-firefox": "bash bin/build-extension.bash firefox",
+        "build-chrome": "bash bin/build-extension.bash chrome",
+        "build-edge": "bash bin/build-extension.bash edge",
+        "build-safari": "bash bin/build-extension.bash safari"
 	},
 	"imports": {
 		"/": "./",
