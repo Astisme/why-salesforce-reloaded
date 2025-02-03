@@ -656,7 +656,9 @@ function removeOtherTabs(miniURL, tabTitle, removeBefore = null) {
 	const index = sf_currentTabs.findIndex((tab) =>
 		tab.url === miniURL && tab.tabTitle === tabTitle
 	);
-	if (index === -1) return showToast("The tab could not be found.", false, true);
+	if (index === -1) {
+		return showToast("The tab could not be found.", false, true);
+	}
 
 	sf_setStorage(
 		removeBefore
