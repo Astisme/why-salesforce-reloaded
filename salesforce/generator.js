@@ -963,6 +963,7 @@ function _generateOpenOtherOrgModal(miniURL, tabTitle) {
 function _generateSldsFileInput(
 	wrapperId,
 	inputElementId,
+    acceptedType,
 	singleFile = false,
 	allowDrop = true,
 	preventFileSelection = false,
@@ -972,7 +973,9 @@ function _generateSldsFileInput(
 		throw new Error(
 			"Cannot generate a file input when allowDrop == false && preventFileSelection == true",
 		);
-	}
+	} else if(wrapperId == null || wrapperId === "" || inputElementId == null || inputElementId === "" || acceptedType == null || acceptedType === ""){
+        throw new Error("Cannot generate a file input when the required files are not passed.");
+    }
 
 	const fileInputWrapper = document.createElement("div");
 	fileInputWrapper.id = wrapperId;
@@ -1131,6 +1134,7 @@ function _generateSldsFileInput(
 		"slds-file-selector__input",
 		"slds-assistive-text",
 	);
+    inputContainer.setAttribute("accept", acceptedType);
 	inputContainer.setAttribute("type", "file");
 	inputContainer.setAttribute("part", "input");
 	inputContainer.setAttribute("multiple", "");

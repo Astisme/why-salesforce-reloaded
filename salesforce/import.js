@@ -42,6 +42,7 @@ function generateSldsImport() {
 	const { fileInputWrapper, inputContainer } = _generateSldsFileInput(
 		importId,
 		importFileId,
+        ".json,application/json"
 	);
 	fileInputWrapper.style.marginBottom = "1rem";
 	divParent.appendChild(fileInputWrapper);
