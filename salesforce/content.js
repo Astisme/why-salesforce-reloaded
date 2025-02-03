@@ -539,20 +539,19 @@ function showModalOpenOtherOrg(miniURL, tabTitle) {
 				e.preventDefault();
 				const inputVal = inputContainer.value;
 				if (inputVal == null || inputVal === "") {
-					return;
+					return showToast("Insert another org link.", false, true);
 				}
 
 				let alreadyExtracted = false;
 				sf_extractOrgName(inputVal).then((newTarget) => {
-					if (alreadyExtracted) return;
+					if (alreadyExtracted) return; // could be called more than once
 					alreadyExtracted = true;
 					if (
 						!newTarget.match(
 							/^[a-zA-Z0-9\-]+(--[a-zA-Z0-9]+\.sandbox)?(\.develop)?$/g,
 						)
 					) {
-						showToast("Please insert a valid Org!", false);
-						return;
+						return showToast("Please insert a valid Org!", false);
 					}
 
 					const url = new URL(
@@ -657,7 +656,7 @@ function removeOtherTabs(miniURL, tabTitle, removeBefore = null) {
 	const index = sf_currentTabs.findIndex((tab) =>
 		tab.url === miniURL && tab.tabTitle === tabTitle
 	);
-	if (index === -1) return;
+	if (index === -1) return showToast("The tab could not be found.", false, true);
 
 	sf_setStorage(
 		removeBefore
