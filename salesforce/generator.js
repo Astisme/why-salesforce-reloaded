@@ -147,6 +147,9 @@ function _generateRowTemplate(row) {
  * @returns {HTMLElement} - The generated element for the toast message.
  */
 function _generateSldsToastMessage(message, isSuccess, isWarning) {
+    if(message == null || message === "" | isSuccess == null || isWarning == null)
+        throw new Error("Unable to generate Toast Message.");
+
 	const toastType = isSuccess
 		? (isWarning ? "info" : "success")
 		: (isWarning ? "warning" : "error");
@@ -503,10 +506,6 @@ function generateSection(sectionTitle = null) {
  * - closeButton: The close button element for closing the modal.
  */
 function generateSldsModal(modalTitle) {
-	if (document.getElementById(modalId) != null) {
-		throw new Error("A modal is already on the page!");
-	}
-
 	const modalParent = document.createElement("div");
 	modalParent.id = modalId;
 	modalParent.classList.add(
