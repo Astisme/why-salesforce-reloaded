@@ -147,8 +147,12 @@ function _generateRowTemplate(row) {
  * @returns {HTMLElement} - The generated element for the toast message.
  */
 function _generateSldsToastMessage(message, isSuccess, isWarning) {
-    if(message == null || message === "" | isSuccess == null || isWarning == null)
-        throw new Error("Unable to generate Toast Message.");
+	if (
+		message == null || message === "" | isSuccess == null ||
+		isWarning == null
+	) {
+		throw new Error("Unable to generate Toast Message.");
+	}
 
 	const toastType = isSuccess
 		? (isWarning ? "info" : "success")
