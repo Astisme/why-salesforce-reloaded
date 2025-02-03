@@ -29,9 +29,9 @@ const reader = new FileReader();
  * }} An object containing the modal's parent element, the save button, the close button, and the file input element.
  */
 function generateSldsImport() {
-	const { modalParent, article, saveButton, closeButton } = generateSldsModal(
-		"Import Tabs",
-	);
+    const { modalParent, article, saveButton, closeButton } = generateSldsModal(
+            "Import Tabs",
+        );
 	closeButton.id = closeModalId;
 
 	const { section, divParent } = generateSection();
@@ -163,7 +163,6 @@ function listenToFileUpload(modalParent) {
 			return showToast(
 				`Invalid file type: ${file.type}.\nOnly JSON files are supported.`,
 				false,
-				false,
 			);
 		}
 
@@ -200,8 +199,8 @@ function listenToFileUpload(modalParent) {
  * Displays the import modal for uploading tab data.
  */
 function showFileImport() {
-	if (setupTabUl.querySelector(`#${importId}`) != null) {
-		return;
+	if (setupTabUl.querySelector(`#${importId}`) != null || document.getElementById(modalId) != null) {
+		return showToast("Close the other modal first!", false);
 	}
 
 	const { modalParent, saveButton } = generateSldsImport();

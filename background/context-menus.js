@@ -188,10 +188,7 @@ browser.runtime.onStartup.addListener(checkAddRemoveContextMenus);
 // when the extension is installed / updated
 browser.runtime.onInstalled.addListener(checkAddRemoveContextMenus);
 // when the extension is activated by the browser
-self.addEventListener("activate", () => {
-	console.error("activate");
-	checkAddRemoveContextMenus();
-});
+self.addEventListener("activate", checkAddRemoveContextMenus);
 // when the tab changes
 browser.tabs.onHighlighted.addListener(checkAddRemoveContextMenus);
 // when window changes

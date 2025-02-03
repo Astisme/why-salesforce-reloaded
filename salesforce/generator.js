@@ -503,7 +503,11 @@ function generateSection(sectionTitle = null) {
  * - closeButton: The close button element for closing the modal.
  */
 function generateSldsModal(modalTitle) {
+    if(document.getElementById(modalId) != null)
+        throw new Error("A modal is already on the page!");
+    
 	const modalParent = document.createElement("div");
+    modalParent.id = modalId;
 	modalParent.classList.add(
 		"DESKTOP",
 		"uiModal--medium",
@@ -538,7 +542,7 @@ function generateSldsModal(modalTitle) {
 	dialog.setAttribute("aria-modal", "true");
 	dialog.classList.add("panel", "slds-modal", "slds-fade-in-open");
 	dialog.style.opacity = "1";
-	dialog.setAttribute("aria-label", `Again, Why Salesforce: ${modalTitle}`);
+	dialog.setAttribute("aria-label", `Again, Why Salesforce${modalTitle != null && modalTitle !== "" ? ": "+modalTitle : ""}`);
 	//dialog.addEventListener("wheel", e => e.preventDefault());
 	modalParent.appendChild(dialog);
 

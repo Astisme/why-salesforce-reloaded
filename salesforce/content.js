@@ -483,6 +483,10 @@ function getModalHanger() {
  * @param {string} tabTitle - the name of the URL for which the user has engaged this action. If not found, we try to find the name through the saved tabs; otherwise a default text is shown.
  */
 function showModalOpenOtherOrg(miniURL, tabTitle) {
+	if (document.getElementById(modalId) != null) {
+		return showToast("Close the other modal first!", false);
+	}
+
 	sf_containsSalesforceId()
 		.then((containsSfId) => {
 			if (containsSfId) {
