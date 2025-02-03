@@ -47,19 +47,23 @@ function generateSldsImport() {
 	);
 	fileInputWrapper.style.marginBottom = "1rem";
 	divParent.appendChild(fileInputWrapper);
-	divParent.appendChild(
-		_generateCheckboxWithLabel(overwriteId, "Overwrite saved tabs.", false),
-	);
+
+    const style = document.createElement("style");
+    style.textContent = ".hidden { display: none; }";
+    divParent.appendChild(style);
 	divParent.appendChild(
 		_generateCheckboxWithLabel(duplicateId, "Skip duplicate tabs.", true),
 	);
-	divParent.appendChild(
-		_generateCheckboxWithLabel(
-			otherOrgId,
-			"Preserve tabs for other orgs.",
-			true,
-		),
-	);
+    const overwriteCheckbox = _generateCheckboxWithLabel(overwriteId, "Overwrite saved tabs.", false);
+	divParent.appendChild(overwriteCheckbox);
+    const otherOrgCheckbox = _generateCheckboxWithLabel(
+        otherOrgId,
+        "Preserve tabs for other orgs.",
+        true,
+    );
+    otherOrgCheckbox.classList.add("hidden");
+	divParent.appendChild(otherOrgCheckbox);
+    overwriteCheckbox.addEventListener("change", () => otherOrgCheckbox.classList.toggle("hidden"));
 
 	return { modalParent, saveButton, closeButton, inputContainer };
 }
@@ -75,9 +79,13 @@ function generateSldsImport() {
  * @param {boolean} message.skipDuplicates - Whether to skip the duplicated values of the URLs of already saved tabs
  */
 function importer(message) {
-	const currentUrls = !message.overwrite
-		? new Set(sf_currentTabs.map((current) => current.url))
-		: new Set();
+	const currentUrls = new Set();
+    if(!message.overwrite){
+        sf_currentTabs.forEach(tab => currentUrls.add(tab.url));
+    } else if(message.preserveOtherOrg){
+        // I want to overwrite everything but the org-specific tabs
+        sf_currentTabs.forEach(tab => tab.org != null && currentUrls.add(tab.url));
+    }
 	let importedArray = message.imported;
 
 	// check for duplicated entries
@@ -101,7 +109,7 @@ function importer(message) {
 		}
 	}
 
-	sf_overwriteCurrentTabs(importedArray, message.overwrite);
+	sf_overwriteCurrentTabs(importedArray, message.overwrite, message.preserveOtherOrg);
 	// remove file import
 	document.getElementById(closeModalId).click();
 }
