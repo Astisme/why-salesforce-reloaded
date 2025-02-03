@@ -42,29 +42,37 @@ function generateSldsImport() {
 	const { fileInputWrapper, inputContainer } = _generateSldsFileInput(
 		importId,
 		importFileId,
-        ".json,application/json"
+		".json,application/json",
 	);
 	fileInputWrapper.style.marginBottom = "1rem";
 	divParent.appendChild(fileInputWrapper);
 
-    const style = document.createElement("style");
-    style.textContent = ".hidden { display: none; }";
-    divParent.appendChild(style);
-    const duplicateWarning = document.createElement("span");
-    duplicateWarning.innerHTML = "Duplicate tabs will be ignored.<br />Two tabs are considered duplicates if they have the same URL.";
-    duplicateWarning.style.textAlign = "center";
-    divParent.append(duplicateWarning);
+	const style = document.createElement("style");
+	style.textContent = ".hidden { display: none; }";
+	divParent.appendChild(style);
+	const duplicateWarning = document.createElement("span");
+	duplicateWarning.innerHTML =
+		"Duplicate tabs will be ignored.<br />Two tabs are considered duplicates if they have the same URL.";
+	duplicateWarning.style.textAlign = "center";
+	divParent.append(duplicateWarning);
 
-    const overwriteCheckbox = _generateCheckboxWithLabel(overwriteId, "Overwrite saved tabs.", false);
+	const overwriteCheckbox = _generateCheckboxWithLabel(
+		overwriteId,
+		"Overwrite saved tabs.",
+		false,
+	);
 	divParent.appendChild(overwriteCheckbox);
-    const otherOrgCheckbox = _generateCheckboxWithLabel(
-        otherOrgId,
-        "Preserve tabs for other orgs.",
-        true,
-    );
-    otherOrgCheckbox.classList.add("hidden");
+	const otherOrgCheckbox = _generateCheckboxWithLabel(
+		otherOrgId,
+		"Preserve tabs for other orgs.",
+		true,
+	);
+	otherOrgCheckbox.classList.add("hidden");
 	divParent.appendChild(otherOrgCheckbox);
-    overwriteCheckbox.addEventListener("change", () => otherOrgCheckbox.classList.toggle("hidden"));
+	overwriteCheckbox.addEventListener(
+		"change",
+		() => otherOrgCheckbox.classList.toggle("hidden"),
+	);
 
 	return { modalParent, saveButton, closeButton, inputContainer };
 }
@@ -79,11 +87,11 @@ function generateSldsImport() {
  * @param {boolean} message.preserveOtherOrg - Whether the org-specific tabs should be preserved
  */
 function importer(message) {
-    sf_overwriteCurrentTabs(
-        message.imported,
-        message.overwrite,
-        !message.preserveOtherOrg,
-    );
+	sf_overwriteCurrentTabs(
+		message.imported,
+		message.overwrite,
+		!message.preserveOtherOrg,
+	);
 
 	// remove file import
 	document.getElementById(closeModalId).click();
