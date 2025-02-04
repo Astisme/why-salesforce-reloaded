@@ -62,6 +62,12 @@
 	},
 	"background": {
 		"service_worker": "./background/background.js",
+		"scripts": [
+			"./background/constants.js",
+			"./background/utils.js",
+			"./background/context-menus.js",
+			"./background/background.js"
+		],
 		"type": "module"
 	},
 	"minimum_chrome_version": "120.0.0",

@@ -5,6 +5,14 @@ const starId = `${prefix}-star`;
 const slashedStarId = `${prefix}-slashed-star`;
 
 /**
+ * Finds on the page
+ */
+function getHeader(innerElement = "") {
+	return document.querySelector(
+		`div.tabsetBody.main-content.mainContentMark.fullheight.active.isSetupApp > div.split-right > section.tabContent.oneConsoleTab.active div.overflow.uiBlock ${innerElement}`,
+	);
+}
+/**
  * Generates the element for the favourite button.
  *
  * @returns {Element} - The generated element for the favourite button.
@@ -20,7 +28,7 @@ function generateFavouriteButton() {
 	button.setAttribute("data-aura-class", "uiButton");
 	button.addEventListener(
 		"click",
-		() => actionFavourite(document.querySelector("div.overflow.uiBlock")),
+		actionFavourite,
 	);
 
 	const span = document.createElement("span");
@@ -117,30 +125,51 @@ function toggleFavouriteButton(isSaved, button) {
 }
 
 /**
+ * Checks if the url passed as input contains a Salesforce Id.
+ *
+ * @param {string} url - The URL to be checked.
+ */
+function sf_containsSalesforceId(url = location.href) {
+	return sf_sendMessage({ what: "contains-sf-id", url });
+}
+
+/**
  * Adds the tab with the given URL and finds its title from the page
  *
  * @param {string} url - the minified URL of the tab to add
  * @param {HTMLElement} parent - the parent node of the favourite button
  */
-function addTab(url, parent) {
-	const tabTitle = parent.querySelector(".breadcrumbDetail").innerText;
-	currentTabs.push({ tabTitle, url });
-	setStorage();
+function addTab(url) {
+	const tabTitle = getHeader(".breadcrumbDetail").innerText;
+	const tab = { tabTitle, url };
+	const addThisTab = (tab) => {
+		sf_overwriteCurrentTabs([tab], false);
+	};
+	sf_containsSalesforceId()
+		.then((response) => {
+			if (response == false) {
+				return addThisTab(tab);
+			}
+			sf_extractOrgName()
+				.then((orgName) => {
+					addThisTab({ ...tab, org: orgName });
+				});
+		});
 }
 /**
  * Adds or removes the current tab from the saved tabs list based on the button's state.
  *
  * @param {HTMLElement} parent - The parent element of the favourite button.
  */
-function actionFavourite(parent) {
-	minifyURL(href)
+function actionFavourite() {
+	sf_minifyURL(href)
 		.then((url) => {
 			_minifiedURL = url;
 
 			if (isCurrentlyOnSavedTab) {
 				removeTab(url);
 			} else {
-				addTab(url, parent);
+				addTab(url);
 			}
 
 			toggleFavouriteButton();
@@ -152,10 +181,10 @@ function actionFavourite(parent) {
  */
 function checkUpdateFavouriteButton() {
 	// check if the current page is being imported
-	minifyURL(href)
+	sf_minifyURL(href)
 		.then((miniURL) => {
 			_minifiedURL = miniURL;
-			const isOnFavouriteTab = currentTabs.some((current) =>
+			const isOnFavouriteTab = sf_currentTabs.some((current) =>
 				current.url === miniURL
 			);
 			toggleFavouriteButton(isOnFavouriteTab);
@@ -179,11 +208,9 @@ function showFavouriteButton(count = 0) {
 		return;
 	}
 
-	// there's possibly 2 headers: one for Setup home and one for Object Manager
-	const headers = Array.from(
-		document.querySelectorAll("div.overflow.uiBlock > div.bRight"),
-	);
-	if (headers == null || headers.length < 1) {
+	// there's possibly 2 headers: one for Setup home and one for Object Manager by getting the active one, we're sure to get the correct one (and only one)
+	const header = getHeader("div.bRight");
+	if (header == null) {
 		return setTimeout(() => showFavouriteButton(count + 1), 500);
 	}
 
@@ -192,14 +219,13 @@ function showFavouriteButton(count = 0) {
 		isOnSavedTab();
 	}
 
-	for (const header of headers) {
-		if (header.querySelector(`#${buttonId}`) != null) {
-			// already inserted my button, check if I should switch it
-			checkUpdateFavouriteButton();
-			continue;
-		}
-		const button = generateFavouriteButton();
-		header.appendChild(button);
-		toggleFavouriteButton(isCurrentlyOnSavedTab, button); // init correctly
+	const oldButton = header.querySelector(`#${buttonId}`);
+	if (oldButton != null) {
+		// already inserted my button, check if I should switch it
+		checkUpdateFavouriteButton();
+		return;
 	}
+	const button = generateFavouriteButton();
+	header.appendChild(button);
+	toggleFavouriteButton(isCurrentlyOnSavedTab, button); // init correctly
 }

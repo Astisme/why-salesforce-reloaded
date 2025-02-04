@@ -5,6 +5,17 @@ const toastId = `${prefix}-toast`;
 const modalId = `${prefix}-modal`;
 const modalConfirmId = `${prefix}-modal-confirm`;
 
+/**
+ * Generates a random number with the specified number of digits.
+ *
+ * @param {number} digits - The number of digits for the random number. Must be greater than 1.
+ * @returns {number|null} A random number with the specified number of digits, or `null` if `digits <= 1`.
+ *
+ * - If `digits <= 1`, returns `null`.
+ * - Calculates the lower bound as 10^(digits - 1) (e.g., 10 for 2 digits, 100 for 3 digits).
+ * - Multiplies a random value (0 to 1) by the range (9 * 10^(digits - 1)) and adds the lower bound.
+ * - Ensures the result is a whole number with the correct number of digits.
+ */
 function getRng_n_digits(digits = 1) {
 	if (digits <= 1) {
 		return null;
@@ -16,7 +27,7 @@ function getRng_n_digits(digits = 1) {
 
 /**
  * Expands a URL by adding the domain and the Salesforce setup parts.
- * This function undoes what minifyURL did to a URL.
+ * This function undoes what sf_minifyURL did to a URL.
  *
  * @param {string} url - The URL to expand.
  * @returns {string} The expanded URL.
@@ -31,10 +42,43 @@ function getRng_n_digits(digits = 1) {
  * SetupOneHome/home/
  * SetupOneHome/home
  */
-function expandURL(url) {
-	return chrome.runtime.sendMessage({
-		message: { what: "expand", url, baseUrl: globalThis.origin },
-	});
+function sf_expandURL(url) {
+	return sf_sendMessage({ what: "expand", url, baseUrl: globalThis.origin });
+}
+
+/**
+ * Handles the redirection to another Salesforce page without requiring a full reload.
+ *
+ * @param {Event} e - the click event
+ */
+function handleLightningLinkClick(e) {
+	e.preventDefault();
+
+	/**
+	 * Picks a link target between _blank and _top based on whether the user is click CTRL or the meta key.
+	 * If the link goes outside of setup, always returns _blank.
+	 *
+	 * @param {Event} e - the click event
+	 * @returns {String} "_blank" | "_top"
+	 */
+	function getLinkTarget(e, url) {
+		return e.ctrlKey || e.metaKey || !url.includes(setupLightning)
+			? "_blank"
+			: "_top";
+	}
+	const url = e.currentTarget.href;
+	const target = e.currentTarget.target ?? getLinkTarget(e, url);
+	// open link into new page when requested or if the user is clicking the favourite tab one more time
+	if (target === "_blank" || url === href) {
+		open(url, target);
+	} else {
+		postMessage({
+			what: "lightningNavigation",
+			navigationType: "url",
+			url,
+			fallbackURL: url,
+		}, "*");
+	}
 }
 
 /**
@@ -43,12 +87,13 @@ function expandURL(url) {
  * @param {Object} row - The tab data object containing title and URL.
  * @param {string} row.tabTitle - The title of the tab.
  * @param {string} row.url - The URL of the tab.
+ * @param {string} row.org - The org of the org-specific tab.
  * @returns {HTMLElement} - The generated list item element representing the tab.
  */
 function _generateRowTemplate(row) {
 	const { tabTitle, url } = row;
-	const miniURLpromise = minifyURL(url);
-	const expURLpromise = expandURL(url);
+	const miniURLpromise = sf_minifyURL(url);
+	const expURLpromise = sf_expandURL(url);
 
 	return Promise.all([miniURLpromise, expURLpromise])
 		.then(([miniURL, expURL]) => {
@@ -76,9 +121,9 @@ function _generateRowTemplate(row) {
 			a.setAttribute("href", expURL);
 			a.classList.add("tabHeader", "slds-context-bar__label-action");
 			a.style.zIndex = 0;
-			a.addEventListener("click", _handleLightningLinkClick);
+			a.addEventListener("click", handleLightningLinkClick);
 
-			const span = document.createElement("span");
+			const span = document.createElement(row.org == null ? "span" : "b");
 			span.classList.add("title", "slds-truncate");
 			span.textContent = tabTitle;
 
@@ -102,6 +147,13 @@ function _generateRowTemplate(row) {
  * @returns {HTMLElement} - The generated element for the toast message.
  */
 function _generateSldsToastMessage(message, isSuccess, isWarning) {
+	if (
+		message == null || message === "" | isSuccess == null ||
+		isWarning == null
+	) {
+		throw new Error("Unable to generate Toast Message.");
+	}
+
 	const toastType = isSuccess
 		? (isWarning ? "info" : "success")
 		: (isWarning ? "warning" : "error");
@@ -218,6 +270,46 @@ function _generateSldsToastMessage(message, isSuccess, isWarning) {
 	return toastContainer;
 }
 
+/**
+ * Creates and returns an abbreviation element indicating a required field.
+ *
+ * The function constructs an <abbr> element, applies the "slds-required" class,
+ * sets the "title" attribute to "required" and the "part" attribute to "required",
+ * and sets its text content to an asterisk ("*").
+ *
+ * @returns {HTMLElement} The <abbr> element representing the required indicator.
+ */
+function generateRequired() {
+	const requiredElement = document.createElement("abbr");
+	requiredElement.classList.add("slds-required");
+	requiredElement.setAttribute("title", "required");
+	requiredElement.setAttribute("part", "required");
+	requiredElement.textContent = "*";
+	return requiredElement;
+}
+
+/**
+ * Generates a customizable input element wrapped in a Salesforce-styled form structure.
+ *
+ * @param {Object} config - Configuration object for the input.
+ * @param {string} config.label - The label text for the input.
+ * @param {string} [config.type="text"] - The type of the input element (e.g., "text", "password").
+ * @param {boolean} [config.required=false] - Indicates if the input is required.
+ * @param {string|null} [config.placeholder=null] - Placeholder text for the input.
+ * @param {Object|null} [config.prepend=null] - Configuration for an input element to prepend.
+ * @param {Object|null} [config.append=null] - Configuration for an input element to append.
+ * @param {string|null} [config.style=null] - Additional inline styles for the main input element.
+ *
+ * @returns {Object} - An object containing:
+ *   - `inputParent`: The parent `div` containing the entire input structure.
+ *   - `inputContainer`: The main input element.
+ *
+ * - Dynamically generates a unique `id` for the input using `getRng_n_digits(10)`.
+ * - Wraps the input in a Salesforce-styled stacked form element.
+ * - Supports additional inputs before (`prepend`) or after (`append`) the main input.
+ * - Applies optional attributes like `placeholder`, `required`, and `style`.
+ * - Maintains Salesforce Lightning Design System (SLDS) styling conventions.
+ */
 function generateInput({
 	label,
 	type = "text",
@@ -227,8 +319,6 @@ function generateInput({
 	append = null,
 	style = null,
 }) {
-	const inputId = `${prefix}-${getRng_n_digits(10)}`;
-
 	const inputParent = document.createElement("div");
 	inputParent.setAttribute("name", "input");
 
@@ -251,18 +341,14 @@ function generateInput({
 	formElementLabel.style.display = "unset"; // makes the elements inside have full width
 	exportParts.appendChild(formElementLabel);
 
+	const inputId = `${prefix}-${getRng_n_digits(10)}`;
 	const labelElement = document.createElement("label");
 	labelElement.classList.add("slds-form-element__label", "slds-no-flex");
 	labelElement.setAttribute("for", inputId);
 	formElementLabel.appendChild(labelElement);
 
 	if (required) {
-		const requiredElement = document.createElement("abbr");
-		requiredElement.classList.add("slds-required");
-		requiredElement.setAttribute("title", "required");
-		requiredElement.setAttribute("part", "required");
-		requiredElement.textContent = "*";
-		labelElement.appendChild(requiredElement);
+		labelElement.appendChild(generateRequired());
 	}
 	labelElement.append(label);
 
@@ -318,42 +404,58 @@ function generateInput({
 	return { inputParent, inputContainer };
 }
 
-function generateSection(sectionTitle) {
+/**
+ * Generates a customizable Salesforce-styled section with a title and a layout structure.
+ *
+ * @param {string} sectionTitle - The title of the section to be displayed.
+ *
+ * @returns {Object} - An object containing:
+ *   - `section`: The root `records-record-layout-section` element that wraps the section.
+ *   - `divParent`: A container div element for additional content inside the section.
+ *
+ * - Creates a `records-record-layout-section` component with a nested layout adhering to Salesforce's design standards.
+ * - Includes a section title styled with SLDS (Salesforce Lightning Design System).
+ * - Builds a nested grid layout inside the section for content organization.
+ * - Adds empty slots (`divParent` and cloned `borderSpacer`) for future customization or dynamic content injection.
+ */
+function generateSection(sectionTitle = null) {
 	const section = document.createElement("records-record-layout-section");
 	section.setAttribute("lwc-692i7qiai51-host", "");
 
-	const newDiv = document.createElement("div");
-	newDiv.setAttribute("lwc-mlenr16lk9", "");
-	newDiv.classList.add("slds-card__body", "slds-card__body_inner");
-	section.appendChild(newDiv);
+	if (sectionTitle != null) {
+		const newDiv = document.createElement("div");
+		newDiv.setAttribute("lwc-mlenr16lk9", "");
+		newDiv.classList.add("slds-card__body", "slds-card__body_inner");
+		section.appendChild(newDiv);
 
-	const innerDiv = document.createElement("div");
-	innerDiv.setAttribute("lwc-mlenr16lk9", "");
-	innerDiv.classList.add(
-		"section-layout-container",
-		"slds-section",
-		"slds-is-open",
-	);
-	newDiv.appendChild(innerDiv);
+		const innerDiv = document.createElement("div");
+		innerDiv.setAttribute("lwc-mlenr16lk9", "");
+		innerDiv.classList.add(
+			"section-layout-container",
+			"slds-section",
+			"slds-is-open",
+		);
+		newDiv.appendChild(innerDiv);
 
-	const h3 = document.createElement("h3");
-	h3.setAttribute("lwc-mlenr16lk9", "");
-	h3.classList.add(
-		"label",
-		"slds-section__title",
-		"slds-truncate",
-		"slds-p-around_x-small",
-		"slds-theme_shade",
-	);
-	h3.setAttribute("data-target-reveals", "");
-	innerDiv.appendChild(h3);
+		const h3 = document.createElement("h3");
+		h3.setAttribute("lwc-mlenr16lk9", "");
+		h3.classList.add(
+			"label",
+			"slds-section__title",
+			"slds-truncate",
+			"slds-p-around_x-small",
+			"slds-theme_shade",
+		);
+		h3.setAttribute("data-target-reveals", "");
+		innerDiv.appendChild(h3);
 
-	const span = document.createElement("span");
-	span.setAttribute("lwc-mlenr16lk9", "");
-	span.classList.add("slds-truncate");
-	span.setAttribute("title", sectionTitle);
-	span.textContent = sectionTitle;
-	h3.appendChild(span);
+		const span = document.createElement("span");
+		span.setAttribute("lwc-mlenr16lk9", "");
+		span.classList.add("slds-truncate");
+		span.setAttribute("title", sectionTitle);
+		span.textContent = sectionTitle;
+		h3.appendChild(span);
+	}
 
 	const progressiveContainer = document.createElement("div");
 	progressiveContainer.classList.add(
@@ -397,8 +499,19 @@ function generateSection(sectionTitle) {
 	return { section, divParent };
 }
 
+/**
+ * Generates a Salesforce Lightning Design System (SLDS)-styled modal dialog.
+ *
+ * @param {string} modalTitle - The title of the modal.
+ * @returns {Object} An object containing key elements of the modal:
+ * - modalParent: The main modal container element.
+ * - article: The content area within the modal.
+ * - saveButton: The save button element for user actions.
+ * - closeButton: The close button element for closing the modal.
+ */
 function generateSldsModal(modalTitle) {
 	const modalParent = document.createElement("div");
+	modalParent.id = modalId;
 	modalParent.classList.add(
 		"DESKTOP",
 		"uiModal--medium",
@@ -433,7 +546,12 @@ function generateSldsModal(modalTitle) {
 	dialog.setAttribute("aria-modal", "true");
 	dialog.classList.add("panel", "slds-modal", "slds-fade-in-open");
 	dialog.style.opacity = "1";
-	dialog.setAttribute("aria-label", `Again, Why Salesforce: ${modalTitle}`);
+	dialog.setAttribute(
+		"aria-label",
+		`Again, Why Salesforce${
+			modalTitle != null && modalTitle !== "" ? ": " + modalTitle : ""
+		}`,
+	);
 	//dialog.addEventListener("wheel", e => e.preventDefault());
 	modalParent.appendChild(dialog);
 
@@ -462,6 +580,7 @@ function generateSldsModal(modalTitle) {
 	);
 	modalHeader.appendChild(closeButton);
 	closeButton.addEventListener("click", () => modalParent.remove());
+	backdropDiv.addEventListener("click", () => closeButton.click());
 
 	const closeIcon = document.createElement("lightning-primitive-icon");
 	closeIcon.setAttribute("variant", "bare");
@@ -521,7 +640,7 @@ function generateSldsModal(modalTitle) {
 	viewModeDiv.setAttribute("data-aura-class", "lafPageHost");
 	modalBody.appendChild(viewModeDiv);
 
-	const actionWrapperDiv = document.createElement("div");
+	const actionWrapperDiv = document.createElement("form");
 	actionWrapperDiv.classList.add(
 		"isModal",
 		"inlinePanel",
@@ -739,28 +858,52 @@ function generateSldsModal(modalTitle) {
 		"forceActionButton",
 	);
 	saveButton.setAttribute("aria-live", "off");
-	saveButton.setAttribute("type", "button");
+	saveButton.setAttribute("type", "submit");
 	saveButton.setAttribute("title", "Save");
 	saveButton.setAttribute("aria-label", "");
 	saveButton.setAttribute("data-aura-rendered-by", "1380:0");
 	saveButton.setAttribute("data-aura-class", "uiButton forceActionButton");
 	buttonContainerInnerDiv.appendChild(saveButton);
 
+	saveButton.addEventListener;
+
 	const saveSpan = document.createElement("span");
 	saveSpan.classList.add("label", "bBody");
 	saveSpan.setAttribute("dir", "ltr");
 	saveSpan.setAttribute("data-aura-rendered-by", "1383:0");
-	saveSpan.textContent = "Save";
+	saveSpan.textContent = "Continue";
 	saveButton.appendChild(saveSpan);
 
-	document.addEventListener("keydown", function (event) {
-		event.key === "Escape" && closeButton.click() &&
-			document.removeEventListener("keydown");
-	});
+	// listen for key presses
+	function keyDownListener(event) {
+		switch (event.key) {
+			case "Escape":
+				closeButton.click();
+				break;
+			case "Enter":
+				saveButton.click();
+				break;
+			default:
+				return;
+		}
+		document.removeEventListener("keydown", keyDownListener);
+	}
+	document.addEventListener("keydown", keyDownListener);
 
 	return { modalParent, article, saveButton, closeButton };
 }
 
+/**
+ * Generates and opens a modal dialog for entering another Salesforce Org's information.
+ *
+ * @param {string} miniURL - A partial URL for the target org.
+ * @param {string} tabTitle - The title of the modal tab.
+ * @returns {Object} An object containing key elements of the modal:
+ * - modalParent: The main modal container element.
+ * - saveButton: The save button element for user actions.
+ * - closeButton: The close button element for closing the modal.
+ * - inputContainer: The container element for the org link input field.
+ */
 function _generateOpenOtherOrgModal(miniURL, tabTitle) {
 	const { modalParent, article, saveButton, closeButton } = generateSldsModal(
 		tabTitle,
@@ -768,6 +911,8 @@ function _generateOpenOtherOrgModal(miniURL, tabTitle) {
 
 	const { section, divParent } = generateSection("Other Org info");
 	divParent.style.width = "100%"; // makes the elements inside have full width
+	divParent.style.display = "flex";
+	divParent.style.alignItems = "center";
 	article.appendChild(section);
 
 	const orgLinkInputConf = {
@@ -776,24 +921,363 @@ function _generateOpenOtherOrgModal(miniURL, tabTitle) {
 		required: true,
 		placeholder: "other-org",
 		style: "width: 50%",
-		prepend: {
-			type: "text",
-			placeholder: "https://",
-			enabled: false,
-			style: "width: 9%",
-		},
-		append: {
-			type: "text",
-			placeholder: `.lightning.force.com${
-				!miniURL.startsWith("/") ? setupLightning : ""
-			}${miniURL}`,
-			enabled: false,
-			style: "width: 41%",
-		},
 	};
 
 	const { inputParent, inputContainer } = generateInput(orgLinkInputConf);
+	const https = document.createElement("span");
+	https.append("https://");
+	https.style.height = "1.5rem";
+	divParent.appendChild(https);
 	divParent.appendChild(inputParent);
+	const linkEnd = document.createElement("span");
+	linkEnd.append(
+		`.lightning.force.com${
+			!miniURL.startsWith("/") ? setupLightning : ""
+		}${miniURL}`,
+	);
+	linkEnd.style.width = "fit-content";
+	linkEnd.style.height = "1.5rem";
+	linkEnd.style.wordBreak = "break-all";
+	linkEnd.style.overflow = "hidden";
+	divParent.appendChild(linkEnd);
 
 	return { modalParent, saveButton, closeButton, inputContainer };
+}
+
+/**
+ * Generates an SLDS file input component with configurable file selection and drag-and-drop support.
+ *
+ * Depending on the parameters, this function constructs a complex DOM structure styled with SLDS classes.
+ * It supports enabling/disabling drag-and-drop, preventing file selection, and toggling single or multiple file uploads.
+ *
+ * @param {boolean} [singleFile=false] - If true, restricts the input to a single file; if false, multiple files can be selected.
+ * @param {boolean} [allowDrop=true] - If true, enables file drop functionality.
+ * @param {boolean} [preventFileSelection=false] - If true, disables file selection via the file dialog.
+ *                                                Note: Cannot be true if allowDrop is false.
+ * @param {boolean} [required=true] - If true, marks the file input as required and appends a required indicator.
+ * @throws {Error} Throws an error if allowDrop is false while preventFileSelection is true.
+ * @returns {{ fileInputWrapper: HTMLElement, inputContainer: HTMLInputElement }} An object containing:
+ *   - fileInputWrapper: The wrapper element for the entire file input component.
+ *   - inputContainer: The actual file input element.
+ */
+function _generateSldsFileInput(
+	wrapperId,
+	inputElementId,
+	acceptedType,
+	singleFile = false,
+	allowDrop = true,
+	preventFileSelection = false,
+	required = true,
+) {
+	if (!allowDrop && preventFileSelection) {
+		throw new Error(
+			"Cannot generate a file input when allowDrop == false && preventFileSelection == true",
+		);
+	} else if (
+		wrapperId == null || wrapperId === "" || inputElementId == null ||
+		inputElementId === "" || acceptedType == null || acceptedType === ""
+	) {
+		throw new Error(
+			"Cannot generate a file input when the required files are not passed.",
+		);
+	}
+
+	const fileInputWrapper = document.createElement("div");
+	fileInputWrapper.id = wrapperId;
+	fileInputWrapper.classList.add(
+		"previewMode",
+		"MEDIUM",
+		"forceRelatedListPreview",
+	);
+	fileInputWrapper.setAttribute("data-aura-class", "forceRelatedListPreview");
+	fileInputWrapper.style.width = "100%";
+
+	const innerDiv = document.createElement("div");
+	fileInputWrapper.appendChild(innerDiv);
+
+	const cardBodyDiv = document.createElement("div");
+	cardBodyDiv.classList.add(
+		"slds-card__body_inner",
+		"forceContentFileDroppableZone",
+		"forceContentRelatedListPreviewFileList",
+	);
+	cardBodyDiv.setAttribute(
+		"data-aura-class",
+		"forceContentFileDroppableZone forceContentRelatedListPreviewFileList",
+	);
+	innerDiv.appendChild(cardBodyDiv);
+
+	if (preventFileSelection && allowDrop) {
+		const fileSelectorDiv = document.createElement("div");
+		fileSelectorDiv.classList.add(
+			"slds-file-selector",
+			"slds-file-selector--integrated",
+			"slds-file-selector--integrated",
+		);
+		cardBodyDiv.appendChild(fileSelectorDiv);
+
+		const dropzoneDiv = document.createElement("div");
+		dropzoneDiv.classList.add(
+			"slds-file-selector__dropzone",
+			"slds-file-selector__dropzone--integrated",
+		);
+		fileSelectorDiv.appendChild(dropzoneDiv);
+
+		const dropzoneBodySpan = document.createElement("span");
+		dropzoneBodySpan.classList.add(
+			"slds-file-selector__body",
+			"slds-file-selector__body--integrated",
+		);
+		dropzoneDiv.appendChild(dropzoneBodySpan);
+
+		const lightningIcon = document.createElement("lightning-icon");
+		lightningIcon.classList.add(
+			"slds-icon-utility-upload",
+			"slds-file-selector__body-icon",
+			"slds-icon",
+			"slds-icon-text-default",
+			"slds-button__icon",
+			"slds-icon_container forceIcon",
+		);
+		lightningIcon.setAttribute("icon-name", "utility:upload");
+		lightningIcon.setAttribute("data-data-rendering-service-uid", "742");
+		lightningIcon.setAttribute("data-aura-class", "forceIcon");
+		dropzoneBodySpan.appendChild(lightningIcon);
+
+		const iconSpan = document.createElement("span");
+		iconSpan.style.setProperty(
+			"--sds-c-icon-color-background",
+			"var(--slds-c-icon-color-background, transparent)",
+		);
+		iconSpan.setAttribute("part", "boundary");
+		lightningIcon.appendChild(iconSpan);
+
+		const primitiveIcon = document.createElement(
+			"lightning-primitive-icon",
+		);
+		primitiveIcon.setAttribute("exportparts", "icon");
+		primitiveIcon.setAttribute("size", "medium");
+		primitiveIcon.setAttribute("variant", "inverse");
+		iconSpan.appendChild(primitiveIcon);
+
+		const svg = document.createElement("svg");
+		svg.setAttribute("focusable", "false");
+		svg.setAttribute("aria-hidden", "true");
+		svg.setAttribute("viewBox", "0 0 520 520");
+		svg.setAttribute("part", "icon");
+		svg.classList.add("slds-icon");
+		primitiveIcon.appendChild(svg);
+
+		const g = document.createElement("g");
+		svg.appendChild(g);
+
+		const path = document.createElement("path");
+		path.setAttribute(
+			"d",
+			"M485 310h-30c-8 0-15 8-15 15v100c0 8-7 15-15 15H95c-8 0-15-7-15-15V325c0-7-7-15-15-15H35c-8 0-15 8-15 15v135a40 40 0 0040 40h400a40 40 0 0040-40V325c0-7-7-15-15-15zM270 24c-6-6-15-6-21 0L114 159c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l56-56c6-6 18-2 18 7v212c0 8 6 15 14 15h30c8 0 16-8 16-15V153c0-9 10-13 17-7l56 56c6 6 15 6 21 0l21-21c6-6 6-15 0-21z",
+		);
+		g.appendChild(path);
+
+		const dropFilesSpan = document.createElement("span");
+		dropFilesSpan.classList.add(
+			"slds-file-selector__text",
+			"slds-file-selector__text--integrated",
+			"slds-text-heading--medium",
+			"slds-text-align--center",
+		);
+		dropFilesSpan.textContent = `Drop File${singleFile ? "" : "s"}`;
+		dropzoneBodySpan.appendChild(dropFilesSpan);
+	}
+
+	const dragOverDiv = document.createElement("div");
+	dragOverDiv.classList.add("drag-over-body");
+	cardBodyDiv.appendChild(dragOverDiv);
+
+	const lightningInput = document.createElement("lightning-input");
+	lightningInput.classList.add("slds-form-element", "lightningInput");
+	lightningInput.setAttribute("data-data-rendering-service-uid", "743");
+	dragOverDiv.appendChild(lightningInput);
+
+	const primitiveInputFile = document.createElement(
+		"lightning-primitive-input-file",
+	);
+	primitiveInputFile.setAttribute("exportparts", "button");
+	lightningInput.appendChild(primitiveInputFile);
+
+	const formLabelSpan = document.createElement("span");
+	formLabelSpan.classList.add(
+		"slds-form-element__label",
+		"slds-assistive-text",
+	);
+	primitiveInputFile.appendChild(formLabelSpan);
+
+	const controlDiv = document.createElement("div");
+	controlDiv.classList.add("slds-form-element__control");
+	primitiveInputFile.appendChild(controlDiv);
+
+	const fileSelectorImagesDiv = document.createElement("div");
+	fileSelectorImagesDiv.classList.add(
+		"slds-file-selector",
+		"slds-file-selector--images",
+		"slds-file-selector_images",
+	);
+	fileSelectorImagesDiv.setAttribute("part", "file-selector");
+	controlDiv.appendChild(fileSelectorImagesDiv);
+
+	const fileDroppableZone = document.createElement(
+		"lightning-primitive-file-droppable-zone",
+	);
+	fileDroppableZone.classList.add("slds-file-selector__dropzone");
+	fileSelectorImagesDiv.appendChild(fileDroppableZone);
+
+	const slot = document.createElement("slot");
+	fileDroppableZone.appendChild(slot);
+
+	const inputContainer = document.createElement("input");
+	inputContainer.id = inputElementId;
+	inputContainer.classList.add(
+		"slds-file-selector__input",
+		"slds-assistive-text",
+	);
+	inputContainer.setAttribute("accept", acceptedType);
+	inputContainer.setAttribute("type", "file");
+	inputContainer.setAttribute("part", "input");
+	inputContainer.setAttribute("multiple", "");
+	inputContainer.setAttribute("name", "fileInput");
+	slot.appendChild(inputContainer);
+
+	const fileSelectorLabel = document.createElement("label");
+	fileSelectorLabel.classList.add("slds-file-selector__body");
+	fileSelectorLabel.setAttribute("for", inputElementId);
+	slot.appendChild(fileSelectorLabel);
+
+	const fileSelectorButtonSpan = document.createElement("span");
+	fileSelectorButtonSpan.classList.add(
+		"slds-file-selector__button",
+		"slds-button",
+		"slds-button_neutral",
+	);
+	fileSelectorButtonSpan.setAttribute("part", "button");
+	fileSelectorLabel.appendChild(fileSelectorButtonSpan);
+
+	const buttonIcon = document.createElement("lightning-primitive-icon");
+	buttonIcon.setAttribute("variant", "bare");
+	fileSelectorButtonSpan.appendChild(buttonIcon);
+	fileSelectorButtonSpan.append(`Upload File${singleFile ? "" : "s"}`);
+	required && fileSelectorButtonSpan.appendChild(generateRequired());
+
+	const buttonSvg = document.createElementNS(
+		"http://www.w3.org/2000/svg",
+		"svg",
+	);
+	buttonSvg.classList.add("slds-button__icon", "slds-button__icon_left");
+	buttonSvg.setAttribute("focusable", "false");
+	buttonSvg.setAttribute("data-key", "upload");
+	buttonSvg.setAttribute("aria-hidden", "true");
+	buttonSvg.setAttribute("viewBox", "0 0 520 520");
+	buttonSvg.setAttribute("part", "icon");
+	buttonIcon.appendChild(buttonSvg);
+
+	const buttonG = document.createElementNS("http://www.w3.org/2000/svg", "g");
+	buttonSvg.appendChild(buttonG);
+
+	const buttonPath = document.createElementNS(
+		"http://www.w3.org/2000/svg",
+		"path",
+	);
+	buttonPath.setAttribute(
+		"d",
+		"M485 310h-30c-8 0-15 8-15 15v100c0 8-7 15-15 15H95c-8 0-15-7-15-15V325c0-7-7-15-15-15H35c-8 0-15 8-15 15v135a40 40 0 0040 40h400a40 40 0 0040-40V325c0-7-7-15-15-15zM270 24c-6-6-15-6-21 0L114 159c-6 6-6 15 0 21l21 21c6 6 15 6 21 0l56-56c6-6 18-2 18 7v212c0 8 6 15 14 15h30c8 0 16-8 16-15V153c0-9 10-13 17-7l56 56c6 6 15 6 21 0l21-21c6-6 6-15 0-21z",
+	);
+	buttonG.appendChild(buttonPath);
+
+	if (allowDrop) {
+		const orDropFilesSpan = document.createElement("span");
+		orDropFilesSpan.classList.add(
+			"slds-file-selector__text",
+			"slds-medium-show",
+		);
+		orDropFilesSpan.textContent = `Or drop file${singleFile ? "" : "s"}`;
+		fileSelectorLabel.appendChild(orDropFilesSpan);
+	}
+
+	/*
+        const helpTextDiv = document.createElement("div");
+    helpTextDiv.classList.add("slds-form-element__help");
+    helpTextDiv.setAttribute("data-name", "fileInput");
+    helpTextDiv.setAttribute("part", "help-text");
+    helpTextDiv.setAttribute("role", "status");
+    primitiveInputFile.appendChild(helpTextDiv);
+
+    const hiddenPlaceholderDiv = document.createElement("div");
+    hiddenPlaceholderDiv.classList.add("slds-hide");
+
+    const forcePlaceholder = document.createElement("force-placeholder2");
+
+    const placeholderBodyDiv = document.createElement("div");
+    placeholderBodyDiv.classList.add("body","slds-grid","slds-grid_vertical-align-center","slds-p-around_large");
+
+    const placeholderFigureDiv = document.createElement("div");
+    placeholderFigureDiv.classList.add("slds-media__figure","slds-avatar","slds-m-right_small");
+
+    const placeholderTextContainerDiv = document.createElement("div");
+    placeholderTextContainerDiv.classList.add("text-container");
+
+    const placeholderTextDiv1 = document.createElement("div");
+    placeholderTextDiv1.classList.add("text","slds-m-bottom_small");
+
+    const placeholderTextDiv2 = document.createElement("div");
+    placeholderTextDiv2.classList.add("text","text-medium");
+
+    placeholderTextContainerDiv.appendChild(placeholderTextDiv1);
+    placeholderTextContainerDiv.appendChild(placeholderTextDiv2);
+    placeholderBodyDiv.appendChild(placeholderFigureDiv);
+    placeholderBodyDiv.appendChild(placeholderTextContainerDiv);
+    forcePlaceholder.appendChild(placeholderBodyDiv);
+    hiddenPlaceholderDiv.appendChild(forcePlaceholder);
+
+    const abstractList = document.createElement("ul");
+    abstractList.classList.add("uiAbstractList");
+
+    const emptyContentDiv = document.createElement("div");
+    emptyContentDiv.classList.add("emptyContent","hidden");
+
+    const emptyContentInnerDiv = document.createElement("div");
+    emptyContentInnerDiv.classList.add("emptyContentInner","slds-text-align_center","slds-text-align--center");
+
+    emptyContentDiv.appendChild(emptyContentInnerDiv);
+
+    dragOverDiv.appendChild(hiddenPlaceholderDiv);
+    dragOverDiv.appendChild(abstractList);
+    dragOverDiv.appendChild(emptyContentDiv);
+    */
+
+	return { fileInputWrapper, inputContainer };
+}
+
+/**
+ * Generates a checkbox input element with an associated label.
+ *
+ * @param {string} id - The unique identifier for the checkbox.
+ * @param {string} label - The text to display next to the checkbox.
+ * @param {boolean} [checked=false] - Whether the checkbox should be initially checked.
+ * @returns {HTMLLabelElement} The label element containing the checkbox input and its text.
+ */
+function _generateCheckboxWithLabel(id, label, checked = false) {
+	const checkboxLabel = document.createElement("label");
+	checkboxLabel.for = id;
+
+	const checkbox = document.createElement("input");
+	checkbox.type = "checkbox";
+	checkbox.id = id;
+	checkbox.name = label;
+	checkbox.checked = checked;
+	checkboxLabel.appendChild(checkbox);
+
+	const checkboxSpan = document.createElement("span");
+	checkboxSpan.style.marginLeft = "0.5rem";
+	checkboxSpan.textContent = label;
+	checkboxLabel.append(checkboxSpan);
+
+	return checkboxLabel;
 }
